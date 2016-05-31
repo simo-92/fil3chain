@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import javax.persistence.Column;
+
 import java.net.NetworkInterface;
 import java.util.Enumeration;
 import it.scrs.miner.dao.block.Block;
@@ -43,9 +46,10 @@ public class Miner {
 	private String portEntryPoint;
 	private String entryPointBaseUri;
 	private List<String> ipPeers; // contiene gli ip degli altri miner nella rete
+	private User me;
 	private static final Logger log = LoggerFactory.getLogger(Miner.class);
 	private static final int nBlockUpdate = 10;// TODO metter nel properties
-	private static final String prefixVPNet ="10.192.";//TODO  mettere nel properties
+	private static final String prefixVPNet = "10.192.";// TODO mettere nel properties
 
 
 	/**
@@ -53,6 +57,7 @@ public class Miner {
 	 */
 	public Miner() {
 		super();
+		// TODO PRendi dal database ME USER
 	}
 
 	/**
@@ -81,7 +86,7 @@ public class Miner {
 
 		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri();
 		String result = "";
-		String myIp="";
+		String myIp = "";
 		List<String> myIpS = new ArrayList<String>();
 		Enumeration<NetworkInterface> e;
 		try {
@@ -91,10 +96,12 @@ public class Miner {
 				Enumeration<InetAddress> ee = n.getInetAddresses();
 				while (ee.hasMoreElements()) {
 					InetAddress i = (InetAddress) ee.nextElement();
-					if(i.getHostAddress().startsWith("1"));
+					if (i.getHostAddress().startsWith("1"))
+						;
 					myIpS.add(i.getHostAddress());
-					if(i.getHostAddress().startsWith(prefixVPNet));
-					myIp= i.getHostAddress();
+					if (i.getHostAddress().startsWith(prefixVPNet))
+						;
+					myIp = i.getHostAddress();
 				}
 			}
 		} catch (SocketException e1) {
@@ -104,7 +111,7 @@ public class Miner {
 
 		ipPeers = new ArrayList<String>();
 		try {
-			
+
 			result = HttpUtil.doPost(url, new Pairs<String, String>("ip", myIp));
 		} catch (Exception ex) {
 			// Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
@@ -117,7 +124,7 @@ public class Miner {
 		if (MinerApplication.testMiner == Boolean.TRUE) {
 			if (ipPeers == null)
 				ipPeers = new ArrayList<String>();
-				ipPeers.add("10.192.0.7");//TODO IPVPN CICCIO RISERVA SERVER EP DOWN
+			ipPeers.add("10.192.0.7");// TODO IPVPN CICCIO RISERVA SERVER EP DOWN
 
 		}
 		ipPeers.removeAll(myIpS);
@@ -140,6 +147,71 @@ public class Miner {
 
 		int nonce = 0;
 		Block block;
+
+		// Tutti i miei parmatetri
+
+		// TODO
+
+		// Verifica le transazioni se valide (ovvero se SHA(file) già è presente in un blocco)
+
+		// get trans from Dispatcher
+
+		// richiesta a PoolDispatcher per saper la difficolta
+
+		// try {
+		// diff = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
+		// } catch (Exception e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		//
+		// getLastChainLevel l altezza massima
+		// bf = prendi l hash del blocco piu lungo
+		//
+
+		// encodeMerkleTree (Trans)
+
+		// minerPublic Key = me.pKey
+		// usr = me
+
+		do {
+			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, transactions, bf, usr);
+			block.generateHashBlock();
+			nonce++;
+		} while (!block.verify());
+		return block;
+	}
+
+	/**
+	 * @param merkleRoot
+	 * @param minerPublicKey
+	 * @param chainLevel
+	 * @param transactions
+	 * @param bf
+	 * @param usr
+	 * @return
+	 */
+	public Block verifyBlock(Block block) {
+
+		String creationTime;// bLOCK.CREAIONtIME
+		String merkleRoot;
+		Integer minerPublicKey;
+		Integer nonce = 0;
+		Integer chainLevel;
+
+		// Tutti i miei parmatetri
+
+		// TODO
+
+		// Verifica le transazioni BEL BLOCCO se valide (ovvero se SHA(file) già è presente in un blocco)
+
+		
+		//Merkletree del BLOCCO =encodeMerkleTree (Trans DEL BLOCCO)
+		// minerPublic Key = BLOCCO.pKey
+		// usr = Blocco.User
+	
+		//nounce = BLOCK.nOUNCE
+
 		do {
 			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, transactions, bf, usr);
 			block.generateHashBlock();
@@ -281,8 +353,6 @@ public class Miner {
 		while (!nullResponse && (i < nBlockUpdate) && (designedMiner.getValue2() > myChainLevel)) {
 			// TODO cambire la uri di richiesta
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
-			
-			
 
 			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel);
 

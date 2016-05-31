@@ -110,32 +110,55 @@ public class Block {
 
 	public Boolean verify() {
 
-		// richiesta a PoolDispatcher per saper la difficolta
-
-		// try {
-		// diff = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
-		// } catch (Exception e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
+	
+		
+		
 		Integer diff, i;
 		diff = 2;
 		i = 0;
 		String s = this.getHashBlock();
 		String puzzle = "";
+
+		
+		
 		while (i < diff) {
 			puzzle += "0";
 			i++;
 		}
+		
+	
 		this.setHashBlock(null);
+		
 		String hash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
+		
 		this.setHashBlock(hash);
 		if (s.startsWith(puzzle) && (s.compareTo(hash) == 0))
 			return Boolean.TRUE;
 		return Boolean.FALSE;
 	}
 
+	
+	
+	
+	
+	
+	//MychainLevel=Chiedi ultimo blocco nel db
+	//se la differenza tra il mio blocco e il blocco è arrivato
+	// se è negativa 
+		//ed è 1 è successivo al mio blocco
+		// facio la verifica
+	
+	
+	
+	//verifica se esiste un padre 
+	//Verify MerkleRooot
+	////rooot = MerkleTree(getTransaction)
+	//rooot.stringCompare(MerkleTree)
+	
+	
+	
+	
+	
 	// public void generateVerifiedHashBlock() {
 	//
 	// // richiesta a PoolDispatcher per saper la difficolta
