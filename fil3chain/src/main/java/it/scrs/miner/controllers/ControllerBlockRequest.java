@@ -34,6 +34,12 @@ public class ControllerBlockRequest {
 	private BlockRepository blockRepository;
 
 
+	
+	
+	
+	
+	
+	//TODO Inerire controller quando arriva un nuovo blocco 
 	/*
 	 * @RequestMapping(value="/provaJson", method= RequestMethod.GET) public @ResponseBody
 	 * requestBlocks(@RequestParam("chainLevel")Integer chainLevel){ Block block=new
@@ -70,7 +76,7 @@ public class ControllerBlockRequest {
 		return blockRepository.findBychainLevel(chainLevel);
 	}	
 	
-	
+	// TODO Cambiare e mettere specifiche professore
 		@RequestMapping(value = "/poolDispatcher", method = RequestMethod.GET)
 		public Integer getDifficult() {
 			return 1;

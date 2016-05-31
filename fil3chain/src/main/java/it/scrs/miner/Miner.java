@@ -3,15 +3,6 @@ package it.scrs.miner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.orm.jpa.EntityScan;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.reflect.TypeToken;
@@ -24,9 +15,11 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import it.scrs.miner.dao.block.Block;
+import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
 // import java.util.logging.Logger;
@@ -38,6 +31,7 @@ import it.scrs.miner.models.Pairs;
  * 
  *
  */
+
 @Component
 public class Miner {
 
@@ -46,6 +40,7 @@ public class Miner {
 	private String entryPointBaseUri;
 	private List<String> ipPeers; // contiene gli ip degli altri miner nella rete
 	private static final Logger log = LoggerFactory.getLogger(Miner.class);
+	private static final int nBlockUpdate = 10;// TODO metter nel properties
 
 
 	/**
@@ -75,6 +70,7 @@ public class Miner {
 	/**
 	 * @return
 	 */
+	@SuppressWarnings("unchecked")
 	public boolean firstConnectToEntryPoint() {
 
 		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri();
@@ -92,13 +88,13 @@ public class Miner {
 		type = new TypeToken<ArrayList<String>>() {
 		}.getType();
 		ipPeers = (List<String>) JsonUtility.fromJson(result, type);
-		
-		if(MinerApplication.testMiner==Boolean.TRUE){
-			if(ipPeers == null)
+
+		if (MinerApplication.testMiner == Boolean.TRUE) {
+			if (ipPeers == null)
 				ipPeers.add("192.168.0.108");
-			
+
 		}
-		
+
 		ipPeers.forEach(ip -> System.out.println(ip));
 		return true;
 	}
@@ -113,6 +109,7 @@ public class Miner {
 	 * @return
 	 */
 	public Block generateBlock(String merkleRoot, Integer minerPublicKey, Integer chainLevel, List<Transaction> transactions, Block bf, User usr) {
+
 		int nonce = 0;
 		Block block;
 		do {
@@ -123,26 +120,160 @@ public class Miner {
 		return block;
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	/**
+	 * @param blockRepository
+	 * @param serviceMiner
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 * @throws Exception
+	 */
+	public void updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, Exception {
+
+		List<String> ipMiners = this.getIpPeers();
+		// Rimuovo il mio IP
+		// TODO Bisogna prendere l ip
+		ipMiners.remove("192.168.0.143");
+		Integer myChainLevel = 0;
+		while (!ipMiners.isEmpty()) {
+			// Lista contenente le richieste asincrone ai 3 ip
+			List<Future<Pairs<String, Integer>>> minerResp = new ArrayList<Future<Pairs<String, Integer>>>();
+			// Chiedi al db il valora del mio Max chainLevel
+			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel();
+
+			// Finche non sono aggiornato(ovvero mi rispondono con stringa
+			// codificata o blocco fittizio)
+			// Prendo k ip random da tutta la lista di Ip che mi sono stati inviati
+			askMinerChainLvl(ipMiners, minerResp, serviceMiner);
+
+			// minerResp.add(serviceMiner.findMaxChainLevel("192.168.0.107"));
+			System.out.println("1");
+
+			// Oggetto che contiene la coppia IP,ChainLevel del Miner designato
+			Pairs<String, Integer> designedMiner = new Pairs<String, Integer>();
+			waitAndChooseMiner(minerResp, designedMiner);
+
+			killRequest(minerResp);
+
+			System.out.println("Il Miner designato = " + designedMiner.getValue1() + " ChainLevel = " + designedMiner.getValue2() + "\n");
+
+			// Aggiorno la mia blockChain con i blocchi che mi arrivano in modo incrementale
+			// TODO realizzare la variante di chidere N blocchi tutti insieme
+			if (designedMiner.getValue1() != null)
+				getBlocksFromMiner(ipMiners, myChainLevel, designedMiner, blockRepository);
+			// aspetta una risposta
+			// verifico i blocchi e aggiungo al db
+
+			// mi connetto al primo che rispondi si e gli chiedo 10 blocchi o meno
+			// chiusi dal blocco fittizio
+
+			System.out.println(ipMiners.toString());
+		}
+	}
+
+	/**
+	 * @param minerResp
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
+	private void killRequest(List<Future<Pairs<String, Integer>>> minerResp) throws InterruptedException, ExecutionException {
+
+		for (Future<Pairs<String, Integer>> f : minerResp) {
+			System.out.println("\nElimino :" + f.get().getValue1());
+			f.cancel(Boolean.TRUE);
+		}
+	}
+
+	/**
+	 * @param ipMiners
+	 * @param minerResp
+	 */
+	private void askMinerChainLvl(List<String> ipMiners, List<Future<Pairs<String, Integer>>> minerResp, ServiceMiner serviceMiner) {
+
+		for (int i = 0; i < ipMiners.size(); i++) {
+			// Double x = Math.random() * ipMiners.size();
+			Future<Pairs<String, Integer>> result = serviceMiner.findMaxChainLevel(ipMiners.get(i));
+			if (result == null) {
+				String tmp = ipMiners.remove(i);
+				System.out.println("\n ho rimosso l ip " + tmp);
+			} else {
+				minerResp.add(result);
+			}
+
+		}
+	}
+
+	/**
+	 * @param minerResp
+	 * @param designedMiner
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 */
+	private void waitAndChooseMiner(List<Future<Pairs<String, Integer>>> minerResp, Pairs<String, Integer> designedMiner) throws InterruptedException, ExecutionException {
+
+		Boolean flag = Boolean.TRUE;
+		while (flag && !minerResp.isEmpty()) {
+			System.out.print("1.5");
+			System.out.println("size: "+minerResp.size());
+			// Controlliamo se uno dei nostri messaggi di richiesta è tornato
+			// indietro con successo
+			Thread.sleep(250L);
+			for (Future<Pairs<String, Integer>> f : minerResp) {
+				// facciamo un For per ciclare tutte richieste attive
+				// all'interno del nostro array e controlliamo se
+				// sono arrivate le risposte
+
+				if (f != null && f.isDone()) {
+					// IP del miner designato da cui prendere la blockchain
+					designedMiner.setValue1(f.get().getValue1());
+					// ChainLevel del miner designato
+					designedMiner.setValue2(f.get().getValue2());
+					System.out.println("\nRisposto da: " + f.get().getValue1() + "chain level " + f.get().getValue2());
+					flag = Boolean.FALSE;
+
+				}
+				else{
+					// TODO rivedere questa cosa wait/////
+					minerResp.remove(f);
+				}
+
+			}
+
+		}
+	}
+
+	/**
+	 * @param ipMiners
+	 * @param myChainLevel
+	 * @param designedMiner
+	 * @throws Exception
+	 */
+	private void getBlocksFromMiner(List<String> ipMiners, Integer myChainLevel, Pairs<String, Integer> designedMiner, BlockRepository blockRepository) throws Exception {
+
+		Integer i = 0;
+		Boolean nullResponse = Boolean.FALSE;
+		while (!nullResponse && (i < nBlockUpdate) && (designedMiner.getValue2() > myChainLevel)) {
+			// TODO cambire la uri di richiesta
+			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
+			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel);
+			if (blockResponse != null) {
+				System.out.println("\nBlock response: " + blockResponse.toString());
+				for (Block b : blockResponse) {
+					// TODO qui dentro ora posso salvare nel mio DB tutti i blocchi appena ricevuti e verificarli
+					blockRepository.save(b);
+					System.out.println("Ho tirato fuori il blocco con chainLevel: " + b.getChainLevel() + "\n");
+				}
+			} else {
+				nullResponse = Boolean.TRUE;
+			}
+			i++;
+
+		}
+		System.out.println("2");
+
+		if (!nullResponse && designedMiner.getValue2() <= blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel())
+			ipMiners.remove(designedMiner.getValue1());
+	}
+
 	/**
 	 * @return the ipEntryPoint
 	 */
