@@ -285,10 +285,9 @@ public class Miner {
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
 			
 			
-			Type type = new TypeToken<List<Block>>(){}.getType();
-			List<Block> blockResponse = (List<Block>) JsonUtility.fromJson(HttpUtil.doGet("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel), type);
 
-			//HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel);
+			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel);
+
 			if (blockResponse != null) {
 				System.out.println("\nBlock response: " + blockResponse.toString());
 				for (Block b : blockResponse) {

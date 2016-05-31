@@ -65,40 +65,41 @@ public class HttpUtil {
         return result.toString();
     }
     
-//    /**
-//     * esegue una richiesta get
-//     * @param url url a cui inviare la richiesta
-//     * @return risposta ricevuta
-//     * @throws possibili errori di comunicazione HTTP
-//     */
-//    @SuppressWarnings("unchecked")
-//	public static List<Block> doGetJSON(String url,String t) throws Exception{
-//       
-//        HttpClient client = HttpClientBuilder.create().build();
-//        HttpGet request = new HttpGet(url);
-//        
-////    	RequestConfig requestConfig = RequestConfig.custom()
-////    	  .setSocketTimeout(TIMEOUT_MILLIS)
-////    	  .setConnectTimeout(TIMEOUT_MILLIS)
-////    	  .setConnectionRequestTimeout(TIMEOUT_MILLIS)
-////    	  .build();
-////
-////    	request.setConfig(requestConfig);
+    /**
+     * esegue una richiesta get
+     * @param url url a cui inviare la richiesta
+     * @return risposta ricevuta
+     * @throws possibili errori di comunicazione HTTP
+     */
+    @SuppressWarnings("unchecked")
+	public static List<Block> doGetJSON(String url) throws Exception{
+       
+        HttpClient client = HttpClientBuilder.create().build();
+        HttpGet request = new HttpGet(url);
+        
+//    	RequestConfig requestConfig = RequestConfig.custom()
+//    	  .setSocketTimeout(TIMEOUT_MILLIS)
+//    	  .setConnectTimeout(TIMEOUT_MILLIS)
+//    	  .setConnectionRequestTimeout(TIMEOUT_MILLIS)
+//    	  .build();
 //
-//        HttpResponse response;
-//        response = client.execute(request);
-//        BufferedReader rd;
-//        rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-//        StringBuffer result = new StringBuffer();
-//        String line = "";
-//        while((line = rd.readLine()) != null){
-//            result.append(line);
-//        }
-//        //TODO per lupo quando riuserai il fromJson , usare x.class nel caso specifico non va bene perche non riesce a ricostruire oggetto
-//        //per un uso più corretto usa il la riga del Type che riesci a ricostruirlo bene
-//        Type listType = new TypeToken<List<Block>(){}.getType();
-//      return gson.fromJson(result.toString(),listType);
-//    }
+//    	request.setConfig(requestConfig);
+
+        HttpResponse response;
+        response = client.execute(request);
+        BufferedReader rd;
+        rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
+        StringBuffer result = new StringBuffer();
+        String line = "";
+        while((line = rd.readLine()) != null){
+            result.append(line);
+        }
+        //TODO per lupo quando riuserai il fromJson , usare x.class nel caso specifico non va bene perche non riesce a ricostruire oggetto
+        //per un uso più corretto usa il la riga del Type che riesci a ricostruirlo bene
+        Gson gson=new Gson();
+        Type listType = new TypeToken<List<Block>>(){}.getType();
+      return gson.fromJson(result.toString(),listType);
+ }
     
     
     /**
