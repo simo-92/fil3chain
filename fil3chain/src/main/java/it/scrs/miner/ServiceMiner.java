@@ -2,6 +2,9 @@ package it.scrs.miner;
 
 
 import java.util.concurrent.Future;
+
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
@@ -16,11 +19,22 @@ import it.scrs.miner.models.Pairs;
 @Service
 public class ServiceMiner {
 
-	RestTemplate restTemplate=new RestTemplate();
+	
+	
+	
+	
+	private static final int nSecOut = 3;//TODO PRendi dal properties
+	RestTemplate restTemplate=  new RestTemplate();
 
 	// TODO aggiungere nei parametri l'ip che arriva da fuori a cui deve essere fatta la richiesta
 	@Async
 	public Future<Pairs<String, Integer>> findMaxChainLevel(String uriMiner)  {
+
+		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory)restTemplate.getRequestFactory());
+		rf.setReadTimeout(1000*nSecOut);
+		rf.setConnectTimeout(1000*nSecOut);
+	
+
 		String s="";
 		Integer level=-1;
 		try {
@@ -38,3 +52,6 @@ public class ServiceMiner {
 		
 	}
 }
+
+
+

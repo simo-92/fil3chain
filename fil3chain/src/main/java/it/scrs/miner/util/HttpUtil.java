@@ -11,6 +11,7 @@ import it.scrs.miner.models.Pairs;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -27,7 +28,10 @@ import com.google.gson.reflect.TypeToken;
 /**classe di utilita per effettuare richieste http verso il sistema legacy */
 public class HttpUtil {
     
-    /**
+    private static final int TIMEOUT_MILLIS = 3000;
+
+
+	/**
      * esegue una richiesta get
      * @param url url a cui inviare la richiesta
      * @return risposta ricevuta
@@ -35,8 +39,20 @@ public class HttpUtil {
      */
     public static String doGet(String url) throws Exception{
        
+    	HttpPost request = new HttpPost(url);
+//
+//    	RequestConfig requestConfig = RequestConfig.custom()
+//    	  .setSocketTimeout(TIMEOUT_MILLIS)
+//    	  .setConnectTimeout(TIMEOUT_MILLIS)
+//    	  .setConnectionRequestTimeout(TIMEOUT_MILLIS)
+//    	  .build();
+//
+//    	request.setConfig(requestConfig);
+    	
+    	
         HttpClient client = HttpClientBuilder.create().build();
-        HttpGet request = new HttpGet(url);
+  
+       
         HttpResponse response;
         response = client.execute(request);
         BufferedReader rd;
@@ -60,6 +76,21 @@ public class HttpUtil {
        
         HttpClient client = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(url);
+        
+        
+        
+    	RequestConfig requestConfig = RequestConfig.custom()
+    	  .setSocketTimeout(TIMEOUT_MILLIS)
+    	  .setConnectTimeout(TIMEOUT_MILLIS)
+    	  .setConnectionRequestTimeout(TIMEOUT_MILLIS)
+    	  .build();
+
+    	request.setConfig(requestConfig);
+    	
+        
+        
+        
+        
         HttpResponse response;
         response = client.execute(request);
         BufferedReader rd;

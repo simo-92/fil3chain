@@ -1,6 +1,9 @@
 package it.scrs.miner;
 
 
+import java.net.InetAddress;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +46,11 @@ public class MinerApplication implements CommandLineRunner {
 		Miner miner = new Miner();
 		miner.loadNetworkConfig();
 		miner.firstConnectToEntryPoint();
+		System.out.println("\n il mio ip : "+ InetAddress.getLocalHost().getHostAddress());
 	
+
+		
+		
 		// Mino per prova
 		Block block = miner.generateBlock(null, 17, 31, null, null, null);
 		System.out.println(block.generateAndGetHashBlock());

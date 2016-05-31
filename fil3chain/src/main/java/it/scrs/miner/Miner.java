@@ -12,12 +12,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
+import java.net.NetworkInterface;
+import java.util.Enumeration;
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.transaction.Transaction;
@@ -69,6 +73,7 @@ public class Miner {
 
 	/**
 	 * @return
+	 * @throws SocketException
 	 */
 	@SuppressWarnings("unchecked")
 	public boolean firstConnectToEntryPoint() {
@@ -76,11 +81,34 @@ public class Miner {
 		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri();
 		String result = "";
 		String localIp = "";
+		String myIp="";
+		List<String> myIpS = new ArrayList<String>();
+		Enumeration<NetworkInterface> e;
+		try {
+			e = NetworkInterface.getNetworkInterfaces();
+			while (e.hasMoreElements()) {
+				NetworkInterface n = (NetworkInterface) e.nextElement();
+				Enumeration<InetAddress> ee = n.getInetAddresses();
+				while (ee.hasMoreElements()) {
+
+					InetAddress i = (InetAddress) ee.nextElement();
+					if(i.getHostAddress().startsWith("1"));
+					myIpS.add(i.getHostAddress());
+					if(i.getHostAddress().startsWith("10.192."));
+					myIp= i.getHostAddress();
+					
+
+				}
+			}
+		} catch (SocketException e1) {
+			// TODO Auto-generated catch block
+			// e1.printStackTrace();
+		}
 
 		ipPeers = new ArrayList<String>();
 		try {
-			localIp = InetAddress.getLocalHost().getHostAddress();
-			result = HttpUtil.doPost(url, new Pairs<String, String>("ip", localIp));
+			
+			result = HttpUtil.doPost(url, new Pairs<String, String>("ip", myIp));
 		} catch (Exception ex) {
 			// Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
 		}
@@ -91,13 +119,15 @@ public class Miner {
 
 		if (MinerApplication.testMiner == Boolean.TRUE) {
 			if (ipPeers == null)
-				ipPeers.add("192.168.0.108");
+				ipPeers = new ArrayList<String>();
+				ipPeers.add("10.192.0.7");//TODO IPVPN CICCIO RISERVA SERVER EP DOWN
 
 		}
-
+		ipPeers.removeAll(myIpS);
 		ipPeers.forEach(ip -> System.out.println(ip));
+
 		return true;
-//merdreeeeeee
+		// merdreeeeeee
 	}
 
 	/**
@@ -214,7 +244,7 @@ public class Miner {
 		Boolean flag = Boolean.TRUE;
 		while (flag && !minerResp.isEmpty()) {
 			System.out.print("1.5");
-			System.out.println("size: "+minerResp.size());
+			System.out.println("size: " + minerResp.size());
 			// Controlliamo se uno dei nostri messaggi di richiesta è tornato
 			// indietro con successo
 			Thread.sleep(250L);
@@ -231,8 +261,7 @@ public class Miner {
 					System.out.println("\nRisposto da: " + f.get().getValue1() + "chain level " + f.get().getValue2());
 					flag = Boolean.FALSE;
 
-				}
-				else{
+				} else {
 					// TODO rivedere questa cosa wait/////
 					minerResp.remove(f);
 				}
