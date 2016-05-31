@@ -45,6 +45,7 @@ public class Miner {
 	private List<String> ipPeers; // contiene gli ip degli altri miner nella rete
 	private static final Logger log = LoggerFactory.getLogger(Miner.class);
 	private static final int nBlockUpdate = 10;// TODO metter nel properties
+	private static final String prefixVPNet ="10.192.";//TODO  mettere nel properties
 
 
 	/**
@@ -89,14 +90,11 @@ public class Miner {
 				NetworkInterface n = (NetworkInterface) e.nextElement();
 				Enumeration<InetAddress> ee = n.getInetAddresses();
 				while (ee.hasMoreElements()) {
-
 					InetAddress i = (InetAddress) ee.nextElement();
 					if(i.getHostAddress().startsWith("1"));
 					myIpS.add(i.getHostAddress());
-					if(i.getHostAddress().startsWith("10.192."));
+					if(i.getHostAddress().startsWith(prefixVPNet));
 					myIp= i.getHostAddress();
-					
-
 				}
 			}
 		} catch (SocketException e1) {
