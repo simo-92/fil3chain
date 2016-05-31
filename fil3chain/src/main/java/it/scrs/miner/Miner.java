@@ -97,6 +97,7 @@ public class Miner {
 
 		ipPeers.forEach(ip -> System.out.println(ip));
 		return true;
+//merdreeeeeee
 	}
 
 	/**
