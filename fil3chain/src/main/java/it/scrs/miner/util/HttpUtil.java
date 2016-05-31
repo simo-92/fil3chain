@@ -103,10 +103,7 @@ public class HttpUtil {
         Gson gson=new Gson();
         //TODO per lupo quando riuserai il fromJson , usare x.class nel caso specifico non va bene perche non riesce a ricostruire oggetto
         //per un uso più corretto usa il la riga del Type che riesci a ricostruirlo bene
-       
-        //List<Block> x=new ArrayList<Block>();
         Type listType = new TypeToken<List<Block>>(){}.getType();
-        
       return gson.fromJson(result.toString(),listType);
     }
     

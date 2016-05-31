@@ -80,7 +80,6 @@ public class Miner {
 
 		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri();
 		String result = "";
-		String localIp = "";
 		String myIp="";
 		List<String> myIpS = new ArrayList<String>();
 		Enumeration<NetworkInterface> e;
@@ -284,6 +283,8 @@ public class Miner {
 		while (!nullResponse && (i < nBlockUpdate) && (designedMiner.getValue2() > myChainLevel)) {
 			// TODO cambire la uri di richiesta
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
+			
+			
 			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel);
 			if (blockResponse != null) {
 				System.out.println("\nBlock response: " + blockResponse.toString());

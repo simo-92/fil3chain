@@ -3,7 +3,6 @@ package it.scrs.miner;
 
 import java.util.concurrent.Future;
 
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -18,10 +17,6 @@ import it.scrs.miner.models.Pairs;
 
 @Service
 public class ServiceMiner {
-
-	
-	
-	
 	
 	private static final int nSecOut = 3;//TODO PRendi dal properties
 	RestTemplate restTemplate=  new RestTemplate();
