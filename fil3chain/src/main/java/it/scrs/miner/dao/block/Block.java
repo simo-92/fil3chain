@@ -108,11 +108,39 @@ public class Block {
 		this.userContainer = userContainer;
 	}
 
-	public Boolean verify() {
+	public Boolean CalculatePOW() {
 
 	
+		Integer diff, i;
+		diff = 2;
+		i = 0;
+		String s = this.getHashBlock();
+		String puzzle = "";
+
 		
 		
+		while (i < diff) {
+			puzzle += "0";
+			i++;
+		}
+		
+	
+
+		
+		String hash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
+		
+		this.setHashBlock(hash);
+		if (s.startsWith(puzzle))
+			return Boolean.TRUE;
+		return Boolean.FALSE;
+	}
+
+	
+	
+
+	public Boolean verifyHash() {
+
+	
 		Integer diff, i;
 		diff = 2;
 		i = 0;
@@ -136,10 +164,6 @@ public class Block {
 			return Boolean.TRUE;
 		return Boolean.FALSE;
 	}
-
-	
-	
-	
 	
 	
 	//MychainLevel=Chiedi ultimo blocco nel db

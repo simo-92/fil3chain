@@ -116,8 +116,7 @@ public class Miner {
 		} catch (Exception ex) {
 			// Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		Type type;
-		type = new TypeToken<ArrayList<String>>() {
+		Type type = new TypeToken<ArrayList<String>>() {
 		}.getType();
 		ipPeers = (List<String>) JsonUtility.fromJson(result, type);
 
@@ -143,7 +142,7 @@ public class Miner {
 	 * @param usr
 	 * @return
 	 */
-	public Block generateBlock(String merkleRoot, Integer minerPublicKey, Integer chainLevel, List<Transaction> transactions, Block bf, User usr) {
+	public Block generateBlock( List<Transaction> transactions) {
 
 		int nonce = 0;
 		Block block;
@@ -178,7 +177,7 @@ public class Miner {
 			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, transactions, bf, usr);
 			block.generateHashBlock();
 			nonce++;
-		} while (!block.verify());
+		} while (!block.verifyHash());
 		return block;
 	}
 
@@ -194,29 +193,33 @@ public class Miner {
 	public Block verifyBlock(Block block) {
 
 		String creationTime;// bLOCK.CREAIONtIME
-		String merkleRoot;
-		Integer minerPublicKey;
+		String merkleRoot = null;
+		Integer minerPublicKey = null;
 		Integer nonce = 0;
-		Integer chainLevel;
-
+		Integer chainLevel = null;
+		List<Transaction> trans = null;
+		Block bf = null;
+		User usr = null;
 		// Tutti i miei parmatetri
 
 		// TODO
+		//
+
+		// Calcola la differenza tra il mio chainLevel e quello del blocco
 
 		// Verifica le transazioni BEL BLOCCO se valide (ovvero se SHA(file) già è presente in un blocco)
 
-		
-		//Merkletree del BLOCCO =encodeMerkleTree (Trans DEL BLOCCO)
+		// Merkletree del BLOCCO =encodeMerkleTree (Trans DEL BLOCCO)
 		// minerPublic Key = BLOCCO.pKey
 		// usr = Blocco.User
-	
-		//nounce = BLOCK.nOUNCE
+
+		// nounce = BLOCK.nOUNCE
 
 		do {
-			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, transactions, bf, usr);
+			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, bf, usr);
 			block.generateHashBlock();
 			nonce++;
-		} while (!block.verify());
+		} while (!block.verifyHash());
 		return block;
 	}
 
@@ -346,6 +349,7 @@ public class Miner {
 	 * @param designedMiner
 	 * @throws Exception
 	 */
+	@SuppressWarnings("unchecked")
 	private void getBlocksFromMiner(List<String> ipMiners, Integer myChainLevel, Pairs<String, Integer> designedMiner, BlockRepository blockRepository) throws Exception {
 
 		Integer i = 0;
@@ -353,8 +357,9 @@ public class Miner {
 		while (!nullResponse && (i < nBlockUpdate) && (designedMiner.getValue2() > myChainLevel)) {
 			// TODO cambire la uri di richiesta
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
-
-			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel);
+			Type type = new TypeToken<List<Block>>() {
+			}.getType();
+			List<Block> blockResponse = (List<Block>) HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
 
 			if (blockResponse != null) {
 				System.out.println("\nBlock response: " + blockResponse.toString());
@@ -373,6 +378,53 @@ public class Miner {
 
 		if (!nullResponse && designedMiner.getValue2() <= blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel())
 			ipMiners.remove(designedMiner.getValue1());
+	}
+
+	/**
+	 * @param ipMiners
+	 * @param myChainLevel
+	 * @param designedMiner
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	private List<Transaction> getTransFromDisp(Integer nTrans) throws Exception {
+		
+		
+		
+		// TODO List<Transaction> trans = HttpUtil.doGetJSON("http://" + getEntryPointBaseUri() +
+		
+		Type type = new TypeToken<List<Transaction>>() {
+		}.getType();
+		List<Transaction> trans = (List<Transaction>)HttpUtil.doGetJSON("http://" + "10.198.0.7" + ":8080/JsonTransaction?nTrans=" + nTrans, type);
+
+		// Integer i = 0;
+		// Boolean nullResponse = Boolean.FALSE;
+		// while (!nullResponse && (i < nBlockUpdate) && (designedMiner.getValue2() > myChainLevel)) {
+		// // TODO cambire la uri di richiesta
+		// myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
+		//
+		// List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() +
+		// ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel);
+		//
+		// if (blockResponse != null) {
+		// System.out.println("\nBlock response: " + blockResponse.toString());
+		// for (Block b : blockResponse) {
+		// // TODO qui dentro ora posso salvare nel mio DB tutti i blocchi appena ricevuti e verificarli
+		// blockRepository.save(b);
+		// System.out.println("Ho tirato fuori il blocco con chainLevel: " + b.getChainLevel() + "\n");
+		// }
+		// } else {
+		// nullResponse = Boolean.TRUE;
+		// }
+		// i++;
+		//
+		// }
+		// System.out.println("2");
+		//
+		// if (!nullResponse && designedMiner.getValue2() <=
+		// blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel())
+		// ipMiners.remove(designedMiner.getValue1());
+		return trans;
 	}
 
 	/**
