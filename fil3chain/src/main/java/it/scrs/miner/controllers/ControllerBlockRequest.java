@@ -67,7 +67,15 @@ public class ControllerBlockRequest {
 	
 	
 	
-	
+	@RequestMapping(value = "/fil3chain/newBlock", method = RequestMethod.POST)
+	@ResponseBody
+	public Block newBlock(@RequestBody Block block) {		
+		Block newBlock=block;
+		System.out.println("il blocco che mi è stato mandato è"+newBlock);
+		//TODO dobbiamo verificare il blocco appena arrivato se è valido 
+		//blocco il thread di mining e lo riavvio sulla fil3chain aggiornata	
+		return newBlock;
+	}
 	
 		
 	
