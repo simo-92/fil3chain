@@ -1,6 +1,7 @@
 package it.scrs.miner.controllers;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.naming.Binding;
@@ -14,7 +15,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
-
+import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.transaction.TransactionRepository;
 import it.scrs.miner.dao.user.UserRepository;
 
@@ -82,6 +83,24 @@ public class ControllerBlockRequest {
 			return 1;
 		}
 
+		//Aggiungo delle transazioni di prova
+		@RequestMapping(value = "/JsonTransaction", method = RequestMethod.GET)
+		@ResponseBody
+		public List<Transaction> JsonTransaction(Integer nTrans) {
+			String s="";
+			Double x ;
+			List<Transaction> trans=new ArrayList<Transaction>();
+			for(int i=0;i<nTrans;i++){
+				x = Math.random() * nTrans;
+				s=org.apache.commons.codec.digest.DigestUtils.sha256Hex(x.toString());
+				Transaction transaction=new Transaction(s, "file prova numero: "+i);
+				trans.add(transaction);
+			}
+			return trans;
+		}
+		
+		
+		
 		//Mappiamo la richiesta di invio di blocchi ad un Peer che la richiede
 		@RequestMapping(value = "/fil3chain/updateAtMaxLevel", method = RequestMethod.GET)
 		public Integer updateAtMaxLevel() {
