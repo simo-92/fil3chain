@@ -52,8 +52,8 @@ public class MinerApplication implements CommandLineRunner {
 		
 		
 		// Mino per prova
-		Block block = miner.generateBlock(null, 17, 31, null, null, null);
-		System.out.println(block.generateAndGetHashBlock());
+//		Block block = miner.generateBlock(null, 17, 31, null, null, null);
+//		System.out.println(block.generateAndGetHashBlock());
 
 		// prendi minerReq ip a caso dalla lista dei miner
 		miner.updateFilechain(blockRepository, serviceMiner);

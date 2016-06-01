@@ -142,44 +142,49 @@ public class Miner {
 	 * @param usr
 	 * @return
 	 */
-	public Block generateBlock( List<Transaction> transactions) {
-
-		int nonce = 0;
-		Block block;
-
-		// Tutti i miei parmatetri
-
-		// TODO
-
-		// Verifica le transazioni se valide (ovvero se SHA(file) già è presente in un blocco)
-
-		// get trans from Dispatcher
-
-		// richiesta a PoolDispatcher per saper la difficolta
-
-		// try {
-		// diff = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
-		// } catch (Exception e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		//
-		// getLastChainLevel l altezza massima
-		// bf = prendi l hash del blocco piu lungo
-		//
-
-		// encodeMerkleTree (Trans)
-
-		// minerPublic Key = me.pKey
-		// usr = me
-
-		do {
-			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, transactions, bf, usr);
-			block.generateHashBlock();
-			nonce++;
-		} while (!block.verifyHash());
-		return block;
-	}
+//	public Block generateBlock( List<Transaction> transactions) {
+//
+//		int nonce = 0;
+//		Block block;
+//
+//		// Tutti i miei parmatetri
+//
+//		// TODO
+//
+//		// Verifica le transazioni se valide (ovvero se SHA(file) già è presente in un blocco)
+//
+//		// get trans from Dispatcher
+//
+//		// richiesta a PoolDispatcher per saper la difficolta
+//
+//		// try {
+//		// diff = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
+//		// } catch (Exception e) {
+//		// // TODO Auto-generated catch block
+//		// e.printStackTrace();
+//		// }
+//		//
+//		// getLastChainLevel l altezza massima
+//		// bf = prendi l hash del blocco piu lungo
+//		//
+//
+//		// encodeMerkleTree (Trans)
+//
+//		// minerPublic Key = me.pKey
+//		// usr = me
+//
+//		do {
+//			String merkleRoot;
+//			Integer minerPublicKey;
+//			Integer chainLevel;
+//			Block bf;
+//			User usr;
+////			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, transactions, bf, usr);
+//			block.generateHashBlock();
+//			nonce++;
+//		} while (!block.verifyHash());
+//		return block;
+//	}
 
 	/**
 	 * @param merkleRoot

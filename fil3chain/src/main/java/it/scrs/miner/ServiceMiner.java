@@ -21,7 +21,7 @@ public class ServiceMiner {
 	private static final int nSecOut = 3;//TODO PRendi dal properties
 	RestTemplate restTemplate=  new RestTemplate();
 
-	// TODO aggiungere nei parametri l'ip che arriva da fuori a cui deve essere fatta la richiesta
+	
 	@Async
 	public Future<Pairs<String, Integer>> findMaxChainLevel(String uriMiner)  {
 
@@ -39,7 +39,6 @@ public class ServiceMiner {
 			level = Integer.decode(s);
 			return new AsyncResult<Pairs<String, Integer>>(new Pairs<String, Integer>(uriMiner, level));
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 //			e.printStackTrace();
 			System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
 			return null;
