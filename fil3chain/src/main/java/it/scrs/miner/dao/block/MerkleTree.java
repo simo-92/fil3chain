@@ -46,16 +46,19 @@ public class MerkleTree {
      */
     private static String joinNodes(String n1, String n2){
         //return hash(n1+n2); TODO
-        return n1+n2;
+        //ha senso farlo così?
+        return org.apache.commons.codec.digest.DigestUtils.sha256Hex(n1+n2);
     }
     //test
     public static void main(String[] args){
         List<String> trans=new ArrayList();
-        trans.add("A");
-        trans.add("B");
-        trans.add("C");
-        trans.add("D");
-        trans.add("E");
+        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("A"));
+        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("B"));
+        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("C"));
+        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("D"));
+        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("E"));
         System.out.println(MerkleTree.buildMerkleTree(trans));
+        
+        
     }
 }
