@@ -46,12 +46,15 @@ public class Transaction {
 
 	@ManyToOne
 	@JoinColumn(name = "Block_hashBlock")
-	private Block blockContainer; // è il blocco che contiene la transazione
+	private Block blockContainer; // TODO DA TOGLIERE è il blocco che contiene la transazione
 
 	@ManyToOne
 	@JoinColumn(name = "User_publicKeyHash") // Autore
 	private User authorContainer;
 
+	
+	
+	// TODO Togliere cited erenderla 1 a n e non n a n
 	@ManyToMany
 	@JoinTable(name = "Citations", joinColumns = { 
 			@JoinColumn(name = "Transaction_hashFileCite", referencedColumnName = "hashFile") }, inverseJoinColumns = {
