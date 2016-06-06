@@ -39,12 +39,13 @@ public class Miner {
 	private String portEntryPoint;
 	private String entryPointBaseUri;
 	private List<String> ipPeers; // contiene gli ip degli altri miner nella rete
-    private String ip;
+        private String ip;
 	private User me;
-
+        private String myPublickKey;
+        private String myPrivateKey;
     private static final Logger log = LoggerFactory.getLogger(Miner.class);
 	private static final int nBlockUpdate = 10;// TODO metter nel properties
-	private static final String prefixVPNet = "10.192.";// TODO mettere nel properties
+	
 
 
     /**
@@ -58,9 +59,20 @@ public class Miner {
 	/**
 	 * 
 	 */
-	public void loadNetworkConfig() {
-
+	public void loadKeyConfig() {
 		Properties prop = new Properties();
+		InputStream in = Miner.class.getResourceAsStream("/keys.properties");
+		try {
+			prop.load(in);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+                this.myPublickKey = prop.getProperty("public");
+                this.myPrivateKey = prop.getProperty("private");
+	}
+        
+        public void loadNetworkConfig(){
+                Properties prop = new Properties();
 		InputStream in = Miner.class.getResourceAsStream("/network.properties");
 		try {
 			prop.load(in);
@@ -70,7 +82,7 @@ public class Miner {
 		this.setIpEntryPoint(prop.getProperty("ipEntryPoint"));
 		this.setPortEntryPoint(prop.getProperty("portEntryPoint"));
 		this.setEntryPointBaseUri(prop.getProperty("entryPointBaseUri"));
-	}
+        }
 
 	/**
 	 * @return
