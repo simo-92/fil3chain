@@ -14,8 +14,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
 
-
-import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
 
 // import java.util.logging.Logger;
@@ -56,6 +54,7 @@ public class MinerApplication implements CommandLineRunner {
 //		System.out.println(block.generateAndGetHashBlock());
 
 		// prendi minerReq ip a caso dalla lista dei miner
+		miner.initializeBlockChain(blockRepository);
 		miner.updateFilechain(blockRepository, serviceMiner);
 		System.out.println("3");
 		//TODO Avviare MINING
@@ -108,7 +107,6 @@ public class MinerApplication implements CommandLineRunner {
 	 * @param serviceMiner the serviceMiner to set
 	 */
 	public void setServiceMiner(ServiceMiner serviceMiner) {
-	
 		this.serviceMiner = serviceMiner;
 	}
 
