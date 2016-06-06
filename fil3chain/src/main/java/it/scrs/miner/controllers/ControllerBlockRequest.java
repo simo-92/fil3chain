@@ -40,7 +40,7 @@ public class ControllerBlockRequest {
 	
 	
 	
-	//TODO Inerire controller quando arriva un nuovo blocco 
+	
 	/*
 	 * @RequestMapping(value="/provaJson", method= RequestMethod.GET) public @ResponseBody
 	 * requestBlocks(@RequestParam("chainLevel")Integer chainLevel){ Block block=new
@@ -50,7 +50,7 @@ public class ControllerBlockRequest {
 	@RequestMapping(value = "/provaJson", method = RequestMethod.GET)
 	public Block requestBlocks() {
 
-		Block block = new Block("adas", "dsadsa", 12, 23, 3);
+		Block block = new Block("adas", "dsadsa", "12", 23, 3);
 
 		return block;
 	}
@@ -66,7 +66,7 @@ public class ControllerBlockRequest {
 	
 	
 	
-	
+	//Controller che intercetta arrivo di un nuovo blocco
 	@RequestMapping(value = "/fil3chain/newBlock", method = RequestMethod.POST)
 	@ResponseBody
 	public Block newBlock(@RequestBody Block block) {		
