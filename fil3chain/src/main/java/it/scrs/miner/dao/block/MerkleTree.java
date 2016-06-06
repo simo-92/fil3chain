@@ -50,15 +50,15 @@ public class MerkleTree {
         return org.apache.commons.codec.digest.DigestUtils.sha256Hex(n1+n2);
     }
     //test
-    public static void main(String[] args){
-        List<String> trans=new ArrayList();
-        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("A"));
-        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("B"));
-        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("C"));
-        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("D"));
-        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("E"));
-        System.out.println(MerkleTree.buildMerkleTree(trans));
-        
-        
-    }
+//    public static void main(String[] args){
+//        List<String> trans=new ArrayList();
+//        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("A"));
+//        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("B"));
+//        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("C"));
+//        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("D"));
+//        trans.add(org.apache.commons.codec.digest.DigestUtils.sha256Hex("E"));
+//        System.out.println(MerkleTree.buildMerkleTree(trans));
+//        
+//        
+//    }
 }
