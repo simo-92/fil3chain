@@ -2,6 +2,10 @@ package it.scrs.miner;
 
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Enumeration;
 
 
 import org.slf4j.Logger;
@@ -11,22 +15,23 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 
 
 import it.scrs.miner.dao.block.BlockRepository;
 
-// import java.util.logging.Logger;
-
-
-
+import javax.swing.*;
 
 @SpringBootApplication
 @ComponentScan("it.scrs.miner")
 @EnableAutoConfiguration
 public class MinerApplication implements CommandLineRunner {
 
+    private static final String IP_REGEX = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+
 	public static final Boolean testMiner = Boolean.TRUE;
+
 	@SuppressWarnings("unused")
 	private static final Logger log = LoggerFactory.getLogger(MinerApplication.class);
 
@@ -36,19 +41,18 @@ public class MinerApplication implements CommandLineRunner {
 	@Autowired
 	private ServiceMiner serviceMiner;
 
-
 	
 	@Override
 	public void run(String... args) throws Exception {
 
+        // Seleziona l'IP da utilizzare per la sessione corrente
+        String myIp = selectIp();
+
 		Miner miner = new Miner();
 		miner.loadNetworkConfig();
 		miner.firstConnectToEntryPoint();
-		System.out.println("\n il mio ip : "+ InetAddress.getLocalHost().getHostAddress());
-	
+        miner.setIp(myIp);
 
-		
-		
 		// Mino per prova
 //		Block block = miner.generateBlock(null, 17, 31, null, null, null);
 //		System.out.println(block.generateAndGetHashBlock());
@@ -63,13 +67,57 @@ public class MinerApplication implements CommandLineRunner {
 	
 
 	public static void main(String[] args) {
-
-		SpringApplication.run(MinerApplication.class);
-
+        SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(MinerApplication.class).headless(false);
+        springApplicationBuilder.run(args);
+        // springApplication.run(MinerApplication.class);
 	}
 
 
-	
+    /**
+     * Permette di selezionare l'IP da utilizzare
+     * per la sessione corrente tramite un dialog.
+     * @return
+     */
+	private String selectIp() {
+        ArrayList<String> ips = getAllIpAddresses();
+        if(ips == null) {
+            System.err.println("Non sei connesso a nessuna rete.");
+            return null;
+        }
+
+        String input = (String) JOptionPane.showInputDialog(null, "Scegli il tuo indirizzo IP",
+                "Lista IP", JOptionPane.QUESTION_MESSAGE, null, // Use
+                // default
+                // icon
+                ips.toArray(), // Array of choices
+                ips.get(0)); // Initial choice
+        return input;
+    }
+
+
+    private ArrayList<String> getAllIpAddresses() {
+
+        ArrayList<String> ips = new ArrayList<>();
+
+        try {
+            Enumeration e = NetworkInterface.getNetworkInterfaces();
+            while(e.hasMoreElements()) {
+                NetworkInterface n = (NetworkInterface) e.nextElement();
+                Enumeration ee = n.getInetAddresses();
+                while (ee.hasMoreElements()) {
+                    InetAddress i = (InetAddress) ee.nextElement();
+                    if(i.getHostAddress().matches(IP_REGEX)) ips.add(i.getHostAddress());
+                }
+            }
+        } catch (SocketException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return ips;
+    }
+
+
 	/**
 	 * @return the blockRepository
 	 */

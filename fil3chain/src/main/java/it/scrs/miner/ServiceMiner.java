@@ -1,6 +1,9 @@
 package it.scrs.miner;
 
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.concurrent.Future;
 
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -18,32 +21,48 @@ import it.scrs.miner.models.Pairs;
 @Service
 public class ServiceMiner {
 	
-	private static final int nSecOut = 3;//TODO PRendi dal properties
-	RestTemplate restTemplate=  new RestTemplate();
+	private int timeoutSeconds = 5;
 
+	RestTemplate restTemplate=  new RestTemplate();
 	
 	@Async
 	public Future<Pairs<String, Integer>> findMaxChainLevel(String uriMiner)  {
 
-		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory)restTemplate.getRequestFactory());
-		rf.setReadTimeout(1000*nSecOut);
-		rf.setConnectTimeout(1000*nSecOut);
-	
+		loadConfiguration();
 
-		String s="";
-		Integer level=-1;
+        System.out.println("Timeout: " + timeoutSeconds);
+
+		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+		rf.setReadTimeout(1000 * timeoutSeconds);
+		rf.setConnectTimeout(1000 * timeoutSeconds);
+
+		String s = "";
+		Integer level = -1;
 		try {
 			System.out.println("\nRichiesta ad :" + uriMiner);
-			s=restTemplate.getForObject("http://"+uriMiner+":8080/fil3chain/updateAtMaxLevel",String.class);
+			s = restTemplate.getForObject("http://" + uriMiner + ":8080/fil3chain/updateAtMaxLevel", String.class);
 //			s = HttpUtil.doGet("http://"+uriMiner+":8080/fil3chain/updateAtMaxLevel");
 			level = Integer.decode(s);
-			return new AsyncResult<Pairs<String, Integer>>(new Pairs<String, Integer>(uriMiner, level));
+			return new AsyncResult<>(new Pairs<>(uriMiner, level));
 		} catch (Exception e) {
 //			e.printStackTrace();
 			System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
 			return null;
 		}
 		
+	}
+
+	private void loadConfiguration() {
+		// Carica la configurazione
+		Properties prop = new Properties();
+		InputStream in = ServiceMiner.class.getResourceAsStream("/network.properties");
+		try {
+			prop.load(in);
+			// Imposta il timeout
+			this.timeoutSeconds = Integer.parseInt(prop.getProperty("timeoutSeconds", "3"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
 

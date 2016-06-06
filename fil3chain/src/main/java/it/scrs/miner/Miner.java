@@ -1,13 +1,18 @@
 package it.scrs.miner;
 
 
+import com.google.gson.reflect.TypeToken;
+import it.scrs.miner.dao.block.Block;
+import it.scrs.miner.dao.block.BlockRepository;
+import it.scrs.miner.dao.transaction.Transaction;
+import it.scrs.miner.dao.user.User;
+import it.scrs.miner.models.Pairs;
+import it.scrs.miner.util.HttpUtil;
+import it.scrs.miner.util.JsonUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import com.google.gson.reflect.TypeToken;
-import it.scrs.miner.util.HttpUtil;
-import it.scrs.miner.util.JsonUtility;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
@@ -18,16 +23,7 @@ import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import javax.persistence.Column;
-
-import java.net.NetworkInterface;
-import java.util.Enumeration;
-import it.scrs.miner.dao.block.Block;
-import it.scrs.miner.dao.block.BlockRepository;
-import it.scrs.miner.dao.transaction.Transaction;
-import it.scrs.miner.dao.user.User;
 // import java.util.logging.Logger;
-import it.scrs.miner.models.Pairs;
 
 
 
@@ -43,19 +39,21 @@ public class Miner {
 	private String portEntryPoint;
 	private String entryPointBaseUri;
 	private List<String> ipPeers; // contiene gli ip degli altri miner nella rete
+    private String ip;
 	private User me;
-	private static final Logger log = LoggerFactory.getLogger(Miner.class);
+
+    private static final Logger log = LoggerFactory.getLogger(Miner.class);
 	private static final int nBlockUpdate = 10;// TODO metter nel properties
 	private static final String prefixVPNet = "10.192.";// TODO mettere nel properties
 
 
-	/**
+    /**
 	 * 
 	 */
 	public Miner() {
 		super();
 		// TODO PRendi dal database ME USER
-	}
+    }
 
 	/**
 	 * 
@@ -84,7 +82,7 @@ public class Miner {
 		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri();
 		String result = "";
 		String myIp = "";
-		List<String> myIpS = new ArrayList<String>();
+		List<String> myIpS = new ArrayList<>();
 		Enumeration<NetworkInterface> e;
 		try {
 			e = NetworkInterface.getNetworkInterfaces();
@@ -235,13 +233,14 @@ public class Miner {
 	public void updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, Exception {
 
 		List<String> ipMiners = this.getIpPeers();
-		// Rimuovo il mio IP
-		// TODO Bisogna prendere l ip
-		// ipMiners.remove("192.168.0.143");
+
+        // Rimuovo il mio IP
+        ipMiners.remove(ip);
+
 		Integer myChainLevel = 0;
 		while (!ipMiners.isEmpty()) {
 			// Lista contenente le richieste asincrone ai 3 ip
-			List<Future<Pairs<String, Integer>>> minerResp = new ArrayList<Future<Pairs<String, Integer>>>();
+			List<Future<Pairs<String, Integer>>> minerResp = new ArrayList<>();
 			// Chiedi al db il valora del mio Max chainLevel
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel();
 
@@ -289,6 +288,8 @@ public class Miner {
 	}
 
 	/**
+     * Restituisce la lista di miner che hanno risposto
+     * con il loro livello di block chain.
 	 * @param ipMiners
 	 * @param minerResp
 	 */
@@ -299,11 +300,10 @@ public class Miner {
 			Future<Pairs<String, Integer>> result = serviceMiner.findMaxChainLevel(ipMiners.get(i));
 			if (result == null) {
 				String tmp = ipMiners.remove(i);
-				System.out.println("\n ho rimosso l ip " + tmp);
+				System.out.println("\nHo rimosso l'IP: " + tmp);
 			} else {
 				minerResp.add(result);
 			}
-
 		}
 	}
 
@@ -513,5 +513,13 @@ public class Miner {
         block.setNonce(0);
         block.setMinerPublicKey(0);
         return block;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public String getIp() {
+        return ip;
     }
 }

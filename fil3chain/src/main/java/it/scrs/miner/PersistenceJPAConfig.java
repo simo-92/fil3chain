@@ -51,6 +51,7 @@ public class PersistenceJPAConfig {
         Properties properties = additionalProperties();
 
         Connection connection = null;
+
         // Sporcheria explaination:
         // Creo il database da zero, se fallisce allora
         // Aggiorno le proprietà
