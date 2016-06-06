@@ -14,10 +14,7 @@ import java.lang.reflect.Type;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -240,7 +237,7 @@ public class Miner {
 		List<String> ipMiners = this.getIpPeers();
 		// Rimuovo il mio IP
 		// TODO Bisogna prendere l ip
-		ipMiners.remove("192.168.0.143");
+		// ipMiners.remove("192.168.0.143");
 		Integer myChainLevel = 0;
 		while (!ipMiners.isEmpty()) {
 			// Lista contenente le richieste asincrone ai 3 ip
@@ -436,7 +433,6 @@ public class Miner {
 	 * @return the ipEntryPoint
 	 */
 	public String getIpEntryPoint() {
-
 		return ipEntryPoint;
 	}
 
@@ -445,7 +441,6 @@ public class Miner {
 	 *            the ipEntryPoint to set
 	 */
 	public void setIpEntryPoint(String ipEntryPoint) {
-
 		this.ipEntryPoint = ipEntryPoint;
 	}
 
@@ -453,7 +448,6 @@ public class Miner {
 	 * @return the portEntryPoint
 	 */
 	public String getPortEntryPoint() {
-
 		return portEntryPoint;
 	}
 
@@ -462,7 +456,6 @@ public class Miner {
 	 *            the portEntryPoint to set
 	 */
 	public void setPortEntryPoint(String portEntryPoint) {
-
 		this.portEntryPoint = portEntryPoint;
 	}
 
@@ -470,7 +463,6 @@ public class Miner {
 	 * @return the entryPointBaseUri
 	 */
 	public String getEntryPointBaseUri() {
-
 		return entryPointBaseUri;
 	}
 
@@ -479,7 +471,6 @@ public class Miner {
 	 *            the entryPointBaseUri to set
 	 */
 	public void setEntryPointBaseUri(String entryPointBaseUri) {
-
 		this.entryPointBaseUri = entryPointBaseUri;
 	}
 
@@ -487,7 +478,6 @@ public class Miner {
 	 * @return the ipPeers
 	 */
 	public List<String> getIpPeers() {
-
 		return ipPeers;
 	}
 
@@ -496,7 +486,6 @@ public class Miner {
 	 *            the ipPeers to set
 	 */
 	public void setIpPeers(List<String> ipPeers) {
-
 		this.ipPeers = ipPeers;
 	}
 
@@ -504,8 +493,25 @@ public class Miner {
 	 * @return the log
 	 */
 	public static Logger getLog() {
-
 		return log;
 	}
 
+	public void initializeBlockChain(BlockRepository blockRepository) {
+		// Se non ho nessun blocco ne aggiungo uno fittizio
+		if(! blockRepository.findAll().iterator().hasNext()) {
+			Block block = getFirstBlock();
+			blockRepository.save(block);
+		}
+	}
+
+    private Block getFirstBlock() {
+        Block block = new Block();
+        block.setHashBlock("0");
+        block.setChainLevel(0);
+        block.setCreationTime(new Date(0).toString());
+        block.setMerkleRoot("0");
+        block.setNonce(0);
+        block.setMinerPublicKey(0);
+        return block;
+    }
 }
