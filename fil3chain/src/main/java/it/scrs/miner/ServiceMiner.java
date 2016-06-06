@@ -36,16 +36,15 @@ public class ServiceMiner {
 		rf.setReadTimeout(1000 * timeoutSeconds);
 		rf.setConnectTimeout(1000 * timeoutSeconds);
 
-		String s = "";
+		String result = "";
 		Integer level = -1;
 		try {
 			System.out.println("\nRichiesta ad :" + uriMiner);
-			s = restTemplate.getForObject("http://" + uriMiner + ":8080/fil3chain/updateAtMaxLevel", String.class);
-//			s = HttpUtil.doGet("http://"+uriMiner+":8080/fil3chain/updateAtMaxLevel");
-			level = Integer.decode(s);
+			result = restTemplate.getForObject("http://" + uriMiner + ":8080/fil3chain/updateAtMaxLevel", String.class);
+			level = Integer.decode(result);
 			return new AsyncResult<>(new Pairs<>(uriMiner, level));
 		} catch (Exception e) {
-//			e.printStackTrace();
+            // e.printStackTrace();
 			System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
 			return null;
 		}

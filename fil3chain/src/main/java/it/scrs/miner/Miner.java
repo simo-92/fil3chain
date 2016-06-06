@@ -4,6 +4,7 @@ package it.scrs.miner;
 import com.google.gson.reflect.TypeToken;
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
+import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
 import it.scrs.miner.models.Pairs;
@@ -16,10 +17,11 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.net.SocketException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -81,7 +83,8 @@ public class Miner {
 
 		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri();
 		String result = "";
-		String myIp = "";
+		/*
+        String myIp = "";
 		List<String> myIpS = new ArrayList<>();
 		Enumeration<NetworkInterface> e;
 		try {
@@ -100,43 +103,35 @@ public class Miner {
 				}
 			}
 		} catch (SocketException e1) {
-			// TODO Auto-generated catch block
 			// e1.printStackTrace();
 		}
+        */
 
-		ipPeers = new ArrayList<String>();
+		ipPeers = new ArrayList<>();
 		try {
 
-			result = HttpUtil.doPost(url, new Pairs<String, String>("ip", myIp));
+			result = HttpUtil.doPost(url, new Pairs<>("ip", ip));
 		} catch (Exception ex) {
 			// Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
 		}
 		Type type = new TypeToken<ArrayList<String>>() {
 		}.getType();
-		ipPeers = (List<String>) JsonUtility.fromJson(result, type);
+		ipPeers = JsonUtility.fromJson(result, type);
 
 		if (MinerApplication.testMiner == Boolean.TRUE) {
-			if (ipPeers == null)
-				ipPeers = new ArrayList<String>();
-			ipPeers.add("10.192.0.7");// TODO IPVPN CICCIO RISERVA SERVER EP DOWN
-
+			if (ipPeers == null) {
+				ipPeers = new ArrayList<>();
+            } else {
+                //TODO: IPVPN CICCIO RISERVA SERVER EP DOWN
+			    ipPeers.add("10.192.0.7");
+            }
 		}
-		ipPeers.removeAll(myIpS);
+		// ipPeers.removeAll(myIpS);
 		ipPeers.forEach(ip -> System.out.println(ip));
 
 		return true;
-		// merdreeeeeee
 	}
 
-	/**
-	 * @param merkleRoot
-	 * @param minerPublicKey
-	 * @param chainLevel
-	 * @param transactions
-	 * @param bf
-	 * @param usr
-	 * @return
-	 */
 //	public Block generateBlock( List<Transaction> transactions) {
 //
 //		int nonce = 0;
@@ -181,33 +176,77 @@ public class Miner {
 //		return block;
 //	}
 
-	/**
-	 * @param merkleRoot
-	 * @param minerPublicKey
-	 * @param chainLevel
-	 * @param transactions
-	 * @param bf
-	 * @param usr
-	 * @return
-	 */
-	public Block verifyBlock(Block block) {
+	public Block verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException {
 
-		String creationTime;// bLOCK.CREAIONtIME
+		String creationTime;
 		String merkleRoot = null;
-		Integer minerPublicKey = null;
+		String minerPublicKey = null;
 		Integer nonce = 0;
 		Integer chainLevel = null;
 		List<Transaction> trans = null;
-		Block bf = null;
+		Block block = null;
 		User usr = null;
+        String signature = null;
 		// Tutti i miei parmatetri
 
-		// TODO
-		//
-
 		// Calcola la differenza tra il mio chainLevel e quello del blocco
+        Block myLastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
+        Integer chainLevelDifference = b.getChainLevel() - myLastBlock.getChainLevel();
 
-		// Verifica le transazioni BEL BLOCCO se valide (ovvero se SHA(file) già è presente in un blocco)
+        // Caso branch
+        // Verifica
+        // Aggiungi
+        // TODO: Se la differenza è 0 ma i padri sono diversi?
+        if(chainLevelDifference == 0 && b.getFatherBlockContainer().equals(myLastBlock.getFatherBlockContainer())) {
+            // Continua nel codice
+        }
+
+        // Caso sta appena avanti
+        // Controlla padre
+        // Puo essere finto
+        // TODO: Se la differenza è 1 ma il padre non è il mio ultimo blocco?
+        if(chainLevelDifference == 1 && b.getFatherBlockContainer().equals(myLastBlock)) {
+            // Verifica il blocco
+        }
+
+        // Update della chain
+        if(chainLevelDifference >= 2) {
+            // Update
+            updateFilechain(blockRepository, serviceMiner);
+        }
+
+        if(chainLevelDifference < 0) {
+            // Verifica il blocco
+        }
+
+		// Verifica transazioni uniche
+        // Tutti i predecessori del blocco arrivato NON devono avere la transazione
+        if(b.getFatherBlockContainer() != null) {
+            List<Block> predecessori = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
+
+            for(Block p: predecessori){
+                for(Transaction t: b.getTransactionsContainer()) {
+                    if(p.getTransactionsContainer().contains(t)) {
+                        System.err.println("La transazione è presente in uno dei predecessori.");
+                        return null;
+                    }
+                }
+            }
+
+        }
+
+        // Verifica MerkleRoot
+        ArrayList<String> transactionsHash = new ArrayList<>();
+        for(Transaction transaction: b.getTransactionsContainer()) {
+            transactionsHash.add(transaction.getHashFile());
+        }
+
+        String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
+
+        if(! checkMerkle.equals(b.getMerkleRoot())) {
+            System.err.println("MerkleRoot diverso.");
+            return null;
+        }
 
 		// Merkletree del BLOCCO =encodeMerkleTree (Trans DEL BLOCCO)
 		// minerPublic Key = BLOCCO.pKey
@@ -215,8 +254,12 @@ public class Miner {
 
 		// nounce = BLOCK.nOUNCE
 
+        // TODO: Rifare la verifica.
+        // Chiamata al PD in cui si chiede la difficolta
+        // a cui è stato fatto il blocco, dato il timestamp.
+
 		do {
-			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, bf, usr);
+			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
 			block.generateHashBlock();
 			nonce++;
 		} while (!block.verifyHash());
@@ -230,7 +273,7 @@ public class Miner {
 	 * @throws ExecutionException
 	 * @throws Exception
 	 */
-	public void updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, Exception {
+	public void updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException {
 
 		List<String> ipMiners = this.getIpPeers();
 
@@ -352,7 +395,7 @@ public class Miner {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private void getBlocksFromMiner(List<String> ipMiners, Integer myChainLevel, Pairs<String, Integer> designedMiner, BlockRepository blockRepository) throws Exception {
+	private void getBlocksFromMiner(List<String> ipMiners, Integer myChainLevel, Pairs<String, Integer> designedMiner, BlockRepository blockRepository) throws IOException {
 
 		Integer i = 0;
 		Boolean nullResponse = Boolean.FALSE;
@@ -361,7 +404,7 @@ public class Miner {
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
 			Type type = new TypeToken<List<Block>>() {
 			}.getType();
-			List<Block> blockResponse = (List<Block>) HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
+			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
 
 			if (blockResponse != null) {
 				System.out.println("\nBlock response: " + blockResponse.toString());
@@ -382,22 +425,13 @@ public class Miner {
 			ipMiners.remove(designedMiner.getValue1());
 	}
 
-	/**
-	 * @param ipMiners
-	 * @param myChainLevel
-	 * @param designedMiner
-	 * @throws Exception
-	 */
 	@SuppressWarnings("unchecked")
 	private List<Transaction> getTransFromDisp(Integer nTrans) throws Exception {
-		
-		
-		
 		// TODO List<Transaction> trans = HttpUtil.doGetJSON("http://" + getEntryPointBaseUri() +
 		
 		Type type = new TypeToken<List<Transaction>>() {
 		}.getType();
-		List<Transaction> trans = (List<Transaction>)HttpUtil.doGetJSON("http://" + "10.198.0.7" + ":8080/JsonTransaction?nTrans=" + nTrans, type);
+		List<Transaction> trans = HttpUtil.doGetJSON("http://" + "10.198.0.7" + ":8080/JsonTransaction?nTrans=" + nTrans, type);
 
 		// Integer i = 0;
 		// Boolean nullResponse = Boolean.FALSE;
@@ -511,7 +545,7 @@ public class Miner {
         block.setCreationTime(new Date(0).toString());
         block.setMerkleRoot("0");
         block.setNonce(0);
-        block.setMinerPublicKey(0);
+        block.setMinerPublicKey("0");
         return block;
     }
 

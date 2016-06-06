@@ -5,22 +5,11 @@
 package it.scrs.miner.dao.block;
 
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
-import it.scrs.miner.util.HttpUtil;
+
+import javax.persistence.*;
+import java.util.List;
 
 
 
@@ -38,12 +27,16 @@ public class Block {
 								// blockchain
 	@Column(nullable = false)
 	private String creationTime;
-	@Column(nullable = false)
+
+    @Column(nullable = false)
 	private String merkleRoot;
-	@Column(nullable = false)
-	private Integer minerPublicKey;
-	@Column(nullable = false)
+
+    @Column(nullable = false)
+	private String minerPublicKey;
+
+    @Column(nullable = false)
 	private Integer nonce;
+
 	@Column(nullable = false)
 	private Integer chainLevel;
 
@@ -53,9 +46,11 @@ public class Block {
 
 	@OneToMany(mappedBy = "blockContainer")
 	private List<Transaction> transactionsContainer;
+
 	@OneToOne
 	@JoinColumn(name = "Block_prevHashBlock")
 	private Block fatherBlockContainer;
+
 	@ManyToOne
 	@JoinColumn(name = "User_publicKeyHash") // Autore
 	private User userContainer;
@@ -76,7 +71,7 @@ public class Block {
 	 * @param nonce
 	 * @param chainLevel
 	 */
-	public Block(String hashBlock, String merkleRoot, Integer minerPublicKey, Integer nonce, Integer chainLevel) {
+	public Block(String hashBlock, String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel) {
 		super();
 		this.hashBlock = hashBlock;
 		this.creationTime = Long.toString(System.currentTimeMillis());
@@ -96,7 +91,7 @@ public class Block {
 	 * @param fatherBlockContainer
 	 * @param userContainer
 	 */
-	public Block(String merkleRoot, Integer minerPublicKey, Integer nonce, Integer chainLevel, List<Transaction> transactionsContainer, Block fatherBlockContainer, User userContainer) {
+	public Block(String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel, List<Transaction> transactionsContainer, Block fatherBlockContainer, User userContainer) {
 		super();
 		this.creationTime = Long.toString(System.currentTimeMillis());
 		this.merkleRoot = merkleRoot;
@@ -209,10 +204,8 @@ public class Block {
 	// }
 
 	public void generateHashBlock() {
-
 		String s = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
 		this.setHashBlock(s);
-
 	}
 
 	public String generateAndGetHashBlock() {
@@ -228,7 +221,7 @@ public class Block {
 	 * @param nonce
 	 * @param chainLevel
 	 */
-	public Block(String merkleRoot, Integer minerPublicKey, Integer nonce, Integer chainLevel) {
+	public Block(String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel) {
 		super();
 		this.merkleRoot = merkleRoot;
 		this.minerPublicKey = minerPublicKey;
@@ -290,7 +283,7 @@ public class Block {
 	/**
 	 * @return the minerPublicKey
 	 */
-	public Integer getMinerPublicKey() {
+	public String getMinerPublicKey() {
 
 		return minerPublicKey;
 	}
@@ -299,7 +292,7 @@ public class Block {
 	 * @param minerPublicKey
 	 *            the minerPublicKey to set
 	 */
-	public void setMinerPublicKey(Integer minerPublicKey) {
+	public void setMinerPublicKey(String minerPublicKey) {
 
 		this.minerPublicKey = minerPublicKey;
 	}
@@ -381,8 +374,7 @@ public class Block {
 	}
 
 	/**
-	 * @param userContainer
-	 *            the userContainer to set
+	 * @param userContainer the userContainer to set
 	 */
 	public void setUserContainer(User userContainer) {
 

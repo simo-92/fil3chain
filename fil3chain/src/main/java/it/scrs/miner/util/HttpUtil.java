@@ -2,6 +2,7 @@ package it.scrs.miner.util;
 
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -73,7 +74,7 @@ public class HttpUtil {
 	 *             errori di comunicazione HTTP
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> T doGetJSON(String url, Type t) throws Exception {
+	public static <T> T doGetJSON(String url, Type t) throws IOException {
 
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpGet request = new HttpGet(url);
