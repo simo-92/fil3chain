@@ -61,8 +61,6 @@ public class Transaction {
 			@JoinColumn(name = "Transaction_hashFileCited", referencedColumnName = "hashFile") })
 	private List<Transaction> citationsContainer;
 
-	@ManyToMany(mappedBy = "citationsContainer")
-	private List<Transaction> transactionContainer;
 
 
 	public Transaction(String hashFile, String filename) {

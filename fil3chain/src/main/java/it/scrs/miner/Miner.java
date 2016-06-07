@@ -178,44 +178,44 @@ public class Miner {
 
 	public Block verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException {
 
-		String creationTime;
-		String merkleRoot = null;
-		String minerPublicKey = null;
+
 		Integer nonce = 0;
 		Integer chainLevel = null;
-		List<Transaction> trans = null;
+
+		
 		Block block = null;
-		User usr = null;
-		String signature = null;
+
 		// Tutti i miei parmatetri
 
-		// Calcola la differenza tra il mio chainLevel e quello del blocco
+		// Calcola la differenza tra il chain level del blocco e il mio chain level
 		Block myLastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
 		Integer chainLevelDifference = b.getChainLevel() - myLastBlock.getChainLevel();
 
-		// Caso branch
-		// Verifica
-		// Aggiungi//
-		
-		
+	
+		//Aumento performance consigli anche inutile farlo
 		//TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
+		
+		
+		
+			
 		// TODO
 		// Ultimo livello può essere una lista di nodi
-	// se la differenza è zero non controlare l ultimo ma i penultimi(il NONNO)
+		// se la differenza è zero non controlare l ultimo ma i penultimi(il NONNO)
 		if (chainLevelDifference == 0 && b.getFatherBlockContainer().equals(myLastBlock.getFatherBlockContainer())) {
-			// Continua nel codice
+			// Continua nel codice Verify
 		}
-		else 	;	// TODO: 	//se nessuno tra i nodi è mio padre fai update
-		//se dopo update il padre non esce fuori scarta il blocco
+		else 	;	// TODO: 	//se nessuno tra i nodi è mio padre fai update e return null;
 
-		// Caso sta appena avanti
-		// Controlla PADRE
-		// Puo essere finto
-		// TODO: Se la differenza è 1 ma il padre è il mio ultimo blocco?
-		if (chainLevelDifference == 1 && b.getFatherBlockContainer().equals(myLastBlock)) {
-			// Verifica il blocco
+
+		// Caso sta appena avanti Controlla PADRE Puo essere finto
+		//
+		
+		
+		//Un nuovo blocco devo controllare se tra lista del mio ultimo livello è presente il padre 
+		if (chainLevelDifference == 1 && blockRepository.findBychainLevel(b.getChainLevel()-1).contains(b)){			// Verifica il blocco
+			// Continua nel codice Verify
 		}
-		//altrimenti update e se fallisci scartalo
+		//altrimenti update e esci
 		
 		
 
@@ -226,10 +226,38 @@ public class Miner {
 			//scarti tutto
 		}
 
-		if (chainLevelDifference < 0) {
+		if (chainLevelDifference < 0 ) {
 			// Verifica il blocco
 		}
 
+	
+
+		
+		/// 
+		Boolean check = trueVerify(blockRepository, b, nonce, chainLevel);
+		
+		
+		
+		
+		return block;
+		
+		
+		//TODO Sistemare l if scritto al volo 
+	}
+
+	
+	
+	// SOLO CODICE DI VERIFICA
+	private Boolean trueVerify(BlockRepository blockRepository, Block b, Integer nonce, Integer chainLevel) {
+
+		Block block;
+		String creationTime;
+		String merkleRoot = null;
+		String minerPublicKey = null;
+		List<Transaction> trans = null;
+		User usr = null;
+		String signature = null;
+		
 		// Verifica transazioni uniche
 		// Tutti i predecessori del blocco arrivato NON devono avere la transazione
 		if (b.getFatherBlockContainer() != null) {
@@ -245,7 +273,9 @@ public class Miner {
 			}
 
 		}
-
+		
+		
+		
 		// Verifica MerkleRoot
 		ArrayList<String> transactionsHash = new ArrayList<>();
 		for (Transaction transaction : b.getTransactionsContainer()) {
@@ -256,11 +286,12 @@ public class Miner {
 
 		if (!checkMerkle.equals(b.getMerkleRoot())) {
 			System.err.println("MerkleRoot diverso.");
-			return null;
+			return Boolean.FALSE;
 		}
 
-		// Merkletree del BLOCCO =encodeMerkleTree (Trans DEL BLOCCO)
+	
 		// minerPublic Key = BLOCCO.pKey
+	
 		// usr = Blocco.User
 
 		// nounce = BLOCK.nOUNCE
@@ -273,14 +304,8 @@ public class Miner {
 			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
 			block.generateHashBlock();
 			nonce++;
-		if (!block.verifyHash());// c è il punto e virgola
 		
-		//Se il blocco è verificato(ed è maggiore del mio chain level stoppa mining e  riparti)
-		
-		return block;
-		
-		
-		//TODO Sistemare l if scritto al volo 
+	return Boolean.TRUE;
 	}
 
 	/**
