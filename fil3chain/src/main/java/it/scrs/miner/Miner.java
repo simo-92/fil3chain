@@ -196,23 +196,34 @@ public class Miner {
 		// Caso branch
 		// Verifica
 		// Aggiungi
-		// TODO: Se la differenza è 0 ma i padri sono diversi?
+		
+		
+		//TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
+		// TODO
+		// Ultimo livello può essere una lista di nodi
+	// se la differenza è zero non controlare l ultimo ma i penultimi(il NONNO)
 		if (chainLevelDifference == 0 && b.getFatherBlockContainer().equals(myLastBlock.getFatherBlockContainer())) {
 			// Continua nel codice
 		}
+		else 	;	// TODO: 	//se nessuno tra i nodi è mio padre fai update
+		//se dopo update il padre non esce fuori scarta il blocco
 
 		// Caso sta appena avanti
-		// Controlla padre
+		// Controlla PADRE
 		// Puo essere finto
-		// TODO: Se la differenza è 1 ma il padre non è il mio ultimo blocco?
+		// TODO: Se la differenza è 1 ma il padre è il mio ultimo blocco?
 		if (chainLevelDifference == 1 && b.getFatherBlockContainer().equals(myLastBlock)) {
 			// Verifica il blocco
 		}
+		//altrimenti update e se fallisci scartalo
+		
+		
 
 		// Update della chain
 		if (chainLevelDifference >= 2) {
 			// Update
 			updateFilechain(blockRepository, serviceMiner);
+			//scarti tutto
 		}
 
 		if (chainLevelDifference < 0) {
@@ -258,12 +269,18 @@ public class Miner {
 		// Chiamata al PD in cui si chiede la difficolta
 		// a cui è stato fatto il blocco, dato il timestamp.
 
-		do {
+		
 			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
 			block.generateHashBlock();
 			nonce++;
-		} while (!block.verifyHash());
+		if (!block.verifyHash());// c è il punto e virgola
+		
+		//Se il blocco è verificato(ed è maggiore del mio chain level stoppa mining e  riparti)
+		
 		return block;
+		
+		
+		//TODO Sistemare l if scritto al volo 
 	}
 
 	/**
