@@ -39,7 +39,9 @@ public class Block {
 
 	@Column(nullable = false)
 	private Integer chainLevel;
-
+        
+        @Column(nullable=false)
+        private String signature; //firma
 	// Difficoltà per la proof of work ,inviato da poolDispatcher
 
 	// Relationship
@@ -380,5 +382,19 @@ public class Block {
 
 		this.userContainer = userContainer;
 	}
+
+    /**
+     * @return the signature
+     */
+    public String getSignature() {
+        return signature;
+    }
+
+    /**
+     * @param signature the signature to set
+     */
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
 
 }
