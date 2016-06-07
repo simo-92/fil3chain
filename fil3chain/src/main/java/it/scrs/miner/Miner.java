@@ -8,6 +8,7 @@ import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
 import it.scrs.miner.models.Pairs;
+import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.HttpUtil;
 import it.scrs.miner.util.JsonUtility;
 import org.slf4j.Logger;
@@ -18,12 +19,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.SocketException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 // import java.util.logging.Logger;
 
@@ -176,7 +183,7 @@ public class Miner {
 	// return block;
 	// }
 
-	public Block verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException {
+	public Block verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException {
 
 		Integer nonce = 0;
 		Integer chainLevel = null;
@@ -188,10 +195,12 @@ public class Miner {
 		// Calcola la differenza tra il chain level del blocco e il mio chain level
 		Block myLastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
 		Integer chainLevelDifference = b.getChainLevel() - myLastBlock.getChainLevel();
-
+                
 		// Aumento performance consigli anche inutile farlo
 		// TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
-                
+                if(CryptoUtil.verifySignature(myLastBlock.getHashBlock(),myLastBlock.getSignature(),myLastBlock.getMinerPublicKey())) {
+                    return null;
+                }
 		// TODO ORGANIZZARE GLI IF
 		// Ultimo livello può essere una lista di nodi
 		// se la differenza è zero non controlare l ultimo ma i penultimi(il NONNO)

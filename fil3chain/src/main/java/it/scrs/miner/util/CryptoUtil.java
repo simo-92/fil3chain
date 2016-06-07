@@ -1,11 +1,14 @@
 package it.scrs.miner.util;
 
+import java.security.InvalidKeyException;
 import javax.crypto.*;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import org.apache.commons.codec.binary.Base64;
@@ -40,7 +43,7 @@ public class CryptoUtil {
         return encryptedValue;
     }
     
-     public static String decifra(String key,String msg) throws Exception{
+     public static String decifra(String key,String msg) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException {
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE,rebuildPuK(key));
         byte[] decordedValue = Base64.decodeBase64(msg);
@@ -55,13 +58,13 @@ public class CryptoUtil {
         return signature;
     }
     
-    public static Boolean verifySignature(String msg,String signature, String puK)throws Exception{
+    public static Boolean verifySignature(String msg,String signature, String puK) throws InvalidKeyException, IllegalBlockSizeException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeySpecException{
         String hashMsg = org.apache.commons.codec.digest.DigestUtils.sha256Hex(msg);
         String decryptedSignature = decifra(puK,signature);
         return hashMsg.equals(decryptedSignature);
     }
  
-    private static PublicKey rebuildPuK(String keyEncoding)throws Exception{
+    private static PublicKey rebuildPuK(String keyEncoding) throws NoSuchAlgorithmException, InvalidKeySpecException {
         byte[] encoded = Base64.decodeBase64(keyEncoding);
         PublicKey puK = KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(encoded));
         return puK;
