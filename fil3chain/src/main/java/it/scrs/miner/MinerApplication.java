@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -98,10 +97,10 @@ public class MinerApplication implements CommandLineRunner {
 		ArrayList<String> ips = new ArrayList<>();
 
 		try {
-			Enumeration e = NetworkInterface.getNetworkInterfaces();
+			Enumeration<?> e = NetworkInterface.getNetworkInterfaces();
 			while (e.hasMoreElements()) {
 				NetworkInterface n = (NetworkInterface) e.nextElement();
-				Enumeration ee = n.getInetAddresses();
+				Enumeration<?> ee = n.getInetAddresses();
 				while (ee.hasMoreElements()) {
 					InetAddress i = (InetAddress) ee.nextElement();
 					if (i.getHostAddress().matches(IP_REGEX))

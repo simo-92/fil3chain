@@ -2,14 +2,10 @@ package it.scrs.miner.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 
-import it.scrs.miner.dao.block.Block;
 
 import java.lang.reflect.Type;
-import java.util.List;
 
-import org.hibernate.validator.internal.xml.GetterType;
 
 /** classe di utilità per la manipolazione di stringhe in formato JSON */
 public class JsonUtility {
