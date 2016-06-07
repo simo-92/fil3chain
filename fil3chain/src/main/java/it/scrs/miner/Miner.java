@@ -213,8 +213,8 @@ public class Miner {
 		// Abbiamo stabilito di firmare solo l'hash del blocco essendo già esso fatto su tutti gli altri campi
 		// APPROVED!!
 		try {
-			if (CryptoUtil.verifySignature(b.getHashBlock(), b.getSignature(), b.getMinerPublicKey())) {
-				return null;
+			if (!CryptoUtil.verifySignature(b.getHashBlock(), b.getSignature(), b.getMinerPublicKey())) {
+				return Boolean.FALSE;
 
 			}
 		} catch (InvalidKeyException e) {
@@ -246,7 +246,7 @@ public class Miner {
 				for (Transaction t : b.getTransactionsContainer()) {
 					if (p.getTransactionsContainer().contains(t)) {
 						System.err.println("La transazione è presente in uno dei predecessori.");
-						return null;
+						return Boolean.FALSE;
 					}
 				}
 			}
