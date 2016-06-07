@@ -178,11 +178,9 @@ public class Miner {
 
 	public Block verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException {
 
-
 		Integer nonce = 0;
 		Integer chainLevel = null;
 
-		
 		Block block = null;
 
 		// Tutti i miei parmatetri
@@ -191,62 +189,61 @@ public class Miner {
 		Block myLastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
 		Integer chainLevelDifference = b.getChainLevel() - myLastBlock.getChainLevel();
 
-	
-		//Aumento performance consigli anche inutile farlo
-		//TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
-		
-		
-		
-			
-		// TODO
+		// Aumento performance consigli anche inutile farlo
+		// TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
+
+		// TODO ORGANIZZARE GLI IF
 		// Ultimo livello può essere una lista di nodi
 		// se la differenza è zero non controlare l ultimo ma i penultimi(il NONNO)
-		if (chainLevelDifference == 0 && b.getFatherBlockContainer().equals(myLastBlock.getFatherBlockContainer())) {
-			// Continua nel codice Verify
+		if (chainLevelDifference == 0 && blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b)) {
+			trueVerify(blockRepository, b, nonce, chainLevel);
+		} else {
+			updateFilechain(blockRepository, serviceMiner);
+			return null;
 		}
-		else 	;	// TODO: 	//se nessuno tra i nodi è mio padre fai update e return null;
-
+		; // TODO: //se nessuno tra i nodi è mio padre fai update e return null;
 
 		// Caso sta appena avanti Controlla PADRE Puo essere finto
 		//
-		
-		
-		//Un nuovo blocco devo controllare se tra lista del mio ultimo livello è presente il padre 
-		if (chainLevelDifference == 1 && blockRepository.findBychainLevel(b.getChainLevel()-1).contains(b)){			// Verifica il blocco
-			// Continua nel codice Verify
+
+		// Un nuovo blocco devo controllare se tra lista del mio ultimo livello è presente il padre
+		if (chainLevelDifference == 1 && blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b)) { // Verifica
+																												// il
+																												// blocco
+			trueVerify(blockRepository, b, nonce, chainLevel);
+		} else {
+			updateFilechain(blockRepository, serviceMiner);
+			return null;
 		}
-		//altrimenti update e esci
-		
-		
+		// altrimenti update e esci
 
 		// Update della chain
 		if (chainLevelDifference >= 2) {
 			// Update
 			updateFilechain(blockRepository, serviceMiner);
-			//scarti tutto
+			// scarti tutto
 		}
 
-		if (chainLevelDifference < 0 ) {
+		if (chainLevelDifference < 0) {
 			// Verifica il blocco
+			trueVerify(blockRepository, b, nonce, chainLevel);
 		}
 
-	
+		/// qua e ce sta?
 
-		
-		/// 
 		Boolean check = trueVerify(blockRepository, b, nonce, chainLevel);
-		
-		
-		
-		
-		return block;
-		
-		
-		//TODO Sistemare l if scritto al volo 
-	}
 
+		return block;
+
+		// TODO Sistemare l if scritto al volo
+	}
 	
 	
+	
+	
+	
+	
+
 	// SOLO CODICE DI VERIFICA
 	private Boolean trueVerify(BlockRepository blockRepository, Block b, Integer nonce, Integer chainLevel) {
 
@@ -257,7 +254,7 @@ public class Miner {
 		List<Transaction> trans = null;
 		User usr = null;
 		String signature = null;
-		
+
 		// Verifica transazioni uniche
 		// Tutti i predecessori del blocco arrivato NON devono avere la transazione
 		if (b.getFatherBlockContainer() != null) {
@@ -273,9 +270,7 @@ public class Miner {
 			}
 
 		}
-		
-		
-		
+
 		// Verifica MerkleRoot
 		ArrayList<String> transactionsHash = new ArrayList<>();
 		for (Transaction transaction : b.getTransactionsContainer()) {
@@ -289,9 +284,8 @@ public class Miner {
 			return Boolean.FALSE;
 		}
 
-	
 		// minerPublic Key = BLOCCO.pKey
-	
+
 		// usr = Blocco.User
 
 		// nounce = BLOCK.nOUNCE
@@ -300,12 +294,11 @@ public class Miner {
 		// Chiamata al PD in cui si chiede la difficolta
 		// a cui è stato fatto il blocco, dato il timestamp.
 
-		
-			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
-			block.generateHashBlock();
-			nonce++;
-		
-	return Boolean.TRUE;
+		block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
+		block.generateHashBlock();
+		nonce++;
+
+		return Boolean.TRUE;
 	}
 
 	/**
