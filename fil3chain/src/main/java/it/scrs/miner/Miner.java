@@ -195,7 +195,7 @@ public class Miner {
 
 		// Caso branch
 		// Verifica
-		// Aggiungi
+		// Aggiungi//
 		
 		
 		//TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
