@@ -198,7 +198,7 @@ public class Miner {
                 
 		// Aumento performance consigli anche inutile farlo
 		// TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
-                if(CryptoUtil.verifySignature(myLastBlock.getHashBlock(),myLastBlock.getSignature(),myLastBlock.getMinerPublicKey())) {
+                if(CryptoUtil.verifySignature(b.getHashBlock(),b.getSignature(),b.getMinerPublicKey())) {
                     return null;
                 }
 		// TODO ORGANIZZARE GLI IF
