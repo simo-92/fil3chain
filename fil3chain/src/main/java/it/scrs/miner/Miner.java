@@ -191,7 +191,7 @@ public class Miner {
 
 		// Aumento performance consigli anche inutile farlo
 		// TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
-
+                
 		// TODO ORGANIZZARE GLI IF
 		// Ultimo livello può essere una lista di nodi
 		// se la differenza è zero non controlare l ultimo ma i penultimi(il NONNO)
