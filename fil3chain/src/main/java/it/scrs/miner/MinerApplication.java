@@ -53,7 +53,7 @@ public class MinerApplication implements CommandLineRunner {
                 miner.loadMinerConfiguration(); //carica numero blocchi update
 		miner.setIp(myIp);
 		miner.firstConnectToEntryPoint();
-
+                
 		// Mino per prova
 		// Block block = miner.generateBlock(null, 17, 31, null, null, null);
 		// System.out.println(block.generateAndGetHashBlock());

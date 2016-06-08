@@ -17,6 +17,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -104,15 +105,15 @@ public class HttpUtil {
 	 * @throws possibili
 	 *             errori di comunicazione HTTP
 	 */
-	public static String doPost(String url, Pairs<?, ?>... parameters) throws Exception {
+	public static String doPost(String url, String raw_data) throws Exception {
 
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpPost post = new HttpPost(url);
-		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-		for (Pairs<?, ?> p : parameters) {
-			urlParameters.add(new BasicNameValuePair(p.getValue1().toString(), p.getValue2().toString()));
-		}
-		post.setEntity(new UrlEncodedFormEntity(urlParameters));
+//		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+//		for (Pairs<?, ?> p : parameters) {
+//			urlParameters.add(new BasicNameValuePair(p.getValue1().toString(), p.getValue2().toString()));
+//		}
+		post.setEntity(new StringEntity(raw_data));
 		HttpResponse response = client.execute(post);
 		BufferedReader rd;
 		rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));

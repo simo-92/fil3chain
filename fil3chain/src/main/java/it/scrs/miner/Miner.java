@@ -114,6 +114,7 @@ public class Miner {
 
 		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri();
 		String result = "";
+                System.out.println(url);
 		/*
 		 * String myIp = ""; List<String> myIpS = new ArrayList<>(); Enumeration<NetworkInterface> e; try { e =
 		 * NetworkInterface.getNetworkInterfaces(); while (e.hasMoreElements()) { NetworkInterface n =
@@ -127,9 +128,11 @@ public class Miner {
 		ipPeers = new ArrayList<>();
 		try {
 			System.out.println("IL MIO IP: " + ip);
-			result = HttpUtil.doPost(url, new Pairs<>("ip", ip));
+			result = HttpUtil.doPost(url, "{\"user_ip\":\""+this.getIp()+"\"}");
+                        System.out.println(result);
 		} catch (Exception ex) {
 			// Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
+                        ex.printStackTrace();
 			System.out.println("Settare Ip prima di fare richieste, IP VUOTO");
 		}
 		Type type = new TypeToken<ArrayList<String>>() {
