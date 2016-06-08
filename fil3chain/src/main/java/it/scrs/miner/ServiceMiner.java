@@ -21,7 +21,7 @@ import it.scrs.miner.models.Pairs;
 @Service
 public class ServiceMiner {
 	
-	private int timeoutSeconds = 5;
+	private int timeoutSeconds;
 
 	RestTemplate restTemplate=  new RestTemplate();
 	
