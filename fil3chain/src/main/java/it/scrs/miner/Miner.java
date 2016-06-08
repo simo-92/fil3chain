@@ -53,7 +53,7 @@ public class Miner {
 	private String myPublickKey;
 	private String myPrivateKey;
 	private static final Logger log = LoggerFactory.getLogger(Miner.class);
-	private static final int nBlockUpdate = 10;// TODO metter nel properties
+	private static int nBlockUpdate = 10;// TODO metter nel properties
 
 
 	/**
@@ -91,6 +91,19 @@ public class Miner {
 		this.setIpEntryPoint(prop.getProperty("ipEntryPoint"));
 		this.setPortEntryPoint(prop.getProperty("portEntryPoint"));
 		this.setEntryPointBaseUri(prop.getProperty("entryPointBaseUri"));
+	}
+        
+        public void loadMinerConfiguration() {
+		// Carica la configurazione
+		Properties prop = new Properties();
+		InputStream in = Miner.class.getResourceAsStream("/miner.properties");
+		try {
+			prop.load(in);
+			// Imposta il timeout
+			this.nBlockUpdate = Integer.parseInt(prop.getProperty("nBlockUpdate", "10"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
