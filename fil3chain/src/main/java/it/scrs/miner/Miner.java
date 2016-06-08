@@ -53,7 +53,7 @@ public class Miner {
 	private String myPublickKey;
 	private String myPrivateKey;
 	private static final Logger log = LoggerFactory.getLogger(Miner.class);
-	private static int nBlockUpdate = 10;// TODO metter nel properties
+	private static int nBlockUpdate;
 
 
 	/**
