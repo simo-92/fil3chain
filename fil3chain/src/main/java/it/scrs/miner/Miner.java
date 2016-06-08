@@ -198,7 +198,7 @@ public class Miner {
         // Aggiungi
         // TODO: Se la differenza è 0 ma i padri sono diversi?
         if(chainLevelDifference == 0 && b.getFatherBlockContainer().equals(myLastBlock.getFatherBlockContainer())) {
-            // Continua nel codice
+			// Verifica il blocco
         }
 
         // Caso sta appena avanti
@@ -224,7 +224,7 @@ public class Miner {
         if(b.getFatherBlockContainer() != null) {
             List<Block> predecessori = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
 
-            for(Block p: predecessori){
+            for(Block p: predecessori) {
                 for(Transaction t: b.getTransactionsContainer()) {
                     if(p.getTransactionsContainer().contains(t)) {
                         System.err.println("La transazione è presente in uno dei predecessori.");
@@ -275,7 +275,7 @@ public class Miner {
 	 */
 	public void updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException {
 
-		List<String> ipMiners = this.getIpPeers();
+		List<String> ipMiners = getIpPeers();
 
         // Rimuovo il mio IP
         ipMiners.remove(ip);
