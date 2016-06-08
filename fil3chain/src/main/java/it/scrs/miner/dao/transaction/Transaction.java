@@ -11,16 +11,10 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import java.util.List;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import it.scrs.miner.dao.block.Block;
@@ -46,7 +40,7 @@ public class Transaction {
 
 	@ManyToOne
 	@JoinColumn(name = "Block_hashBlock")
-	private Block blockContainer; // TODO DA TOGLIERE è il blocco che contiene la transazione
+	private Block blockContainer;
 
 	@ManyToOne
 	@JoinColumn(name = "User_publicKeyHash") // Autore
@@ -54,7 +48,6 @@ public class Transaction {
 
 	
 	
-	// TODO Togliere cited erenderla 1 a n e non n a n
 	@ManyToMany
 	@JoinTable(name = "Citations", joinColumns = { 
 			@JoinColumn(name = "Transaction_hashFileCite", referencedColumnName = "hashFile") }, inverseJoinColumns = {

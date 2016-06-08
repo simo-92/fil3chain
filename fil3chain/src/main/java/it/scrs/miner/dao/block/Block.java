@@ -186,7 +186,6 @@ public class Block {
 	// try {
 	// difficulty = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
 	// } catch (Exception e) {
-	// // TODO Auto-generated catch block
 	// difficulty = 0;
 	// e.printStackTrace();
 	// }

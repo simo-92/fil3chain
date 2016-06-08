@@ -1,7 +1,6 @@
 
 package it.scrs.miner.dao.block;
 import java.util.List;
-import it.scrs.miner.dao.transaction.Transaction;
 import java.util.ArrayList;
 /**
  * classe per la costruzione di un merkletree
@@ -15,7 +14,7 @@ public class MerkleTree {
      */
     public static String buildMerkleTree(List<String> hashTransactions){
         String merkleRoot="";
-        List<String> aux=new ArrayList();
+        List<String> aux=new ArrayList<String>();
         aux.addAll(hashTransactions);
         //finche' non rimane solo un nodo radice
         while(aux.size()!=1){
@@ -45,8 +44,6 @@ public class MerkleTree {
      * @return fusione tra n1 e n2 (hash)
      */
     private static String joinNodes(String n1, String n2){
-        //return hash(n1+n2); TODO
-        //ha senso farlo così?
         return org.apache.commons.codec.digest.DigestUtils.sha256Hex(n1+n2);
     }
     //test
