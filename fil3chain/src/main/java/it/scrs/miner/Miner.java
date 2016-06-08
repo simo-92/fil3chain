@@ -44,10 +44,11 @@ public class Miner {
     private String ip;
 	private User me;
 
+    private MiningService miningService;
+
     private static final Logger log = LoggerFactory.getLogger(Miner.class);
 	private static final int nBlockUpdate = 10;// TODO metter nel properties
 	private static final String prefixVPNet = "10.192.";// TODO mettere nel properties
-
 
     /**
 	 * 
@@ -109,16 +110,18 @@ public class Miner {
 
 		ipPeers = new ArrayList<>();
 		try {
-
 			result = HttpUtil.doPost(url, new Pairs<>("ip", ip));
 		} catch (Exception ex) {
-			// Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
+            System.err.println("Errore durante la richiesta di IP\n" + ex);
+            // Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		Type type = new TypeToken<ArrayList<String>>() {
-		}.getType();
+
+		Type type = new TypeToken<ArrayList<String>>() {}.getType();
+
 		ipPeers = JsonUtility.fromJson(result, type);
 
 		if (MinerApplication.testMiner == Boolean.TRUE) {
+            // if (ipPeers == null || (ipPeers.size() == 0)) {
 			if (ipPeers == null) {
 				ipPeers = new ArrayList<>();
             } else {
@@ -127,10 +130,20 @@ public class Miner {
             }
 		}
 		// ipPeers.removeAll(myIpS);
+		System.out.println("Numero di IP ottenuti: " + ipPeers.size());
 		ipPeers.forEach(ip -> System.out.println(ip));
 
 		return true;
 	}
+
+    public MiningService getMiningService() {
+        return miningService;
+    }
+
+    public void setMiningService(MiningService miningService) {
+        this.miningService = miningService;
+    }
+
 
 //	public Block generateBlock( List<Transaction> transactions) {
 //
@@ -262,7 +275,7 @@ public class Miner {
 			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
 			block.generateHashBlock();
 			nonce++;
-		} while (!block.verifyHash());
+		} while (!block.verifyHash(5));
 		return block;
 	}
 
@@ -529,6 +542,12 @@ public class Miner {
 	public static Logger getLog() {
 		return log;
 	}
+
+    public void mine() {
+        if (miningService == null && miningService.isInitialized()) return;
+
+        miningService.mine();
+    }
 
 	public void initializeBlockChain(BlockRepository blockRepository) {
 		// Se non ho nessun blocco ne aggiungo uno fittizio

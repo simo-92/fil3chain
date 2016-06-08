@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 
+import it.scrs.miner.dao.block.Block;
+import it.scrs.miner.dao.block.MerkleTree;
+import it.scrs.miner.dao.transaction.Transaction;
+import it.scrs.miner.util.CryptoUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +66,28 @@ public class MinerApplication implements CommandLineRunner {
 		miner.updateFilechain(blockRepository, serviceMiner);
 		System.out.println("3");
 		//TODO Avviare MINING
+
+        // Prendo il mio ultimo blocco
+        Block myLastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
+
+        // Inizializzo il nuovo blocco da minare
+		Block block = new Block();
+        block.setFatherBlockContainer(myLastBlock);
+        block.setChainLevel(myLastBlock.getChainLevel() + 1);
+
+        // Transazione mock
+        Transaction transaction = new Transaction();
+        transaction.setFilename("Ciano's bug");
+        transaction.setHashFile(org.apache.commons.codec.digest.DigestUtils.sha256Hex(transaction.getFilename()));
+
+        ArrayList<String> transactions = new ArrayList<>();
+        transactions.add(transaction.getHashFile());
+
+        block.setMerkleRoot(MerkleTree.buildMerkleTree(transactions));
+
+        // Il miner inizia a minare
+        miner.setMiningService(new MiningService(block, 6));
+        miner.mine();
 	}
 	
 	

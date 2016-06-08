@@ -50,7 +50,7 @@ public class ControllerBlockRequest {
 	@RequestMapping(value = "/provaJson", method = RequestMethod.GET)
 	public Block requestBlocks() {
 
-		Block block = new Block("adas", "dsadsa", 12, 23, 3);
+		Block block = new Block("adas", "dsadsa", "12", 23, 3);
 
 		return block;
 	}

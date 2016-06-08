@@ -103,53 +103,37 @@ public class Block {
 		this.userContainer = userContainer;
 	}
 
-	public Boolean CalculatePOW() {
 
-	
+	public Boolean verifyHash(int difficulty) {
+
+        // Se non è presente alcun hash allora ritorna falso
+        if (this.hashBlock == null || this.hashBlock.isEmpty()) return Boolean.FALSE;
+
+        // Costruisco la stringa di zeri che deve essere presente
+        // all'inizio dell'hash, data la difficoltà
+        String puzzle = "";
+
+        for(int i = 0; i < difficulty; i++) {
+            puzzle += "0";
+        }
+
+        // Restituisce true se l'hash corrente inizia con la stringa definita da puzzle
+        // e se l'hash è un hash del blocco.
+        // False altrimenti
+        return (this.hashBlock.startsWith(puzzle));
+
+		/*
 		Integer diff, i;
 		diff = 2;
 		i = 0;
 		String s = this.getHashBlock();
 		String puzzle = "";
 
-		
-		
 		while (i < diff) {
 			puzzle += "0";
 			i++;
 		}
-		
-	
 
-		
-		String hash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
-		
-		this.setHashBlock(hash);
-		if (s.startsWith(puzzle))
-			return Boolean.TRUE;
-		return Boolean.FALSE;
-	}
-
-	
-	
-
-	public Boolean verifyHash() {
-
-	
-		Integer diff, i;
-		diff = 2;
-		i = 0;
-		String s = this.getHashBlock();
-		String puzzle = "";
-
-		
-		
-		while (i < diff) {
-			puzzle += "0";
-			i++;
-		}
-		
-	
 		this.setHashBlock(null);
 		
 		String hash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
@@ -158,6 +142,7 @@ public class Block {
 		if (s.startsWith(puzzle) && (s.compareTo(hash) == 0))
 			return Boolean.TRUE;
 		return Boolean.FALSE;
+		*/
 	}
 	
 	
