@@ -4,6 +4,7 @@ import it.scrs.miner.dao.block.Block;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.Random;
 
 /**
  * Created by Marco
@@ -84,7 +85,8 @@ public class MiningService extends Thread implements Runnable {
         long startTime = new Date().getTime();
 
         // Nonce
-        Integer nonce = 0;
+        Integer nonce = new Random().nextInt();
+        System.out.println("Nonce di partenza: " + nonce);
 
         // Hash del blocco
         byte[] hash;
