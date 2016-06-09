@@ -53,8 +53,10 @@ public class Miner {
     private MiningService miningService;
 
     private static final Logger log = LoggerFactory.getLogger(Miner.class);
-	private static final int nBlockUpdate = 10;// TODO metter nel properties
+	private static  int nBlockUpdate = 10;// TODO metter nel properties
 	private static final String prefixVPNet = "10.192.";// TODO mettere nel properties
+    private String myPublickKey;
+    private String myPrivateKey;
 
     /**
 	 * 
@@ -67,6 +69,32 @@ public class Miner {
 	/**
 	 * 
 	 */
+        
+        public void loadKeyConfig() {
+
+		Properties prop = new Properties();
+		InputStream in = Miner.class.getResourceAsStream("/keys.properties");
+		try {
+			prop.load(in);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		this.myPublickKey = prop.getProperty("public");
+		this.myPrivateKey = prop.getProperty("private");
+	}
+        
+         public void loadMinerConfiguration() {
+		// Carica la configurazione
+		Properties prop = new Properties();
+		InputStream in = Miner.class.getResourceAsStream("/miner.properties");
+		try {
+			prop.load(in);
+			// Imposta il timeout
+			this.nBlockUpdate = Integer.parseInt(prop.getProperty("nBlockUpdate", "10"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	public void loadNetworkConfig() {
 
 		Properties prop = new Properties();
