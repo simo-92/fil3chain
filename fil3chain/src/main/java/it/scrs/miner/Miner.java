@@ -8,6 +8,7 @@ import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
 import it.scrs.miner.models.Pairs;
+import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.HttpUtil;
 import it.scrs.miner.util.JsonUtility;
 import org.slf4j.Logger;
@@ -18,12 +19,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.SocketException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 // import java.util.logging.Logger;
 
@@ -240,109 +247,124 @@ public void setActionConnect(String actionConnect) {
 //		return block;
 //	}
 
-	public Block verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException {
+	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
 
+		Integer chainLevel = null;
+
+		// Tutti i miei parmatetri
+
+		// se non ho il blocco padre mi aggiorno da tutti ( e mi tornerà anche questo)
+		if (!blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b))
+			return updateFilechain(blockRepository, serviceMiner);
+		else // altrimenti verifico il blocco
+			return trueVerify(blockRepository, b, chainLevel);
+
+	}
+
+	// SOLO CODICE DI VERIFICA
+	private Boolean trueVerify(BlockRepository blockRepository, Block b, Integer chainLevel) {
+
+		Block block;
 		String creationTime;
 		String merkleRoot = null;
 		String minerPublicKey = null;
-		Integer nonce = 0;
-		Integer chainLevel = null;
 		List<Transaction> trans = null;
-		Block block = null;
+		Integer nonce = 0;
 		User usr = null;
-        String signature = null;
-		// Tutti i miei parmatetri
+		String signature = null;
 
-		// Calcola la differenza tra il mio chainLevel e quello del blocco
-        Block myLastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
-        Integer chainLevelDifference = b.getChainLevel() - myLastBlock.getChainLevel();
+		// Aumento performance consigli anche inutile farlo
+		// TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
 
-        // Caso branch
-        // Verifica
-        // Aggiungi
-        // TODO: Se la differenza è 0 ma i padri sono diversi?
-        if(chainLevelDifference == 0 && b.getFatherBlockContainer().equals(myLastBlock.getFatherBlockContainer())) {
-			// Verifica il blocco
-        }
+		// TODO APPENA terminato la funzione incampsuliamo i songoli controlli ognuno con un suo metodo
 
-        // Caso sta appena avanti
-        // Controlla padre
-        // Puo essere finto
-        // TODO: Se la differenza è 1 ma il padre non è il mio ultimo blocco?
-        if(chainLevelDifference == 1 && b.getFatherBlockContainer().equals(myLastBlock)) {
-            // Verifica il blocco
-        }
+		// Abbiamo stabilito di firmare solo l'hash del blocco essendo già esso fatto su tutti gli altri campi
+		// APPROVED!!
+		try {
+			if (!CryptoUtil.verifySignature(b.getHashBlock(), b.getSignature(), b.getMinerPublicKey())) {
+				return Boolean.FALSE;
 
-        // Update della chain
-        if(chainLevelDifference >= 2) {
-            // Update
-            updateFilechain(blockRepository, serviceMiner);
-        }
-
-        if(chainLevelDifference < 0) {
-            // Verifica il blocco
-        }
+			}
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchPaddingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidKeySpecException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		// Verifica transazioni uniche
-        // Tutti i predecessori del blocco arrivato NON devono avere la transazione
-        if(b.getFatherBlockContainer() != null) {
-            List<Block> predecessori = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
+		// Tutti i predecessori del blocco arrivato NON devono avere la transazione
+		if (b.getFatherBlockContainer() != null) {
+			List<Block> predecessori = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
 
-            for(Block p: predecessori) {
-                for(Transaction t: b.getTransactionsContainer()) {
-                    if(p.getTransactionsContainer().contains(t)) {
-                        System.err.println("La transazione è presente in uno dei predecessori.");
-                        return null;
-                    }
-                }
-            }
+			for (Block p : predecessori) {
+				for (Transaction t : b.getTransactionsContainer()) {
+					if (p.getTransactionsContainer().contains(t)) {
+						System.err.println("La transazione è presente in uno dei predecessori.");
+						return Boolean.FALSE;
+					}
+				}
+			}
 
-        }
+		}
 
-        // Verifica MerkleRoot
-        ArrayList<String> transactionsHash = new ArrayList<>();
-        for(Transaction transaction: b.getTransactionsContainer()) {
-            transactionsHash.add(transaction.getHashFile());
-        }
+		// Verifica MerkleRoot
+		ArrayList<String> transactionsHash = new ArrayList<>();
+		for (Transaction transaction : b.getTransactionsContainer()) {
+			transactionsHash.add(transaction.getHashFile());
+		}
 
-        String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
+		String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
 
-        if(! checkMerkle.equals(b.getMerkleRoot())) {
-            System.err.println("MerkleRoot diverso.");
-            return null;
-        }
+		if (!checkMerkle.equals(b.getMerkleRoot())) {
+			System.err.println("MerkleRoot diverso.");
+			return Boolean.FALSE;
+		}
 
-		// Merkletree del BLOCCO =encodeMerkleTree (Trans DEL BLOCCO)
 		// minerPublic Key = BLOCCO.pKey
+
 		// usr = Blocco.User
 
 		// nounce = BLOCK.nOUNCE
 
-        // TODO: Rifare la verifica.
-        // Chiamata al PD in cui si chiede la difficolta
-        // a cui è stato fatto il blocco, dato il timestamp.
+		// TODO: Rifare la verifica.
+		// Chiamata al PD in cui si chiede la difficolta
+		// a cui è stato fatto il blocco, dato il timestamp.
 
-		do {
-			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
-			block.generateHashBlock();
-			nonce++;
-		} while (!block.verifyHash(5));
-		return block;
+		block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
+		block.generateHashBlock();
+		nonce++;
+
+		return Boolean.TRUE;
 	}
 
 	/**
 	 * @param blockRepository
 	 * @param serviceMiner
+	 * @return
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 * @throws Exception
 	 */
-	public void updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException {
+	public Boolean updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
 
-		List<String> ipMiners = getIpPeers();
+		List<String> ipMiners = this.getIpPeers();
 
-        // Rimuovo il mio IP
-        ipMiners.remove(ip);
+		// Rimuovo il mio IP
+		ipMiners.remove(ip);
 
 		Integer myChainLevel = 0;
 		while (!ipMiners.isEmpty()) {
@@ -368,7 +390,6 @@ public void setActionConnect(String actionConnect) {
 			System.out.println("Il Miner designato = " + designedMiner.getValue1() + " ChainLevel = " + designedMiner.getValue2() + "\n");
 
 			// Aggiorno la mia blockChain con i blocchi che mi arrivano in modo incrementale
-			// TODO realizzare la variante di chidere N blocchi tutti insieme
 			if (designedMiner.getValue1() != null)
 				getBlocksFromMiner(ipMiners, myChainLevel, designedMiner, blockRepository);
 			// aspetta una risposta
@@ -379,6 +400,7 @@ public void setActionConnect(String actionConnect) {
 
 			System.out.println(ipMiners.toString());
 		}
+		return Boolean.TRUE;
 	}
 
 	/**
