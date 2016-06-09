@@ -21,7 +21,7 @@ public class IPManager {
     
     public static IPManager getManager() {
         if(ipm == null){
-            ipm=new IPManager();
+            ipm = new IPManager();
             return ipm;
         }
         return ipm;

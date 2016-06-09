@@ -53,7 +53,8 @@ public class Miner {
         private String actionDisconnect;
         private String actionKeepAlive;
 
-	private List<String> ipPeers; // contiene gli ip degli altri miner nella rete
+	//private List<String> ipPeers; // contiene gli ip degli altri miner nella rete
+        private IPManager ipManager;
     private String ip;
 	private User me;
 
@@ -70,6 +71,7 @@ public class Miner {
 	 */
 	public Miner() {
 		super();
+                ipManager = IPManager.getManager();
 		// TODO PRendi dal database ME USER
     }
 
@@ -153,7 +155,7 @@ public class Miner {
 		}
         */
 
-		ipPeers = new ArrayList<>();
+		//ipPeers = new ArrayList<>();
 		try {
                         System.out.println("url: "+url);
                         System.out.println("IL MIO IP: " + ip);
@@ -165,21 +167,23 @@ public class Miner {
 		}
 
 		Type type = new TypeToken<ArrayList<String>>() {}.getType();
+                List<String> ips=JsonUtility.fromJson(result, type);
+                System.out.println(ips.size());
+                ipManager.setAllIp(ips);
+		
 
-		ipPeers = JsonUtility.fromJson(result, type);
-
-		if (MinerApplication.testMiner == Boolean.TRUE) {
-            // if (ipPeers == null || (ipPeers.size() == 0)) {
-			if (ipPeers == null) {
-				ipPeers = new ArrayList<>();
-            } else {
-                //TODO: IPVPN CICCIO RISERVA SERVER EP DOWN
-			    ipPeers.add("10.192.0.7");
-            }
-		}
+//		if (MinerApplication.testMiner == Boolean.TRUE) {
+//            // if (ipPeers == null || (ipPeers.size() == 0)) {
+//			if (ipPeers == null) {
+//				ipPeers = new ArrayList<>();
+//            } else {
+//                //TODO: IPVPN CICCIO RISERVA SERVER EP DOWN
+//			    ipPeers.add("10.192.0.7");
+//            }
+//		}
 		// ipPeers.removeAll(myIpS);
-		System.out.println("Numero di IP ottenuti: " + ipPeers.size());
-		ipPeers.forEach(ip -> System.out.println(ip));
+		System.out.println("Numero di IP ottenuti: " + ipManager.getIPList().size());
+                ipManager.getIPList().forEach(ip -> System.out.println(ip));
 
 		return true;
 	}
@@ -361,7 +365,7 @@ public void setActionConnect(String actionConnect) {
 	 */
 	public Boolean updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
 
-		List<String> ipMiners = this.getIpPeers();
+		List<String> ipMiners = ipManager.getIPList();
 
 		// Rimuovo il mio IP
 		ipMiners.remove(ip);
@@ -594,20 +598,20 @@ public void setActionConnect(String actionConnect) {
 		this.entryPointBaseUri = entryPointBaseUri;
 	}
 
-	/**
-	 * @return the ipPeers
-	 */
-	public List<String> getIpPeers() {
-		return ipPeers;
-	}
+//	/**
+//	 * @return the ipPeers
+//	 */
+//	public List<String> getIpPeers() {
+//		return ipPeers;
+//	}
 
-	/**
-	 * @param ipPeers
-	 *            the ipPeers to set
-	 */
-	public void setIpPeers(List<String> ipPeers) {
-		this.ipPeers = ipPeers;
-	}
+//	/**
+//	 * @param ipPeers
+//	 *            the ipPeers to set
+//	 */
+//	public void setIpPeers(List<String> ipPeers) {
+//		this.ipPeers = ipPeers;
+//	}
 
 	/**
 	 * @return the log
