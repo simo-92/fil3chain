@@ -8,7 +8,6 @@ import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
 import it.scrs.miner.models.Pairs;
-import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.HttpUtil;
 import it.scrs.miner.util.JsonUtility;
 import org.slf4j.Logger;
@@ -19,20 +18,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.net.SocketException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 
-
+// import java.util.logging.Logger;
 
 
 
@@ -47,38 +40,33 @@ public class Miner {
 	private String ipEntryPoint;
 	private String portEntryPoint;
 	private String entryPointBaseUri;
+        private String actionConnect;
+
+    
+        private String actionDisconnect;
+        private String actionKeepAlive;
+
 	private List<String> ipPeers; // contiene gli ip degli altri miner nella rete
-	private String ip;
+    private String ip;
 	private User me;
-	private String myPublickKey;
-	private String myPrivateKey;
-	private static final Logger log = LoggerFactory.getLogger(Miner.class);
-	private static int nBlockUpdate;
 
+    private MiningService miningService;
 
-	/**
+    private static final Logger log = LoggerFactory.getLogger(Miner.class);
+	private static final int nBlockUpdate = 10;// TODO metter nel properties
+	private static final String prefixVPNet = "10.192.";// TODO mettere nel properties
+
+    /**
 	 * 
 	 */
 	public Miner() {
 		super();
-	}
+		// TODO PRendi dal database ME USER
+    }
 
 	/**
 	 * 
 	 */
-	public void loadKeyConfig() {
-
-		Properties prop = new Properties();
-		InputStream in = Miner.class.getResourceAsStream("/keys.properties");
-		try {
-			prop.load(in);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		this.myPublickKey = prop.getProperty("public");
-		this.myPrivateKey = prop.getProperty("private");
-	}
-
 	public void loadNetworkConfig() {
 
 		Properties prop = new Properties();
@@ -91,228 +79,242 @@ public class Miner {
 		this.setIpEntryPoint(prop.getProperty("ipEntryPoint"));
 		this.setPortEntryPoint(prop.getProperty("portEntryPoint"));
 		this.setEntryPointBaseUri(prop.getProperty("entryPointBaseUri"));
-	}
-        
-        public void loadMinerConfiguration() {
-		// Carica la configurazione
-		Properties prop = new Properties();
-		InputStream in = Miner.class.getResourceAsStream("/miner.properties");
-		try {
-			prop.load(in);
-			// Imposta il timeout
-			this.nBlockUpdate = Integer.parseInt(prop.getProperty("nBlockUpdate", "10"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+                this.setActionConnect(prop.getProperty("actionConnect"));
+                this.setActionDisconnect(prop.getProperty("actionDisconnect"));
+                this.setActionKeepAlive(prop.getProperty("actionKeepAlive"));
+                
 	}
 
 	/**
 	 * @return
 	 * @throws SocketException
 	 */
+	@SuppressWarnings("unchecked")
 	public boolean firstConnectToEntryPoint() {
 
-		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri();
+		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri() + this.getActionConnect();
 		String result = "";
-                System.out.println(url);
 		/*
-		 * String myIp = ""; List<String> myIpS = new ArrayList<>(); Enumeration<NetworkInterface> e; try { e =
-		 * NetworkInterface.getNetworkInterfaces(); while (e.hasMoreElements()) { NetworkInterface n =
-		 * (NetworkInterface) e.nextElement(); Enumeration<InetAddress> ee = n.getInetAddresses(); while
-		 * (ee.hasMoreElements()) { InetAddress i = (InetAddress) ee.nextElement(); if
-		 * (i.getHostAddress().startsWith("1")) ; myIpS.add(i.getHostAddress()); if
-		 * (i.getHostAddress().startsWith(prefixVPNet)) ; myIp = i.getHostAddress(); } } } catch (SocketException e1) {
-		 * // e1.printStackTrace(); }
-		 */
+        String myIp = "";
+		List<String> myIpS = new ArrayList<>();
+		Enumeration<NetworkInterface> e;
+		try {
+			e = NetworkInterface.getNetworkInterfaces();
+			while (e.hasMoreElements()) {
+				NetworkInterface n = (NetworkInterface) e.nextElement();
+				Enumeration<InetAddress> ee = n.getInetAddresses();
+				while (ee.hasMoreElements()) {
+					InetAddress i = (InetAddress) ee.nextElement();
+					if (i.getHostAddress().startsWith("1"))
+						;
+					myIpS.add(i.getHostAddress());
+					if (i.getHostAddress().startsWith(prefixVPNet))
+						;
+					myIp = i.getHostAddress();
+				}
+			}
+		} catch (SocketException e1) {
+			// e1.printStackTrace();
+		}
+        */
 
 		ipPeers = new ArrayList<>();
 		try {
-			System.out.println("IL MIO IP: " + ip);
-			result = HttpUtil.doPost(url, "{\"user_ip\":\""+this.getIp()+"\"}");
+                        System.out.println("url: "+url);
+                        System.out.println("IL MIO IP: " + ip);
+			result = HttpUtil.doPost(url, "{\"user_ip\":\""+this.getIp()+":8080\"}");
                         System.out.println(result);
 		} catch (Exception ex) {
-			// Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
-                        ex.printStackTrace();
-			System.out.println("Settare Ip prima di fare richieste, IP VUOTO");
+            System.err.println("Errore durante la richiesta di IP\n" + ex);
+            // Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
 		}
-		Type type = new TypeToken<ArrayList<String>>() {
-		}.getType();
+
+		Type type = new TypeToken<ArrayList<String>>() {}.getType();
+
 		ipPeers = JsonUtility.fromJson(result, type);
 
 		if (MinerApplication.testMiner == Boolean.TRUE) {
+            // if (ipPeers == null || (ipPeers.size() == 0)) {
 			if (ipPeers == null) {
 				ipPeers = new ArrayList<>();
-			} else {
-				// TODO: IPVPN CICCIO RISERVA SERVER EP DOWN
-				ipPeers.add("10.192.0.7");
-			}
+            } else {
+                //TODO: IPVPN CICCIO RISERVA SERVER EP DOWN
+			    ipPeers.add("10.192.0.7");
+            }
 		}
 		// ipPeers.removeAll(myIpS);
+		System.out.println("Numero di IP ottenuti: " + ipPeers.size());
 		ipPeers.forEach(ip -> System.out.println(ip));
 
 		return true;
 	}
+public void setActionConnect(String actionConnect) {
+        this.actionConnect = actionConnect;
+    }
 
-	// public Block generateBlock( List<Transaction> transactions) {
-	//
-	// int nonce = 0;
-	// Block block;
-	//
-	// // Tutti i miei parmatetri
-	//
-	//
-	// // Verifica le transazioni se valide (ovvero se SHA(file) già è presente in un blocco)
-	//
-	// // get trans from Dispatcher
-	//
-	// // richiesta a PoolDispatcher per saper la difficolta
-	//
-	// // try {
-	// // diff = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
-	// // } catch (Exception e) {
-	// // e.printStackTrace();
-	// // }
-	// //
-	// // getLastChainLevel l altezza massima
-	// // bf = prendi l hash del blocco piu lungo
-	// //
-	//
-	// // encodeMerkleTree (Trans)
-	//
-	// // minerPublic Key = me.pKey
-	// // usr = me
-	//
-	// do {
-	// String merkleRoot;
-	// Integer minerPublicKey;
-	// Integer chainLevel;
-	// Block bf;
-	// User usr;
-	//// block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, transactions, bf, usr);
-	// block.generateHashBlock();
-	// nonce++;
-	// } while (!block.verifyHash());
-	// return block;
-	// }
+    public void setActionDisconnect(String actionDisconnect) {
+        this.actionDisconnect = actionDisconnect;
+    }
 
-	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) {
+    public void setActionKeepAlive(String actionKeepAlive) {
+        this.actionKeepAlive = actionKeepAlive;
+    }
+    public MiningService getMiningService() {
+        return miningService;
+    }
 
-		Integer chainLevel = null;
+    public void setMiningService(MiningService miningService) {
+        this.miningService = miningService;
+    }
 
-		// Tutti i miei parmatetri
 
-		// se non ho il blocco padre mi aggiorno da tutti ( e mi tornerà anche questo)
-		if (!blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b))
-			return updateFilechain(blockRepository, serviceMiner);
-		else // altrimenti verifico il blocco
-			return trueVerify(blockRepository, b, chainLevel);
+//	public Block generateBlock( List<Transaction> transactions) {
+//
+//		int nonce = 0;
+//		Block block;
+//
+//		// Tutti i miei parmatetri
+//
+//		// TODO
+//
+//		// Verifica le transazioni se valide (ovvero se SHA(file) già è presente in un blocco)
+//
+//		// get trans from Dispatcher
+//
+//		// richiesta a PoolDispatcher per saper la difficolta
+//
+//		// try {
+//		// diff = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
+//		// } catch (Exception e) {
+//		// // TODO Auto-generated catch block
+//		// e.printStackTrace();
+//		// }
+//		//
+//		// getLastChainLevel l altezza massima
+//		// bf = prendi l hash del blocco piu lungo
+//		//
+//
+//		// encodeMerkleTree (Trans)
+//
+//		// minerPublic Key = me.pKey
+//		// usr = me
+//
+//		do {
+//			String merkleRoot;
+//			Integer minerPublicKey;
+//			Integer chainLevel;
+//			Block bf;
+//			User usr;
+////			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, transactions, bf, usr);
+//			block.generateHashBlock();
+//			nonce++;
+//		} while (!block.verifyHash());
+//		return block;
+//	}
 
-	}
+	public Block verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException {
 
-	// SOLO CODICE DI VERIFICA
-	private Boolean trueVerify(BlockRepository blockRepository, Block b, Integer chainLevel) {
-
-		Block block;
 		String creationTime;
 		String merkleRoot = null;
 		String minerPublicKey = null;
-		List<Transaction> trans = null;
 		Integer nonce = 0;
+		Integer chainLevel = null;
+		List<Transaction> trans = null;
+		Block block = null;
 		User usr = null;
-		String signature = null;
+        String signature = null;
+		// Tutti i miei parmatetri
 
-		// Aumento performance consigli anche inutile farlo
-		// TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
+		// Calcola la differenza tra il mio chainLevel e quello del blocco
+        Block myLastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
+        Integer chainLevelDifference = b.getChainLevel() - myLastBlock.getChainLevel();
 
-		// TODO APPENA terminato la funzione incampsuliamo i songoli controlli ognuno con un suo metodo
+        // Caso branch
+        // Verifica
+        // Aggiungi
+        // TODO: Se la differenza è 0 ma i padri sono diversi?
+        if(chainLevelDifference == 0 && b.getFatherBlockContainer().equals(myLastBlock.getFatherBlockContainer())) {
+			// Verifica il blocco
+        }
 
-		// Abbiamo stabilito di firmare solo l'hash del blocco essendo già esso fatto su tutti gli altri campi
-		// APPROVED!!
-		try {
-			if (!CryptoUtil.verifySignature(b.getHashBlock(), b.getSignature(), b.getMinerPublicKey())) {
-				return Boolean.FALSE;
+        // Caso sta appena avanti
+        // Controlla padre
+        // Puo essere finto
+        // TODO: Se la differenza è 1 ma il padre non è il mio ultimo blocco?
+        if(chainLevelDifference == 1 && b.getFatherBlockContainer().equals(myLastBlock)) {
+            // Verifica il blocco
+        }
 
-			}
-		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidKeySpecException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        // Update della chain
+        if(chainLevelDifference >= 2) {
+            // Update
+            updateFilechain(blockRepository, serviceMiner);
+        }
+
+        if(chainLevelDifference < 0) {
+            // Verifica il blocco
+        }
 
 		// Verifica transazioni uniche
-		// Tutti i predecessori del blocco arrivato NON devono avere la transazione
-		if (b.getFatherBlockContainer() != null) {
-			List<Block> predecessori = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
+        // Tutti i predecessori del blocco arrivato NON devono avere la transazione
+        if(b.getFatherBlockContainer() != null) {
+            List<Block> predecessori = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
 
-			for (Block p : predecessori) {
-				for (Transaction t : b.getTransactionsContainer()) {
-					if (p.getTransactionsContainer().contains(t)) {
-						System.err.println("La transazione è presente in uno dei predecessori.");
-						return Boolean.FALSE;
-					}
-				}
-			}
+            for(Block p: predecessori) {
+                for(Transaction t: b.getTransactionsContainer()) {
+                    if(p.getTransactionsContainer().contains(t)) {
+                        System.err.println("La transazione è presente in uno dei predecessori.");
+                        return null;
+                    }
+                }
+            }
 
-		}
+        }
 
-		// Verifica MerkleRoot
-		ArrayList<String> transactionsHash = new ArrayList<>();
-		for (Transaction transaction : b.getTransactionsContainer()) {
-			transactionsHash.add(transaction.getHashFile());
-		}
+        // Verifica MerkleRoot
+        ArrayList<String> transactionsHash = new ArrayList<>();
+        for(Transaction transaction: b.getTransactionsContainer()) {
+            transactionsHash.add(transaction.getHashFile());
+        }
 
-		String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
+        String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
 
-		if (!checkMerkle.equals(b.getMerkleRoot())) {
-			System.err.println("MerkleRoot diverso.");
-			return Boolean.FALSE;
-		}
+        if(! checkMerkle.equals(b.getMerkleRoot())) {
+            System.err.println("MerkleRoot diverso.");
+            return null;
+        }
 
+		// Merkletree del BLOCCO =encodeMerkleTree (Trans DEL BLOCCO)
 		// minerPublic Key = BLOCCO.pKey
-
 		// usr = Blocco.User
 
 		// nounce = BLOCK.nOUNCE
 
-		// TODO: Rifare la verifica.
-		// Chiamata al PD in cui si chiede la difficolta
-		// a cui è stato fatto il blocco, dato il timestamp.
+        // TODO: Rifare la verifica.
+        // Chiamata al PD in cui si chiede la difficolta
+        // a cui è stato fatto il blocco, dato il timestamp.
 
-		block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
-		block.generateHashBlock();
-		nonce++;
-
-		return Boolean.TRUE;
+		do {
+			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
+			block.generateHashBlock();
+			nonce++;
+		} while (!block.verifyHash(5));
+		return block;
 	}
 
 	/**
 	 * @param blockRepository
 	 * @param serviceMiner
-	 * @return
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 * @throws Exception
 	 */
-	public Boolean updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) {
+	public void updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws IOException, ExecutionException, InterruptedException {
 
-		List<String> ipMiners = this.getIpPeers();
+		List<String> ipMiners = getIpPeers();
 
-		// Rimuovo il mio IP
-		ipMiners.remove(ip);
+        // Rimuovo il mio IP
+        ipMiners.remove(ip);
 
 		Integer myChainLevel = 0;
 		while (!ipMiners.isEmpty()) {
@@ -338,6 +340,7 @@ public class Miner {
 			System.out.println("Il Miner designato = " + designedMiner.getValue1() + " ChainLevel = " + designedMiner.getValue2() + "\n");
 
 			// Aggiorno la mia blockChain con i blocchi che mi arrivano in modo incrementale
+			// TODO realizzare la variante di chidere N blocchi tutti insieme
 			if (designedMiner.getValue1() != null)
 				getBlocksFromMiner(ipMiners, myChainLevel, designedMiner, blockRepository);
 			// aspetta una risposta
@@ -348,7 +351,6 @@ public class Miner {
 
 			System.out.println(ipMiners.toString());
 		}
-		return Boolean.TRUE;
 	}
 
 	/**
@@ -356,21 +358,17 @@ public class Miner {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
-	private void killRequest(List<Future<Pairs<String, Integer>>> minerResp) {
+	private void killRequest(List<Future<Pairs<String, Integer>>> minerResp) throws InterruptedException, ExecutionException {
 
 		for (Future<Pairs<String, Integer>> f : minerResp) {
-			try {
-				System.out.println("\nElimino :" + f.get().getValue1());
-			} catch (InterruptedException | ExecutionException e) {
-				e.printStackTrace();
-			}
+			System.out.println("\nElimino :" + f.get().getValue1());
 			f.cancel(Boolean.TRUE);
 		}
 	}
 
 	/**
-	 * Restituisce la lista di miner che hanno risposto con il loro livello di block chain.
-	 * 
+     * Restituisce la lista di miner che hanno risposto
+     * con il loro livello di block chain.
 	 * @param ipMiners
 	 * @param minerResp
 	 */
@@ -394,7 +392,7 @@ public class Miner {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
-	private void waitAndChooseMiner(List<Future<Pairs<String, Integer>>> minerResp, Pairs<String, Integer> designedMiner) {
+	private void waitAndChooseMiner(List<Future<Pairs<String, Integer>>> minerResp, Pairs<String, Integer> designedMiner) throws InterruptedException, ExecutionException {
 
 		Boolean flag = Boolean.TRUE;
 		while (flag && !minerResp.isEmpty()) {
@@ -402,12 +400,7 @@ public class Miner {
 			System.out.println("size: " + minerResp.size());
 			// Controlliamo se uno dei nostri messaggi di richiesta è tornato
 			// indietro con successo
-			try {
-				Thread.sleep(250L);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			Thread.sleep(250L);
 			for (Future<Pairs<String, Integer>> f : minerResp) {
 				// facciamo un For per ciclare tutte richieste attive
 				// all'interno del nostro array e controlliamo se
@@ -415,19 +408,14 @@ public class Miner {
 
 				if (f != null && f.isDone()) {
 					// IP del miner designato da cui prendere la blockchain
-					try {
-						designedMiner.setValue1(f.get().getValue1());
-
-						// ChainLevel del miner designato
-						designedMiner.setValue2(f.get().getValue2());
-						System.out.println("\nRisposto da: " + f.get().getValue1() + "chain level " + f.get().getValue2());
-						flag = Boolean.FALSE;
-					} catch (InterruptedException | ExecutionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					designedMiner.setValue1(f.get().getValue1());
+					// ChainLevel del miner designato
+					designedMiner.setValue2(f.get().getValue2());
+					System.out.println("\nRisposto da: " + f.get().getValue1() + "chain level " + f.get().getValue2());
+					flag = Boolean.FALSE;
 
 				} else {
+					// TODO rivedere questa cosa wait/////
 					minerResp.remove(f);
 				}
 
@@ -442,20 +430,17 @@ public class Miner {
 	 * @param designedMiner
 	 * @throws Exception
 	 */
-	private void getBlocksFromMiner(List<String> ipMiners, Integer myChainLevel, Pairs<String, Integer> designedMiner, BlockRepository blockRepository) {
+	@SuppressWarnings("unchecked")
+	private void getBlocksFromMiner(List<String> ipMiners, Integer myChainLevel, Pairs<String, Integer> designedMiner, BlockRepository blockRepository) throws IOException {
 
 		Integer i = 0;
 		Boolean nullResponse = Boolean.FALSE;
 		while (!nullResponse && (i < nBlockUpdate) && (designedMiner.getValue2() > myChainLevel)) {
+			// TODO cambire la uri di richiesta
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
 			Type type = new TypeToken<List<Block>>() {
 			}.getType();
-			List<Block> blockResponse = null;
-			try {
-				blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
 
 			if (blockResponse != null) {
 				System.out.println("\nBlock response: " + blockResponse.toString());
@@ -476,13 +461,41 @@ public class Miner {
 			ipMiners.remove(designedMiner.getValue1());
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<Transaction> getTransFromDisp(Integer nTrans) throws Exception {
 		// TODO List<Transaction> trans = HttpUtil.doGetJSON("http://" + getEntryPointBaseUri() +
-
+		
 		Type type = new TypeToken<List<Transaction>>() {
 		}.getType();
 		List<Transaction> trans = HttpUtil.doGetJSON("http://" + "10.198.0.7" + ":8080/JsonTransaction?nTrans=" + nTrans, type);
 
+		// Integer i = 0;
+		// Boolean nullResponse = Boolean.FALSE;
+		// while (!nullResponse && (i < nBlockUpdate) && (designedMiner.getValue2() > myChainLevel)) {
+		// // TODO cambire la uri di richiesta
+		// myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
+		//
+		// List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() +
+		// ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel);
+		//
+		// if (blockResponse != null) {
+		// System.out.println("\nBlock response: " + blockResponse.toString());
+		// for (Block b : blockResponse) {
+		// // TODO qui dentro ora posso salvare nel mio DB tutti i blocchi appena ricevuti e verificarli
+		// blockRepository.save(b);
+		// System.out.println("Ho tirato fuori il blocco con chainLevel: " + b.getChainLevel() + "\n");
+		// }
+		// } else {
+		// nullResponse = Boolean.TRUE;
+		// }
+		// i++;
+		//
+		// }
+		// System.out.println("2");
+		//
+		// if (!nullResponse && designedMiner.getValue2() <=
+		// blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel())
+		// ipMiners.remove(designedMiner.getValue1());
 		return trans;
 	}
 
@@ -490,7 +503,6 @@ public class Miner {
 	 * @return the ipEntryPoint
 	 */
 	public String getIpEntryPoint() {
-
 		return ipEntryPoint;
 	}
 
@@ -499,7 +511,6 @@ public class Miner {
 	 *            the ipEntryPoint to set
 	 */
 	public void setIpEntryPoint(String ipEntryPoint) {
-
 		this.ipEntryPoint = ipEntryPoint;
 	}
 
@@ -507,7 +518,6 @@ public class Miner {
 	 * @return the portEntryPoint
 	 */
 	public String getPortEntryPoint() {
-
 		return portEntryPoint;
 	}
 
@@ -516,7 +526,6 @@ public class Miner {
 	 *            the portEntryPoint to set
 	 */
 	public void setPortEntryPoint(String portEntryPoint) {
-
 		this.portEntryPoint = portEntryPoint;
 	}
 
@@ -524,7 +533,6 @@ public class Miner {
 	 * @return the entryPointBaseUri
 	 */
 	public String getEntryPointBaseUri() {
-
 		return entryPointBaseUri;
 	}
 
@@ -533,7 +541,6 @@ public class Miner {
 	 *            the entryPointBaseUri to set
 	 */
 	public void setEntryPointBaseUri(String entryPointBaseUri) {
-
 		this.entryPointBaseUri = entryPointBaseUri;
 	}
 
@@ -541,7 +548,6 @@ public class Miner {
 	 * @return the ipPeers
 	 */
 	public List<String> getIpPeers() {
-
 		return ipPeers;
 	}
 
@@ -550,7 +556,6 @@ public class Miner {
 	 *            the ipPeers to set
 	 */
 	public void setIpPeers(List<String> ipPeers) {
-
 		this.ipPeers = ipPeers;
 	}
 
@@ -558,38 +563,63 @@ public class Miner {
 	 * @return the log
 	 */
 	public static Logger getLog() {
-
 		return log;
 	}
 
-	public void initializeBlockChain(BlockRepository blockRepository) {
+    public void startMine() {
+        if (miningService == null && miningService.isInitialized()) return;
 
+        miningService.start();
+    }
+
+    public void stopMine() {
+        if (miningService == null && miningService.isInitialized()) return;
+
+        miningService.interrupt();
+    }
+
+    public Boolean isMining() {
+        if (miningService == null && miningService.isInitialized()) return Boolean.FALSE;
+
+        return !miningService.isInterrupted();
+    }
+
+	public void initializeBlockChain(BlockRepository blockRepository) {
 		// Se non ho nessun blocco ne aggiungo uno fittizio
-		if (!blockRepository.findAll().iterator().hasNext()) {
+		if(! blockRepository.findAll().iterator().hasNext()) {
 			Block block = getFirstBlock();
 			blockRepository.save(block);
 		}
 	}
 
-	private Block getFirstBlock() {
+    private Block getFirstBlock() {
+        Block block = new Block();
+        block.setHashBlock("0");
+        block.setChainLevel(0);
+        block.setCreationTime(new Date(0).toString());
+        block.setMerkleRoot("0");
+        block.setNonce(0);
+        block.setMinerPublicKey("0");
+        return block;
+    }
 
-		Block block = new Block();
-		block.setHashBlock("0");
-		block.setChainLevel(0);
-		block.setCreationTime(new Date(0).toString());
-		block.setMerkleRoot("0");
-		block.setNonce(0);
-		block.setMinerPublicKey("0");
-		return block;
-	}
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
 
-	public void setIp(String ip) {
+    public String getIp() {
+        return ip;
+    }
 
-		this.ip = ip;
-	}
+    public String getActionConnect() {
+        return actionConnect;
+    }
 
-	public String getIp() {
+    public String getActionDisconnect() {
+        return actionDisconnect;
+    }
 
-		return ip;
-	}
+    public String getActionKeepAlive() {
+        return actionKeepAlive;
+    }
 }

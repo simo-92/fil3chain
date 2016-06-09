@@ -9,6 +9,7 @@ import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
 
 import javax.persistence.*;
+import java.math.BigInteger;
 import java.util.List;
 
 
@@ -105,53 +106,46 @@ public class Block {
 		this.userContainer = userContainer;
 	}
 
-	public Boolean CalculatePOW() {
 
-	
+	public Boolean verifyHash(int difficulty) {
+
+        // Se non è presente alcun hash allora ritorna falso
+        if (hashBlock == null || hashBlock.isEmpty()) return Boolean.FALSE;
+
+        // Costruisco la stringa di zeri che deve essere presente
+        // all'inizio dell'hash, data la difficoltà
+        String puzzle = "";
+
+		/*
+        for(int i = 1; i <= difficulty; i++) {
+            puzzle += "1";
+        }
+        */
+
+        for(int i = 0; i < difficulty; i++) {
+            puzzle += "0";
+        }
+
+        // BigInteger puzzleInt = new BigInteger(puzzle, 2);
+        // return puzzleInt.and(new BigInteger(hashBlock, 16)).compareTo(new BigInteger("0")) == 0;
+
+        // Restituisce true se l'hash corrente inizia con la stringa definita da puzzle
+        // e se l'hash è un hash del blocco.
+        // False altrimenti
+        return (hashBlock.startsWith(puzzle));
+
+		/*
 		Integer diff, i;
 		diff = 2;
 		i = 0;
 		String s = this.getHashBlock();
 		String puzzle = "";
 
-		
-		
 		while (i < diff) {
 			puzzle += "0";
 			i++;
 		}
-		
-	
 
-		
-		String hash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
-		
-		this.setHashBlock(hash);
-		if (s.startsWith(puzzle))
-			return Boolean.TRUE;
-		return Boolean.FALSE;
-	}
-
-	
-	
-
-	public Boolean verifyHash() {
-
-	
-		Integer diff, i;
-		diff = 2;
-		i = 0;
-		String s = this.getHashBlock();
-		String puzzle = "";
-
-		
-		
-		while (i < diff) {
-			puzzle += "0";
-			i++;
-		}
-		
-	
 		this.setHashBlock(null);
 		
 		String hash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
@@ -160,8 +154,13 @@ public class Block {
 		if (s.startsWith(puzzle) && (s.compareTo(hash) == 0))
 			return Boolean.TRUE;
 		return Boolean.FALSE;
+		*/
 	}
-	
+
+    @Override
+    public String toString() {
+        return fatherBlockContainer.getHashBlock() + merkleRoot + userContainer.getPublicKey();
+    }
 	
 	//MychainLevel=Chiedi ultimo blocco nel db
 	//se la differenza tra il mio blocco e il blocco è arrivato

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import it.scrs.miner.util.JsonUtility;
 
+import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.models.Pairs;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -21,6 +22,10 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.fasterxml.jackson.databind.util.JSONPObject;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.apache.http.entity.StringEntity;
 
 
 
@@ -70,18 +75,19 @@ public class HttpUtil {
 	 * @throws possibili
 	 *             errori di comunicazione HTTP
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T> T doGetJSON(String url, Type t) throws IOException {
 
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpGet request = new HttpGet(url);
 
-		 RequestConfig requestConfig = RequestConfig.custom()
-		 .setSocketTimeout(TIMEOUT_MILLIS)
-		 .setConnectTimeout(TIMEOUT_MILLIS)
-		 .setConnectionRequestTimeout(TIMEOUT_MILLIS)
-		 .build();
-		
-		 request.setConfig(requestConfig);
+		// RequestConfig requestConfig = RequestConfig.custom()
+		// .setSocketTimeout(TIMEOUT_MILLIS)
+		// .setConnectTimeout(TIMEOUT_MILLIS)
+		// .setConnectionRequestTimeout(TIMEOUT_MILLIS)
+		// .build();
+		//
+		// request.setConfig(requestConfig);
 
 		HttpResponse response;
 		response = client.execute(request);
@@ -92,6 +98,9 @@ public class HttpUtil {
 		while ((line = rd.readLine()) != null) {
 			result.append(line);
 		}
+		// TODO per lupo quando riuserai il fromJson , usare x.class nel caso specifico non va bene perche non riesce a
+		// ricostruire oggetto
+		// per un uso più corretto usa il la riga del Type che riesci a ricostruirlo bene
 
 		return JsonUtility.fromJson(result.toString(), t);
 	}
