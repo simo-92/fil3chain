@@ -52,7 +52,8 @@ public class MinerApplication implements CommandLineRunner {
 
 		Miner miner = new Miner();
 		miner.loadNetworkConfig();
-        miner.loadKeyConfig(); // carica le chiavi dal file properties
+                miner.loadKeyConfig(); // carica le chiavi dal file properties
+                miner.loadMinerConfiguration(); //carica numero blocchi update
 		miner.setIp(myIp);
 		miner.firstConnectToEntryPoint();
 
