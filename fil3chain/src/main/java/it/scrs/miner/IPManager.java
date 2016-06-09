@@ -31,6 +31,7 @@ public class IPManager {
         return ipList;
     }
     public synchronized static void setAllIp(List<String> ips){
+       ipm.getIPList().clear();
        ipm.getIPList().addAll(ips);
     }
     
