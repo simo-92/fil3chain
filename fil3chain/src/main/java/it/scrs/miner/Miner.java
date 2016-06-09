@@ -543,10 +543,22 @@ public class Miner {
 		return log;
 	}
 
-    public void mine() {
+    public void startMine() {
         if (miningService == null && miningService.isInitialized()) return;
 
-        miningService.mine();
+        miningService.start();
+    }
+
+    public void stopMine() {
+        if (miningService == null && miningService.isInitialized()) return;
+
+        miningService.interrupt();
+    }
+
+    public Boolean isMining() {
+        if (miningService == null && miningService.isInitialized()) return Boolean.FALSE;
+
+        return !miningService.isInterrupted();
     }
 
 	public void initializeBlockChain(BlockRepository blockRepository) {

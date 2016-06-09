@@ -11,12 +11,11 @@ import java.util.Enumeration;
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
-import it.scrs.miner.util.CryptoUtil;
+import it.scrs.miner.dao.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -74,6 +73,7 @@ public class MinerApplication implements CommandLineRunner {
 		Block block = new Block();
         block.setFatherBlockContainer(myLastBlock);
         block.setChainLevel(myLastBlock.getChainLevel() + 1);
+		block.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
 
         // Transazione mock
         Transaction transaction = new Transaction();
@@ -86,8 +86,14 @@ public class MinerApplication implements CommandLineRunner {
         block.setMerkleRoot(MerkleTree.buildMerkleTree(transactions));
 
         // Il miner inizia a minare
-        miner.setMiningService(new MiningService(block, 6));
-        miner.mine();
+        miner.setMiningService(new MiningService(block, 24, new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("Miner interrotto");
+                System.out.println("Sta minando: " + miner.isMining());
+            }
+        }));
+        miner.startMine();
 	}
 	
 	

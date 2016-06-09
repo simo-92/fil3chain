@@ -9,6 +9,7 @@ import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
 
 import javax.persistence.*;
+import java.math.BigInteger;
 import java.util.List;
 
 
@@ -107,20 +108,29 @@ public class Block {
 	public Boolean verifyHash(int difficulty) {
 
         // Se non è presente alcun hash allora ritorna falso
-        if (this.hashBlock == null || this.hashBlock.isEmpty()) return Boolean.FALSE;
+        if (hashBlock == null || hashBlock.isEmpty()) return Boolean.FALSE;
 
         // Costruisco la stringa di zeri che deve essere presente
         // all'inizio dell'hash, data la difficoltà
         String puzzle = "";
 
+		/*
+        for(int i = 1; i <= difficulty; i++) {
+            puzzle += "1";
+        }
+        */
+
         for(int i = 0; i < difficulty; i++) {
             puzzle += "0";
         }
 
+        // BigInteger puzzleInt = new BigInteger(puzzle, 2);
+        // return puzzleInt.and(new BigInteger(hashBlock, 16)).compareTo(new BigInteger("0")) == 0;
+
         // Restituisce true se l'hash corrente inizia con la stringa definita da puzzle
         // e se l'hash è un hash del blocco.
         // False altrimenti
-        return (this.hashBlock.startsWith(puzzle));
+        return (hashBlock.startsWith(puzzle));
 
 		/*
 		Integer diff, i;
@@ -144,7 +154,11 @@ public class Block {
 		return Boolean.FALSE;
 		*/
 	}
-	
+
+    @Override
+    public String toString() {
+        return fatherBlockContainer.getHashBlock() + merkleRoot + userContainer.getPublicKey();
+    }
 	
 	//MychainLevel=Chiedi ultimo blocco nel db
 	//se la differenza tra il mio blocco e il blocco è arrivato
