@@ -53,8 +53,9 @@ public class MinerApplication implements CommandLineRunner {
 
 		Miner miner = new Miner();
 		miner.loadNetworkConfig();
+                miner.setIp(myIp);
 		miner.firstConnectToEntryPoint();
-        miner.setIp(myIp);
+        
 
 		// Mino per prova
 //		Block block = miner.generateBlock(null, 17, 31, null, null, null);

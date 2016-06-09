@@ -40,6 +40,12 @@ public class Miner {
 	private String ipEntryPoint;
 	private String portEntryPoint;
 	private String entryPointBaseUri;
+        private String actionConnect;
+
+    
+        private String actionDisconnect;
+        private String actionKeepAlive;
+
 	private List<String> ipPeers; // contiene gli ip degli altri miner nella rete
     private String ip;
 	private User me;
@@ -73,6 +79,10 @@ public class Miner {
 		this.setIpEntryPoint(prop.getProperty("ipEntryPoint"));
 		this.setPortEntryPoint(prop.getProperty("portEntryPoint"));
 		this.setEntryPointBaseUri(prop.getProperty("entryPointBaseUri"));
+                this.setActionConnect(prop.getProperty("actionConnect"));
+                this.setActionDisconnect(prop.getProperty("actionDisconnect"));
+                this.setActionKeepAlive(prop.getProperty("actionKeepAlive"));
+                
 	}
 
 	/**
@@ -82,7 +92,7 @@ public class Miner {
 	@SuppressWarnings("unchecked")
 	public boolean firstConnectToEntryPoint() {
 
-		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri();
+		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri() + this.getActionConnect();
 		String result = "";
 		/*
         String myIp = "";
@@ -110,7 +120,10 @@ public class Miner {
 
 		ipPeers = new ArrayList<>();
 		try {
-			result = HttpUtil.doPost(url, new Pairs<>("ip", ip));
+                        System.out.println("url: "+url);
+                        System.out.println("IL MIO IP: " + ip);
+			result = HttpUtil.doPost(url, "{\"user_ip\":\""+this.getIp()+":8080\"}");
+                        System.out.println(result);
 		} catch (Exception ex) {
             System.err.println("Errore durante la richiesta di IP\n" + ex);
             // Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
@@ -135,7 +148,17 @@ public class Miner {
 
 		return true;
 	}
+public void setActionConnect(String actionConnect) {
+        this.actionConnect = actionConnect;
+    }
 
+    public void setActionDisconnect(String actionDisconnect) {
+        this.actionDisconnect = actionDisconnect;
+    }
+
+    public void setActionKeepAlive(String actionKeepAlive) {
+        this.actionKeepAlive = actionKeepAlive;
+    }
     public MiningService getMiningService() {
         return miningService;
     }
@@ -586,5 +609,17 @@ public class Miner {
 
     public String getIp() {
         return ip;
+    }
+
+    public String getActionConnect() {
+        return actionConnect;
+    }
+
+    public String getActionDisconnect() {
+        return actionDisconnect;
+    }
+
+    public String getActionKeepAlive() {
+        return actionKeepAlive;
     }
 }

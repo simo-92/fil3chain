@@ -24,6 +24,7 @@ import org.apache.http.message.BasicNameValuePair;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.http.entity.StringEntity;
 
 
 
@@ -112,15 +113,15 @@ public class HttpUtil {
 	 * @throws possibili
 	 *             errori di comunicazione HTTP
 	 */
-	public static String doPost(String url, Pairs... parameters) throws Exception {
+	public static String doPost(String url, String raw_data) throws Exception {
 
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpPost post = new HttpPost(url);
-		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-		for (Pairs p : parameters) {
-			urlParameters.add(new BasicNameValuePair(p.getValue1().toString(), p.getValue2().toString()));
-		}
-		post.setEntity(new UrlEncodedFormEntity(urlParameters));
+//		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+//		for (Pairs<?, ?> p : parameters) {
+//			urlParameters.add(new BasicNameValuePair(p.getValue1().toString(), p.getValue2().toString()));
+//		}
+		post.setEntity(new StringEntity(raw_data));
 		HttpResponse response = client.execute(post);
 		BufferedReader rd;
 		rd = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
