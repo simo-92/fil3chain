@@ -87,7 +87,7 @@ public class MinerApplication implements CommandLineRunner {
         block.setMerkleRoot(MerkleTree.buildMerkleTree(transactions));
 
         // Il miner inizia a minare
-        miner.setMiningService(new MiningService(block, 28, new Runnable() {
+        miner.setMiningService(new MiningService(block, 26, new Runnable() {
             @Override
             public void run() {
                 System.out.println("Miner interrotto");
