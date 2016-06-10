@@ -653,6 +653,7 @@ public void setActionConnect(String actionConnect) {
         block.setCreationTime(new Date(0).toString());
         block.setMerkleRoot("0");
         block.setNonce(0);
+        block.setSignature("0");
         block.setMinerPublicKey("0");
         return block;
     }
