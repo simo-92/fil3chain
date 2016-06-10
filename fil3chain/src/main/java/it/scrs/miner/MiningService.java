@@ -1,10 +1,13 @@
 package it.scrs.miner;
 
 import it.scrs.miner.dao.block.Block;
+import it.scrs.miner.util.CryptoUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by Marco
@@ -15,6 +18,9 @@ public class MiningService extends Thread implements Runnable {
 
     // Blocco da minare
     private Block block;
+    
+    //Chiave privata del creatore del blocco
+    private String prkey;
 
     // Difficoltà in cui si sta minando
     private Integer difficulty;
@@ -44,8 +50,9 @@ public class MiningService extends Thread implements Runnable {
      * @param block
      * @param difficulty
      */
-    public MiningService(Block block, Integer difficulty, Runnable interruptCallback) {
+    public MiningService(String prKey, Block block, Integer difficulty, Runnable interruptCallback) {
         this.block = block;
+        this.prkey = prKey;
         this.difficulty = difficulty;
         this.interruptCallback = interruptCallback;
     }
@@ -70,13 +77,17 @@ public class MiningService extends Thread implements Runnable {
 
     @Override
     public void run() {
-        mine();
+        try {
+            mine();
+        } catch (Exception ex) {
+            Logger.getLogger(MiningService.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
      * Metodo per minare un blocco
      */
-    public void mine() {
+    public void mine() throws Exception {
 
         // Calcolo le maschere per il check dell'hash.
         calculateMasks();
@@ -119,9 +130,10 @@ public class MiningService extends Thread implements Runnable {
         // Impostazione dell'hash e del nonce
         block.setHashBlock(hexHash);
         block.setNonce(nonce - 1);
+        block.setSignature(CryptoUtil.sign(hexHash, prkey));
 
         System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: " + nonce + " Tempo impiegato: " + totalTime + " secondi");
-        System.out.println("Hash provati: "+(Math.abs(nonceFinish-nonceStart))+ " HashRate: "+(((Math.abs(nonceFinish-nonceStart))/totalTime)/1000000.0f)+" MH/s");
+        System.out.println("Hashate String myPrivateKey; provati: "+(Math.abs(nonceFinish-nonceStart))+ " HashRate: "+(((Math.abs(nonceFinish-nonceStart))/totalTime)/1000000.0f)+" MH/s");
         // Chiude il thread
         interrupt();
     }
@@ -154,6 +166,14 @@ public class MiningService extends Thread implements Runnable {
 
     public void setBlock(Block block) {
         this.block = block;
+    }
+    
+    public String getPrkey() {
+        return prkey;
+    }
+
+    public void setPrkey(String prkey) {
+        this.prkey = prkey;
     }
 
     public Integer getDifficulty() {

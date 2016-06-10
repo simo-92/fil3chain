@@ -1,12 +1,10 @@
 package it.scrs.miner;
 
-
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-
 
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.MerkleTree;
@@ -22,6 +20,14 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 
 import it.scrs.miner.dao.block.BlockRepository;
+import it.scrs.miner.util.CryptoUtil;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.logging.Level;
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 import javax.swing.*;
 
@@ -32,49 +38,47 @@ public class MinerApplication implements CommandLineRunner {
 
     private static final String IP_REGEX = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
 
-	public static final Boolean testMiner = Boolean.TRUE;
+    public static final Boolean testMiner = Boolean.TRUE;
 
-	@SuppressWarnings("unused")
-	private static final Logger log = LoggerFactory.getLogger(MinerApplication.class);
+    @SuppressWarnings("unused")
+    private static final Logger log = LoggerFactory.getLogger(MinerApplication.class);
 
-	@Autowired
-	private BlockRepository blockRepository;
+    @Autowired
+    private BlockRepository blockRepository;
 
-	@Autowired
-	private ServiceMiner serviceMiner;
+    @Autowired
+    private ServiceMiner serviceMiner;
 
-	
-	@Override
-	public void run(String... args) throws Exception {
+    @Override
+    public void run(String... args) throws Exception {
 
         // Seleziona l'IP da utilizzare per la sessione corrente
         String myIp = selectIp();
 
-		Miner miner = new Miner();
-		miner.loadNetworkConfig();
-                miner.loadKeyConfig(); // carica le chiavi dal file properties
-                miner.loadMinerConfiguration(); //carica numero blocchi update
-		miner.setIp(myIp);
-		miner.firstConnectToEntryPoint();
+        Miner miner = new Miner();
+        miner.loadNetworkConfig();
+        miner.loadKeyConfig(); // carica le chiavi dal file properties
+        miner.loadMinerConfiguration(); //carica numero blocchi update
+        miner.setIp(myIp);
+        miner.firstConnectToEntryPoint();
 
-		// Mino per prova
-		// Block block = miner.generateBlock(null, 17, 31, null, null, null);
-		// System.out.println(block.generateAndGetHashBlock());
-
-		// prendi minerReq ip a caso dalla lista dei miner
-		miner.initializeBlockChain(blockRepository);
-		miner.updateFilechain(blockRepository, serviceMiner);
-		System.out.println("3");
-		//TODO Avviare MINING
+        // Mino per prova
+        // Block block = miner.generateBlock(null, 17, 31, null, null, null);
+        // System.out.println(block.generateAndGetHashBlock());
+        // prendi minerReq ip a caso dalla lista dei miner
+        miner.initializeBlockChain(blockRepository);
+        miner.updateFilechain(blockRepository, serviceMiner);
+        System.out.println("3");
+        //TODO Avviare MINING
 
         // Prendo il mio ultimo blocco
         Block myLastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
 
         // Inizializzo il nuovo blocco da minare
-		Block block = new Block();
+        Block block = new Block();
         block.setFatherBlockContainer(myLastBlock);
         block.setChainLevel(myLastBlock.getChainLevel() + 1);
-		block.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
+        block.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
 
         // Transazione mock
         Transaction transaction = new Transaction();
@@ -87,34 +91,34 @@ public class MinerApplication implements CommandLineRunner {
         block.setMerkleRoot(MerkleTree.buildMerkleTree(transactions));
 
         // Il miner inizia a minare
-        miner.setMiningService(new MiningService(block, 16, new Runnable() {
+        miner.setMiningService(new MiningService(miner.getMyPrivateKey(), block, 16, new Runnable() {
             @Override
             public void run() {
                 System.out.println("Miner interrotto");
                 System.out.println("Sta minando: " + miner.isMining());
-                System.out.println("numero: "+IPManager.getManager().getIPList().size());
+                System.out.println("numero: " + IPManager.getManager().getIPList().size());
             }
         }));
         miner.startMine();
-            
-	}
 
-	public static void main(String[] args) {
+    }
 
-		SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(MinerApplication.class).headless(false);
-		springApplicationBuilder.run(args);
-		// springApplication.run(MinerApplication.class);
-	}
+    public static void main(String[] args) {
 
+        SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(MinerApplication.class).headless(false);
+        springApplicationBuilder.run(args);
+        // springApplication.run(MinerApplication.class);
+    }
 
     /**
-     * Permette di selezionare l'IP da utilizzare
-     * per la sessione corrente tramite un dialog.
+     * Permette di selezionare l'IP da utilizzare per la sessione corrente
+     * tramite un dialog.
+     *
      * @return
      */
-	private String selectIp() {
+    private String selectIp() {
         ArrayList<String> ips = getAllIpAddresses();
-        if(ips == null) {
+        if (ips == null) {
             System.err.println("Non sei connesso a nessuna rete.");
             return null;
         }
@@ -128,19 +132,20 @@ public class MinerApplication implements CommandLineRunner {
         return input;
     }
 
-
     private ArrayList<String> getAllIpAddresses() {
 
         ArrayList<String> ips = new ArrayList<>();
 
         try {
             Enumeration e = NetworkInterface.getNetworkInterfaces();
-            while(e.hasMoreElements()) {
+            while (e.hasMoreElements()) {
                 NetworkInterface n = (NetworkInterface) e.nextElement();
                 Enumeration ee = n.getInetAddresses();
                 while (ee.hasMoreElements()) {
                     InetAddress i = (InetAddress) ee.nextElement();
-                    if(i.getHostAddress().matches(IP_REGEX)) ips.add(i.getHostAddress());
+                    if (i.getHostAddress().matches(IP_REGEX)) {
+                        ips.add(i.getHostAddress());
+                    }
                 }
             }
         } catch (SocketException e) {
@@ -151,37 +156,36 @@ public class MinerApplication implements CommandLineRunner {
         return ips;
     }
 
+    /**
+     * @return the blockRepository
+     */
+    public BlockRepository getBlockRepository() {
 
-	/**
-	 * @return the blockRepository
-	 */
-	public BlockRepository getBlockRepository() {
-	
-		return blockRepository;
-	}
+        return blockRepository;
+    }
 
-	/**
-	 * @param blockRepository the blockRepository to set
-	 */
-	public void setBlockRepository(BlockRepository blockRepository) {
-	
-		this.blockRepository = blockRepository;
-	}
+    /**
+     * @param blockRepository the blockRepository to set
+     */
+    public void setBlockRepository(BlockRepository blockRepository) {
 
-	/**
-	 * @return the serviceMiner
-	 */
-	public ServiceMiner getServiceMiner() {
-	
-		return serviceMiner;
-	}
+        this.blockRepository = blockRepository;
+    }
 
-	/**
-	 * @param serviceMiner the serviceMiner to set
-	 */
-	public void setServiceMiner(ServiceMiner serviceMiner) {
-		this.serviceMiner = serviceMiner;
-	}
+    /**
+     * @return the serviceMiner
+     */
+    public ServiceMiner getServiceMiner() {
+
+        return serviceMiner;
+    }
+
+    /**
+     * @param serviceMiner the serviceMiner to set
+     */
+    public void setServiceMiner(ServiceMiner serviceMiner) {
+        this.serviceMiner = serviceMiner;
+    }
 
 }
 
