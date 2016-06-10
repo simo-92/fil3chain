@@ -148,7 +148,7 @@ public class MiningService extends Thread implements Runnable {
         block.setSignature(CryptoUtil.sign(hexHash, prkey));
         block.setMinerPublicKey(pukey);
         block.setFatherBlockContainer(father);
-        //block.setTransactionsContainer(transactions);
+        block.setTransactionsContainer(transactions);
         System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: " + nonce + " Tempo impiegato: " + totalTime + " secondi");
         System.out.println("Hashate String myPrivateKey; provati: "+(Math.abs(nonceFinish-nonceStart))+ " HashRate: "+(((Math.abs(nonceFinish-nonceStart))/totalTime)/1000000.0f)+" MH/s");
         // Chiude il thread

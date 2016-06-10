@@ -20,6 +20,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 
 import it.scrs.miner.dao.block.BlockRepository;
+import it.scrs.miner.dao.transaction.TransactionRepository;
 import it.scrs.miner.util.CryptoUtil;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -47,6 +48,8 @@ public class MinerApplication implements CommandLineRunner {
     @Autowired
     private BlockRepository blockRepository;
 
+    @Autowired
+    private TransactionRepository transRepo;
     @Autowired
     private ServiceMiner serviceMiner;
 
@@ -85,6 +88,7 @@ public class MinerApplication implements CommandLineRunner {
         Transaction transaction = new Transaction();
         transaction.setFilename("Ciano's bug");
         transaction.setHashFile(org.apache.commons.codec.digest.DigestUtils.sha256Hex(transaction.getFilename()));
+        
         List<Transaction> tList = new ArrayList();
         tList.add(transaction);
         ArrayList<String> transactions = new ArrayList<>();

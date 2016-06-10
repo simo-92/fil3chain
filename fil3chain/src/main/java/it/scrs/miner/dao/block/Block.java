@@ -49,7 +49,6 @@ public class Block {
 	// Relationship
 
 	@OneToMany(mappedBy = "blockContainer")
-        @JsonIgnore
 	private List<Transaction> transactionsContainer;
 
 	@OneToOne

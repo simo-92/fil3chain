@@ -5,6 +5,9 @@
 package it.scrs.miner.dao.transaction;
 
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import java.util.List;
 
 import javax.persistence.Column;
