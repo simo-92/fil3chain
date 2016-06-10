@@ -48,7 +48,7 @@ public class Block {
 
 	// Relationship
 
-	@OneToMany(mappedBy = "blockContainer")
+	@OneToMany(mappedBy = "blockContainer",fetch = FetchType.EAGER)
 	private List<Transaction> transactionsContainer;
 
 	@OneToOne
