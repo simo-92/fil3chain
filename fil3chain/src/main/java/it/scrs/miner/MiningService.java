@@ -86,6 +86,9 @@ public class MiningService extends Thread implements Runnable {
 
         // Nonce
         Integer nonce = new Random().nextInt();
+        Integer nonceStart = nonce;
+        Integer nonceFinish = 0;
+        float totalTime= 0;
         System.out.println("Nonce di partenza: " + nonce);
 
         // Hash del blocco
@@ -107,7 +110,8 @@ public class MiningService extends Thread implements Runnable {
             // Incremento il nonce
             nonce++;
         } while (!verifyHash(hash));
-
+        nonceFinish=nonce-1;
+        totalTime= (new Date().getTime() - startTime)/1000.0f;
         // Calcolo hash corretto in esadecimale
         // Spiegazione nonce - 1: Viene fatto -1 perché nell'ultima iterazione viene incrementato anche se l'hash era corretto.
         String hexHash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(block.toString() + (nonce - 1));
@@ -116,8 +120,8 @@ public class MiningService extends Thread implements Runnable {
         block.setHashBlock(hexHash);
         block.setNonce(nonce - 1);
 
-        System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: " + nonce + " Tempo impiegato: " + (new Date().getTime() - startTime)/1000.0f + " secondi");
-
+        System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: " + nonce + " Tempo impiegato: " + totalTime + " secondi");
+        System.out.println("Hash provati: "+(Math.abs(nonceFinish-nonceStart))+ " HashRate: "+(((Math.abs(nonceFinish-nonceStart))/totalTime)/1000000.0f)+" MH/s");
         // Chiude il thread
         interrupt();
     }
