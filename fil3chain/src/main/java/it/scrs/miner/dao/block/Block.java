@@ -5,6 +5,7 @@
 package it.scrs.miner.dao.block;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
 
@@ -48,6 +49,7 @@ public class Block {
 	// Relationship
 
 	@OneToMany(mappedBy = "blockContainer")
+        @JsonIgnore
 	private List<Transaction> transactionsContainer;
 
 	@OneToOne

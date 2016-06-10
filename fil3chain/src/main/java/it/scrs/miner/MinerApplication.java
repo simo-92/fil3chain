@@ -24,6 +24,7 @@ import it.scrs.miner.util.CryptoUtil;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.List;
 import java.util.logging.Level;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -84,14 +85,15 @@ public class MinerApplication implements CommandLineRunner {
         Transaction transaction = new Transaction();
         transaction.setFilename("Ciano's bug");
         transaction.setHashFile(org.apache.commons.codec.digest.DigestUtils.sha256Hex(transaction.getFilename()));
-
+        List<Transaction> tList = new ArrayList();
+        tList.add(transaction);
         ArrayList<String> transactions = new ArrayList<>();
         transactions.add(transaction.getHashFile());
-
+        //TODO dopo
         block.setMerkleRoot(MerkleTree.buildMerkleTree(transactions));
 
         // Il miner inizia a minare
-        miner.setMiningService(new MiningService(miner.getMyPrivateKey(), block, 16, new Runnable() {
+        miner.setMiningService(new MiningService(tList,myLastBlock, miner.getMyPrivateKey(), miner.getMyPublickKey(), block, 16, new Runnable() {
             @Override
             public void run() {
                 System.out.println("Miner interrotto");

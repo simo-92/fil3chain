@@ -1,13 +1,22 @@
 package it.scrs.miner;
 
 import it.scrs.miner.dao.block.Block;
+import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.util.CryptoUtil;
+import it.scrs.miner.util.IP;
+import java.util.ArrayList;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * Created by Marco
@@ -33,6 +42,9 @@ public class MiningService extends Thread implements Runnable {
 
     // Callback chiamata dopo l'interruzione del thread
     private Runnable interruptCallback;
+    private String pukey;
+    private Block father;
+    private List<Transaction> transactions;
 
     /**
      * Costruttore di default (necessario)
@@ -50,9 +62,12 @@ public class MiningService extends Thread implements Runnable {
      * @param block
      * @param difficulty
      */
-    public MiningService(String prKey, Block block, Integer difficulty, Runnable interruptCallback) {
+    public MiningService(List<Transaction> transactions,Block father, String prKey, String puKey, Block block, Integer difficulty, Runnable interruptCallback) {
         this.block = block;
         this.prkey = prKey;
+        this.pukey = puKey;
+        this.father = father;
+        this.transactions = transactions;
         this.difficulty = difficulty;
         this.interruptCallback = interruptCallback;
     }
@@ -131,13 +146,39 @@ public class MiningService extends Thread implements Runnable {
         block.setHashBlock(hexHash);
         block.setNonce(nonce - 1);
         block.setSignature(CryptoUtil.sign(hexHash, prkey));
-
+        block.setMinerPublicKey(pukey);
+        block.setFatherBlockContainer(father);
+        //block.setTransactionsContainer(transactions);
         System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: " + nonce + " Tempo impiegato: " + totalTime + " secondi");
         System.out.println("Hashate String myPrivateKey; provati: "+(Math.abs(nonceFinish-nonceStart))+ " HashRate: "+(((Math.abs(nonceFinish-nonceStart))/totalTime)/1000000.0f)+" MH/s");
         // Chiude il thread
-        interrupt();
+        //interrupt();
+        sendBlockToMiners();
     }
 
+     @Async
+    public Future<List<Block>> sendBlockToMiners() {
+        RestTemplate restTemplate =  new RestTemplate();
+        SimpleClientHttpRequestFactory requestFactory = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+        requestFactory.setConnectTimeout(1000 * 3);
+        List<Block> blocks = new ArrayList<>();
+
+        for (IP ip: IPManager.getManager().getIPList()) {
+            System.out.println("Invio blocco a: " + ip.getIp());
+            try {
+                Block newBlock = restTemplate.postForObject("http://" + ip.getIp() + "/fil3chain/newBlock", block, Block.class);
+                blocks.add(newBlock);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Annullo il blocco appena minato
+        // block = null;
+
+        return new AsyncResult<>(blocks);
+    }
+    
     @Override
     public void interrupt() {
         super.interrupt();
