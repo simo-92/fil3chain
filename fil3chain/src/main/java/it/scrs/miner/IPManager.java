@@ -38,12 +38,21 @@ public class IPManager {
        
     }
     
+    public synchronized int indexOf(String ip){
+        for(int i=0;i<ipList.size();i++)
+            if(ipList.get(i).getIp().equals(ip))
+                return i;
+        return -1;
+    }
+    
     public synchronized  void addIP(IP ip){
-        if(!ipm.getIPList().contains(ip))
+        if(ipm.indexOf(ip.getIp())<0)
             ipm.getIPList().add(ip);
     }
     
     public synchronized  void removeIP(IP ip){
-        ipm.getIPList().remove(ip);
+        int index=indexOf(ip.getIp());
+        if(index>=0)
+            ipm.getIPList().remove(index);
     }
 }
