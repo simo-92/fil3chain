@@ -5,6 +5,7 @@
  */
 package it.scrs.miner;
 
+import it.scrs.miner.util.IP;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +14,7 @@ import java.util.List;
  * @author giordanocristini
  */
 public class IPManager {
-    private List<String> ipList;
+    private final List<IP> ipList;
     private static IPManager ipm;
     private IPManager() {
         ipList = new ArrayList<>();
@@ -27,20 +28,22 @@ public class IPManager {
         return ipm;
             
     }
-    public List<String> getIPList() {
+    public synchronized List<IP> getIPList() {
         return ipList;
+        
     }
-    public synchronized static void setAllIp(List<String> ips){
+    public synchronized  void setAllIp(List<IP> ips){
        ipm.getIPList().clear();
        ipm.getIPList().addAll(ips);
+       
     }
     
-    public synchronized static void addIP(String ip){
+    public synchronized  void addIP(IP ip){
         if(!ipm.getIPList().contains(ip))
             ipm.getIPList().add(ip);
     }
     
-    public synchronized static void removeIP(String ip){
+    public synchronized  void removeIP(IP ip){
         ipm.getIPList().remove(ip);
     }
 }

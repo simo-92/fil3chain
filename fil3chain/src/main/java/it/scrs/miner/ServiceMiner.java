@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import it.scrs.miner.models.Pairs;
+import it.scrs.miner.util.IP;
 
 
 
@@ -26,7 +27,7 @@ public class ServiceMiner {
 	RestTemplate restTemplate=  new RestTemplate();
 	
 	@Async
-	public Future<Pairs<String, Integer>> findMaxChainLevel(String uriMiner)  {
+	public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner)  {
 
 		loadConfiguration();
 
@@ -42,7 +43,7 @@ public class ServiceMiner {
 			System.out.println("\nRichiesta ad :" + uriMiner);
 			result = restTemplate.getForObject("http://" + uriMiner + ":8080/fil3chain/updateAtMaxLevel", String.class);
 			level = Integer.decode(result);
-			return new AsyncResult<>(new Pairs<>(uriMiner, level));
+			return new AsyncResult<>(new Pairs<>(new IP(uriMiner), level));
 		} catch (Exception e) {
             // e.printStackTrace();
 			System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());

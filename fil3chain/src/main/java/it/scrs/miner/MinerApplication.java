@@ -87,14 +87,16 @@ public class MinerApplication implements CommandLineRunner {
         block.setMerkleRoot(MerkleTree.buildMerkleTree(transactions));
 
         // Il miner inizia a minare
-        miner.setMiningService(new MiningService(block, 26, new Runnable() {
+        miner.setMiningService(new MiningService(block, 16, new Runnable() {
             @Override
             public void run() {
                 System.out.println("Miner interrotto");
                 System.out.println("Sta minando: " + miner.isMining());
+                System.out.println("numero: "+IPManager.getManager().getIPList().size());
             }
         }));
         miner.startMine();
+            
 	}
 
 	public static void main(String[] args) {

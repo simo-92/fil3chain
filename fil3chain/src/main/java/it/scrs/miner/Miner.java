@@ -10,6 +10,7 @@ import it.scrs.miner.dao.user.User;
 import it.scrs.miner.models.Pairs;
 import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.HttpUtil;
+import it.scrs.miner.util.IP;
 import it.scrs.miner.util.JsonUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -160,7 +161,7 @@ public class Miner {
                         System.out.println("url: "+url);
                         System.out.println("IL MIO IP: " + ip);
 			result = HttpUtil.doPost(url, "{\"user_ip\":\""+this.getIp()+":8080\"}");
-                        System.out.println(result);
+                        //System.out.println(result);
 		} catch (Exception ex) {
             System.err.println("Errore durante la richiesta di IP\n" + ex);
             // Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
@@ -168,8 +169,11 @@ public class Miner {
 
 		Type type = new TypeToken<ArrayList<String>>() {}.getType();
                 List<String> ips=JsonUtility.fromJson(result, type);
-                System.out.println(ips.size());
-                ipManager.setAllIp(ips);
+                ArrayList<IP> iplist=new ArrayList<>();
+                for(String ip : ips)
+                    iplist.add(new IP(ip));
+                //iplist.forEach(ip -> System.out.println("ip: "+ip));
+                ipManager.setAllIp((List<IP>) iplist.clone());
 		
 
 //		if (MinerApplication.testMiner == Boolean.TRUE) {
@@ -365,7 +369,7 @@ public void setActionConnect(String actionConnect) {
 	 */
 	public Boolean updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
 
-		List<String> ipMiners = ipManager.getIPList();
+		List<IP> ipMiners = (List<IP>)((ArrayList<IP>)ipManager.getIPList()).clone();
 
 		// Rimuovo il mio IP
 		ipMiners.remove(ip);
@@ -373,7 +377,7 @@ public void setActionConnect(String actionConnect) {
 		Integer myChainLevel = 0;
 		while (!ipMiners.isEmpty()) {
 			// Lista contenente le richieste asincrone ai 3 ip
-			List<Future<Pairs<String, Integer>>> minerResp = new ArrayList<>();
+			List<Future<Pairs<IP, Integer>>> minerResp = new ArrayList<>();
 			// Chiedi al db il valora del mio Max chainLevel
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel();
 
@@ -386,7 +390,7 @@ public void setActionConnect(String actionConnect) {
 			System.out.println("1");
 
 			// Oggetto che contiene la coppia IP,ChainLevel del Miner designato
-			Pairs<String, Integer> designedMiner = new Pairs<String, Integer>();
+			Pairs<IP, Integer> designedMiner = new Pairs<IP, Integer>();
 			waitAndChooseMiner(minerResp, designedMiner);
 
 			killRequest(minerResp);
@@ -412,10 +416,10 @@ public void setActionConnect(String actionConnect) {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
-	private void killRequest(List<Future<Pairs<String, Integer>>> minerResp) throws InterruptedException, ExecutionException {
+	private void killRequest(List<Future<Pairs<IP, Integer>>> minerResp) throws InterruptedException, ExecutionException {
 
-		for (Future<Pairs<String, Integer>> f : minerResp) {
-			System.out.println("\nElimino :" + f.get().getValue1());
+		for (Future<Pairs<IP, Integer>> f : minerResp) {
+			System.out.println("\nElimino :" + f.get().getValue1().getIp());
 			f.cancel(Boolean.TRUE);
 		}
 	}
@@ -426,14 +430,14 @@ public void setActionConnect(String actionConnect) {
 	 * @param ipMiners
 	 * @param minerResp
 	 */
-	private void askMinerChainLvl(List<String> ipMiners, List<Future<Pairs<String, Integer>>> minerResp, ServiceMiner serviceMiner) {
+	private void askMinerChainLvl(List<IP> ipMiners, List<Future<Pairs<IP, Integer>>> minerResp, ServiceMiner serviceMiner) {
 
 		for (int i = 0; i < ipMiners.size(); i++) {
 			// Double x = Math.random() * ipMiners.size();
-			Future<Pairs<String, Integer>> result = serviceMiner.findMaxChainLevel(ipMiners.get(i));
+			Future<Pairs<IP, Integer>> result = serviceMiner.findMaxChainLevel(ipMiners.get(i).getIp());
 			if (result == null) {
-				String tmp = ipMiners.remove(i);
-				System.out.println("\nHo rimosso l'IP: " + tmp);
+				IP tmp = ipMiners.remove(i);
+				System.out.println("\nHo rimosso l'IP: " + tmp.getIp());
 			} else {
 				minerResp.add(result);
 			}
@@ -446,7 +450,7 @@ public void setActionConnect(String actionConnect) {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
-	private void waitAndChooseMiner(List<Future<Pairs<String, Integer>>> minerResp, Pairs<String, Integer> designedMiner) throws InterruptedException, ExecutionException {
+	private void waitAndChooseMiner(List<Future<Pairs<IP, Integer>>> minerResp, Pairs<IP, Integer> designedMiner) throws InterruptedException, ExecutionException {
 
 		Boolean flag = Boolean.TRUE;
 		while (flag && !minerResp.isEmpty()) {
@@ -455,7 +459,7 @@ public void setActionConnect(String actionConnect) {
 			// Controlliamo se uno dei nostri messaggi di richiesta è tornato
 			// indietro con successo
 			Thread.sleep(250L);
-			for (Future<Pairs<String, Integer>> f : minerResp) {
+			for (Future<Pairs<IP, Integer>> f : minerResp) {
 				// facciamo un For per ciclare tutte richieste attive
 				// all'interno del nostro array e controlliamo se
 				// sono arrivate le risposte
@@ -485,7 +489,7 @@ public void setActionConnect(String actionConnect) {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	private void getBlocksFromMiner(List<String> ipMiners, Integer myChainLevel, Pairs<String, Integer> designedMiner, BlockRepository blockRepository) throws IOException {
+	private void getBlocksFromMiner(List<IP> ipMiners, Integer myChainLevel, Pairs<IP, Integer> designedMiner, BlockRepository blockRepository) throws IOException {
 
 		Integer i = 0;
 		Boolean nullResponse = Boolean.FALSE;
@@ -494,7 +498,7 @@ public void setActionConnect(String actionConnect) {
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
 			Type type = new TypeToken<List<Block>>() {
 			}.getType();
-			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
+			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
 
 			if (blockResponse != null) {
 				System.out.println("\nBlock response: " + blockResponse.toString());
