@@ -9,23 +9,33 @@ package it.scrs.miner.util;
  *
  * @author giordanocristini
  */
-public class IP implements Cloneable{
-    private String ip;
+public class IP implements Cloneable, Comparable{
+    private String user_ip;
 
     public String getIp() {
-        return ip;
+        return user_ip;
     }
 
     public void setIp(String ip) {
-        this.ip = ip;
+        this.user_ip = ip;
     }
 
     public IP(String ip) {
-        this.ip = ip;
+        this.user_ip = ip;
     }
     
     @Override
     protected Object clone(){
         return new IP(this.toString());
+    }
+    
+    @Override
+    public String toString() {
+        return user_ip;
+    }
+
+    @Override
+    public int compareTo(Object t) {
+        return user_ip.compareTo(((IP)t).getIp());
     }
 }

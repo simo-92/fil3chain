@@ -1,6 +1,9 @@
 package it.scrs.miner.controllers;
 
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import it.scrs.miner.IPManager;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +15,10 @@ import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.transaction.TransactionRepository;
 import it.scrs.miner.dao.user.UserRepository;
+import it.scrs.miner.util.IP;
+import org.springframework.http.MediaType;
+import org.springframework.util.MultiValueMap;
+
 
 
 
@@ -61,6 +68,26 @@ public class ControllerBlockRequest {
 		//TODO dobbiamo verificare il blocco appena arrivato se è valido
 		//blocco il thread di mining e lo riavvio sulla fil3chain aggiornata
 		return newBlock;
+	}
+        
+        // Controller che intercetta la connessione di un utente
+	@RequestMapping(value = "/user_connect", method = RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+	public void newUserConnection(@RequestBody  MultiValueMap<String,String> ip) {
+                String json=ip.keySet().iterator().next();
+		JsonObject jobj = new Gson().fromJson(json,JsonObject.class);
+		String ipHost = jobj.get("user_ip").getAsString();
+                IPManager.getManager().addIP(new IP(ipHost));
+		IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
+	}
+        
+        // Controller che intercetta la disconnessione di un utente
+	@RequestMapping(value = "/user_disconnect", method = RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+	public void newUserDisconnection(@RequestBody  MultiValueMap<String,String> ip) {
+                String json=ip.keySet().iterator().next();
+		JsonObject jobj = new Gson().fromJson(json,JsonObject.class);
+		String ipHost = jobj.get("user_ip").getAsString();
+                IPManager.getManager().removeIP(new IP(ipHost));
+		IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
 	}
 
 	@RequestMapping(value = "/fil3chain/getBlock", method = RequestMethod.GET)
