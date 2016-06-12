@@ -41,7 +41,7 @@ public class ServiceMiner {
 		Integer level = -1;
 		try {
 			System.out.println("\nRichiesta ad :" + uriMiner);
-			result = restTemplate.getForObject("http://" + uriMiner + ":8080/fil3chain/updateAtMaxLevel", String.class);
+			result = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/updateAtMaxLevel", String.class);
 			level = Integer.decode(result);
 			return new AsyncResult<>(new Pairs<>(new IP(uriMiner), level));
 		} catch (Exception e) {
