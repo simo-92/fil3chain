@@ -97,8 +97,8 @@ public class MinerApplication implements CommandLineRunner {
         // Test chiamata per difficoltà
         Integer complexity = PoolDispatcherUtility.getCurrentComplexity();
 
-        // TODO: Eliminare il *6 una volta che il server ha la complessità decente
-        complexity *= 7;
+        // TODO: Eliminare la moltiplicazione una volta che il server ha una complessità decente
+        complexity *= 8;
         System.out.println("Complessità per minare: " + complexity);
 
         // Il miner inizia a minare
@@ -107,7 +107,7 @@ public class MinerApplication implements CommandLineRunner {
             public void run() {
                 System.out.println("Miner interrotto");
                 System.out.println("Sta minando: " + miner.isMining());
-                System.out.println("Numero di IP: " + IPManager.getManager().getIPList().size());
+                // System.out.println("Numero di IP: " + IPManager.getManager().getIPList().size());
             }
         }));
 

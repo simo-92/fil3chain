@@ -81,7 +81,7 @@ public class ControllerBlockRequest {
 		JsonObject jobj = new Gson().fromJson(json,JsonObject.class);
 		String ipHost = jobj.get("user_ip").getAsString();
 		IPManager.getManager().addIP(new IP(ipHost));
-		IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
+		// IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
 	}
 
 	// Controller che intercetta la disconnessione di un utente
@@ -91,7 +91,7 @@ public class ControllerBlockRequest {
 		JsonObject jobj = new Gson().fromJson(json,JsonObject.class);
 		String ipHost = jobj.get("user_ip").getAsString();
 		IPManager.getManager().removeIP(new IP(ipHost));
-		IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
+		// IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
 	}
 
 	@RequestMapping(value = "/fil3chain/getBlock", method = RequestMethod.GET)

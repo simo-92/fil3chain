@@ -495,7 +495,7 @@ public class Miner implements MinerEventsListener {
             myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
             Type type = new TypeToken<List<Block>>() {
             }.getType();
-            List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + ":8080/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
+            List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
 
             if (blockResponse != null) {
                 System.out.println("\nBlock response: " + blockResponse.toString());
@@ -715,7 +715,7 @@ public class Miner implements MinerEventsListener {
             // Aggiorno il servizio di mining
             updateMiningService();
             // Ricomincio a minare
-            startMine();
+            miningService.run();
         }
     }
 

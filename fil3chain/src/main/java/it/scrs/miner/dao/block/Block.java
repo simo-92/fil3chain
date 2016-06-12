@@ -8,8 +8,12 @@ package it.scrs.miner.dao.block;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
+import org.hibernate.annotations.*;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -34,6 +38,7 @@ public class Block {
     private String merkleRoot;
 
     @Column(nullable = false)
+    @Length(max = 500)
     private String minerPublicKey;
 
     @Column(nullable = false)
@@ -43,12 +48,13 @@ public class Block {
     private Integer chainLevel;
 
     @Column(nullable=false)
+    @Length(max = 500)
     private String signature; //firma
     // Difficoltà per la proof of work ,inviato da poolDispatcher
 
     // Relationship
 
-    @OneToMany(mappedBy = "blockContainer",fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "blockContainer", fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
     private List<Transaction> transactionsContainer;
 
     @OneToOne
@@ -57,6 +63,7 @@ public class Block {
 
     @ManyToOne
     @JoinColumn(name = "User_publicKeyHash") // Autore
+    @Cascade(org.hibernate.annotations.CascadeType.ALL)
     private User userContainer;
 
 
