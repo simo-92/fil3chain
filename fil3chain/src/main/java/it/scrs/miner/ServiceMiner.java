@@ -1,6 +1,5 @@
 package it.scrs.miner;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -10,14 +9,10 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
-// import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.RestTemplate;
 
 import it.scrs.miner.models.Pairs;
 import it.scrs.miner.util.IP;
-
-
-
 
 @Service
 public class ServiceMiner {

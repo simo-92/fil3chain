@@ -1,15 +1,12 @@
 package it.scrs.miner;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-
 import it.scrs.miner.dao.block.Block;
+import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
+import it.scrs.miner.dao.transaction.TransactionRepository;
 import it.scrs.miner.dao.user.User;
+import it.scrs.miner.util.PoolDispatcherUtility;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,19 +16,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 
-import it.scrs.miner.dao.block.BlockRepository;
-import it.scrs.miner.dao.transaction.TransactionRepository;
-import it.scrs.miner.util.CryptoUtil;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-import java.util.List;
-import java.util.logging.Level;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-
 import javax.swing.*;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 
 @SpringBootApplication
 @ComponentScan("it.scrs.miner")
@@ -65,6 +56,8 @@ public class MinerApplication implements CommandLineRunner {
         miner.loadMinerConfiguration(); //carica numero blocchi update
         miner.setIp(myIp);
         miner.firstConnectToEntryPoint();
+        miner.setBlockRepository(blockRepository);
+        miner.setServiceMiner(serviceMiner);
 
         // Mino per prova
         // Block block = miner.generateBlock(null, 17, 31, null, null, null);
@@ -72,39 +65,52 @@ public class MinerApplication implements CommandLineRunner {
         // prendi minerReq ip a caso dalla lista dei miner
         miner.initializeBlockChain(blockRepository);
         miner.updateFilechain(blockRepository, serviceMiner);
+
+        // Registro il miner per gli eventi
+        MinersListenerRegister.getInstance().registerMiner(miner);
+
         System.out.println("3");
-        //TODO Avviare MINING
 
         // Prendo il mio ultimo blocco
         Block myLastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
+
+        User me = new User("", "Ciano", "Bug", "Miner", "Mail@Ndaro.it", "Cianone");
 
         // Inizializzo il nuovo blocco da minare
         Block block = new Block();
         block.setFatherBlockContainer(myLastBlock);
         block.setChainLevel(myLastBlock.getChainLevel() + 1);
-        block.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
+        block.setUserContainer(me);
 
-        // Transazione mock
-        Transaction transaction = new Transaction();
-        transaction.setFilename("Ciano's bug");
-        transaction.setHashFile(org.apache.commons.codec.digest.DigestUtils.sha256Hex(transaction.getFilename()));
-        
-        List<Transaction> tList = new ArrayList();
-        tList.add(transaction);
-        ArrayList<String> transactions = new ArrayList<>();
-        transactions.add(transaction.getHashFile());
-        //TODO dopo
-        block.setMerkleRoot(MerkleTree.buildMerkleTree(transactions));
+
+        //TODO: Dopo che?
+        // Prendo le transazioni dal Pool Dispatcher
+        List<Transaction> transactionsList = PoolDispatcherUtility.getTransactions();
+
+        ArrayList<String> hashTransactions = new ArrayList<>();
+        for(Transaction transaction: transactionsList) {
+            hashTransactions.add(transaction.getHashFile());
+        }
+
+        block.setMerkleRoot(MerkleTree.buildMerkleTree(hashTransactions));
+
+        // Test chiamata per difficoltà
+        Integer complexity = PoolDispatcherUtility.getCurrentComplexity();
+
+        // TODO: Eliminare il *6 una volta che il server ha la complessità decente
+        complexity *= 7;
+        System.out.println("Complessità per minare: " + complexity);
 
         // Il miner inizia a minare
-        miner.setMiningService(new MiningService(tList,myLastBlock, miner.getMyPrivateKey(), miner.getMyPublickKey(), block, 16, new Runnable() {
+        miner.setMiningService(new MiningService(transactionsList, myLastBlock, miner.getMyPrivateKey(), miner.getMyPublickKey(), block, complexity, new Runnable() {
             @Override
             public void run() {
                 System.out.println("Miner interrotto");
                 System.out.println("Sta minando: " + miner.isMining());
-                System.out.println("numero: " + IPManager.getManager().getIPList().size());
+                System.out.println("Numero di IP: " + IPManager.getManager().getIPList().size());
             }
         }));
+
         miner.startMine();
 
     }

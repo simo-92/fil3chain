@@ -17,98 +17,98 @@ import java.util.List;
 
 /**
  *
- * 
+ *
  */
 @Entity
 public class Block {
 
-	// Columns
-	@Id
-	private String hashBlock; // ProofOfWOrk //Costituisce l'id del blocco, per
-								// essere identificato in maniera UNIVOCA nella
-								// blockchain
-	@Column(nullable = false)
-	private String creationTime;
+    // Columns
+    @Id
+    private String hashBlock; // ProofOfWOrk //Costituisce l'id del blocco, per
+    // essere identificato in maniera UNIVOCA nella
+    // blockchain
+    @Column(nullable = false)
+    private String creationTime;
 
     @Column(nullable = false)
-	private String merkleRoot;
+    private String merkleRoot;
 
     @Column(nullable = false)
-	private String minerPublicKey;
+    private String minerPublicKey;
 
     @Column(nullable = false)
-	private Integer nonce;
+    private Integer nonce;
 
-	@Column(nullable = false)
-	private Integer chainLevel;
-        
-        @Column(nullable=false)
-        private String signature; //firma
-	// Difficoltà per la proof of work ,inviato da poolDispatcher
+    @Column(nullable = false)
+    private Integer chainLevel;
 
-	// Relationship
+    @Column(nullable=false)
+    private String signature; //firma
+    // Difficoltà per la proof of work ,inviato da poolDispatcher
 
-	@OneToMany(mappedBy = "blockContainer",fetch = FetchType.EAGER)
-	private List<Transaction> transactionsContainer;
+    // Relationship
 
-	@OneToOne
-	@JoinColumn(name = "Block_prevHashBlock")
-	private Block fatherBlockContainer;
+    @OneToMany(mappedBy = "blockContainer",fetch = FetchType.EAGER)
+    private List<Transaction> transactionsContainer;
 
-	@ManyToOne
-	@JoinColumn(name = "User_publicKeyHash") // Autore
-	private User userContainer;
+    @OneToOne
+    @JoinColumn(name = "Block_prevHashBlock")
+    private Block fatherBlockContainer;
 
-
-	/**
-	 * 
-	 */
-	public Block() {
-
-	}
-
-	/**
-	 * @param hashBlock
-	 * @param creationTime
-	 * @param merkleRoot
-	 * @param minerPublicKey
-	 * @param nonce
-	 * @param chainLevel
-	 */
-	public Block(String hashBlock, String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel) {
-		super();
-		this.hashBlock = hashBlock;
-		this.creationTime = Long.toString(System.currentTimeMillis());
-		this.merkleRoot = merkleRoot;
-		this.minerPublicKey = minerPublicKey;
-		this.nonce = nonce;
-		this.chainLevel = chainLevel;
-	}
-
-	/**
-	 * @param creationTime
-	 * @param merkleRoot
-	 * @param minerPublicKey
-	 * @param nonce
-	 * @param chainLevel
-	 * @param transactionsContainer
-	 * @param fatherBlockContainer
-	 * @param userContainer
-	 */
-	public Block(String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel, List<Transaction> transactionsContainer, Block fatherBlockContainer, User userContainer) {
-		super();
-		this.creationTime = Long.toString(System.currentTimeMillis());
-		this.merkleRoot = merkleRoot;
-		this.minerPublicKey = minerPublicKey;
-		this.nonce = nonce;
-		this.chainLevel = chainLevel;
-		this.transactionsContainer = transactionsContainer;
-		this.fatherBlockContainer = fatherBlockContainer;
-		this.userContainer = userContainer;
-	}
+    @ManyToOne
+    @JoinColumn(name = "User_publicKeyHash") // Autore
+    private User userContainer;
 
 
-	public Boolean verifyHash(int difficulty) {
+    /**
+     *
+     */
+    public Block() {
+
+    }
+
+    /**
+     * @param hashBlock
+     * @param creationTime
+     * @param merkleRoot
+     * @param minerPublicKey
+     * @param nonce
+     * @param chainLevel
+     */
+    public Block(String hashBlock, String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel) {
+        super();
+        this.hashBlock = hashBlock;
+        this.creationTime = Long.toString(System.currentTimeMillis());
+        this.merkleRoot = merkleRoot;
+        this.minerPublicKey = minerPublicKey;
+        this.nonce = nonce;
+        this.chainLevel = chainLevel;
+    }
+
+    /**
+     * @param creationTime
+     * @param merkleRoot
+     * @param minerPublicKey
+     * @param nonce
+     * @param chainLevel
+     * @param transactionsContainer
+     * @param fatherBlockContainer
+     * @param userContainer
+     */
+    public Block(String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel, List<Transaction> transactionsContainer, Block fatherBlockContainer, User userContainer) {
+        super();
+        this.creationTime = Long.toString(System.currentTimeMillis());
+        this.merkleRoot = merkleRoot;
+        this.minerPublicKey = minerPublicKey;
+        this.nonce = nonce;
+        this.chainLevel = chainLevel;
+        this.transactionsContainer = transactionsContainer;
+        this.fatherBlockContainer = fatherBlockContainer;
+        this.userContainer = userContainer;
+    }
+
+
+    public Boolean verifyHash(int difficulty) {
 
         // Se non è presente alcun hash allora ritorna falso
         if (hashBlock == null || hashBlock.isEmpty()) return Boolean.FALSE;
@@ -156,231 +156,231 @@ public class Block {
 			return Boolean.TRUE;
 		return Boolean.FALSE;
 		*/
-	}
+    }
 
     @Override
     public String toString() {
         return fatherBlockContainer.getHashBlock() + merkleRoot + userContainer.getPublicKey();
     }
-	
-	//MychainLevel=Chiedi ultimo blocco nel db
-	//se la differenza tra il mio blocco e il blocco è arrivato
-	// se è negativa 
-		//ed è 1 è successivo al mio blocco
-		// facio la verifica
-	
-	
-	
-	//verifica se esiste un padre 
-	//Verify MerkleRooot
-	////rooot = MerkleTree(getTransaction)
-	//rooot.stringCompare(MerkleTree)
-	
-	
-	
-	
-	
-	// public void generateVerifiedHashBlock() {
-	//
-	// // richiesta a PoolDispatcher per saper la difficolta
-	// try {
-	// difficulty = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
-	// } catch (Exception e) {
-	// difficulty = 0;
-	// e.printStackTrace();
-	// }
-	// String s = "";
-	// ArrayList<Integer> puzzle = new ArrayList<Integer>();
-	// for (int i = 0; i < difficulty; i++)
-	// puzzle.add(0);
-	// int j=0;
-	// this.setNonce(j);
-	// do {
-	// s = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
-	// j++;
-	// this.setNonce(j);
-	// } while (s.startsWith(puzzle.toString()));
-	// this.setHashBlock(s);
-	//
-	// }
 
-	public void generateHashBlock() {
-		String s = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
-		this.setHashBlock(s);
-	}
+    //MychainLevel=Chiedi ultimo blocco nel db
+    //se la differenza tra il mio blocco e il blocco è arrivato
+    // se è negativa
+    //ed è 1 è successivo al mio blocco
+    // facio la verifica
 
-	public String generateAndGetHashBlock() {
 
-		String s = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
-		this.setHashBlock(s);
-		return s;
-	}
 
-	/**
-	 * @param merkleRoot
-	 * @param minerPublicKey
-	 * @param nonce
-	 * @param chainLevel
-	 */
-	public Block(String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel) {
-		super();
-		this.merkleRoot = merkleRoot;
-		this.minerPublicKey = minerPublicKey;
-		this.nonce = nonce;
-		this.chainLevel = chainLevel;
-	}
+    //verifica se esiste un padre
+    //Verify MerkleRooot
+    ////rooot = MerkleTree(getTransaction)
+    //rooot.stringCompare(MerkleTree)
 
-	/**
-	 * @return the hashBlock
-	 */
-	public String getHashBlock() {
 
-		return hashBlock;
-	}
 
-	/**
-	 * @param hashBlock
-	 *            the hashBlock to set
-	 */
-	public void setHashBlock(String hashBlock) {
 
-		this.hashBlock = hashBlock;
-	}
 
-	/**
-	 * @return the creationTime
-	 */
-	public String getCreationTime() {
+    // public void generateVerifiedHashBlock() {
+    //
+    // // richiesta a PoolDispatcher per saper la difficolta
+    // try {
+    // difficulty = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
+    // } catch (Exception e) {
+    // difficulty = 0;
+    // e.printStackTrace();
+    // }
+    // String s = "";
+    // ArrayList<Integer> puzzle = new ArrayList<Integer>();
+    // for (int i = 0; i < difficulty; i++)
+    // puzzle.add(0);
+    // int j=0;
+    // this.setNonce(j);
+    // do {
+    // s = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
+    // j++;
+    // this.setNonce(j);
+    // } while (s.startsWith(puzzle.toString()));
+    // this.setHashBlock(s);
+    //
+    // }
 
-		return creationTime;
-	}
+    public void generateHashBlock() {
+        String s = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
+        this.setHashBlock(s);
+    }
 
-	/**
-	 * @param creationTime
-	 *            the creationTime to set
-	 */
-	public void setCreationTime(String creationTime) {
+    public String generateAndGetHashBlock() {
 
-		this.creationTime = creationTime;
-	}
+        String s = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
+        this.setHashBlock(s);
+        return s;
+    }
 
-	/**
-	 * @return the merkleRoot
-	 */
-	public String getMerkleRoot() {
+    /**
+     * @param merkleRoot
+     * @param minerPublicKey
+     * @param nonce
+     * @param chainLevel
+     */
+    public Block(String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel) {
+        super();
+        this.merkleRoot = merkleRoot;
+        this.minerPublicKey = minerPublicKey;
+        this.nonce = nonce;
+        this.chainLevel = chainLevel;
+    }
 
-		return merkleRoot;
-	}
+    /**
+     * @return the hashBlock
+     */
+    public String getHashBlock() {
 
-	/**
-	 * @param merkleRoot
-	 *            the merkleRoot to set
-	 */
-	public void setMerkleRoot(String merkleRoot) {
+        return hashBlock;
+    }
 
-		this.merkleRoot = merkleRoot;
-	}
+    /**
+     * @param hashBlock
+     *            the hashBlock to set
+     */
+    public void setHashBlock(String hashBlock) {
 
-	/**
-	 * @return the minerPublicKey
-	 */
-	public String getMinerPublicKey() {
+        this.hashBlock = hashBlock;
+    }
 
-		return minerPublicKey;
-	}
+    /**
+     * @return the creationTime
+     */
+    public String getCreationTime() {
 
-	/**
-	 * @param minerPublicKey
-	 *            the minerPublicKey to set
-	 */
-	public void setMinerPublicKey(String minerPublicKey) {
+        return creationTime;
+    }
 
-		this.minerPublicKey = minerPublicKey;
-	}
+    /**
+     * @param creationTime
+     *            the creationTime to set
+     */
+    public void setCreationTime(String creationTime) {
 
-	/**
-	 * @return the nonce
-	 */
-	public Integer getNonce() {
+        this.creationTime = creationTime;
+    }
 
-		return nonce;
-	}
+    /**
+     * @return the merkleRoot
+     */
+    public String getMerkleRoot() {
 
-	/**
-	 * @param nonce
-	 *            the nonce to set
-	 */
-	public void setNonce(Integer nonce) {
+        return merkleRoot;
+    }
 
-		this.nonce = nonce;
-	}
+    /**
+     * @param merkleRoot
+     *            the merkleRoot to set
+     */
+    public void setMerkleRoot(String merkleRoot) {
 
-	/**
-	 * @return the chainLevel
-	 */
-	public Integer getChainLevel() {
+        this.merkleRoot = merkleRoot;
+    }
 
-		return chainLevel;
-	}
+    /**
+     * @return the minerPublicKey
+     */
+    public String getMinerPublicKey() {
 
-	/**
-	 * @param chainLevel
-	 *            the chainLevel to set
-	 */
-	public void setChainLevel(Integer chainLevel) {
+        return minerPublicKey;
+    }
 
-		this.chainLevel = chainLevel;
-	}
+    /**
+     * @param minerPublicKey
+     *            the minerPublicKey to set
+     */
+    public void setMinerPublicKey(String minerPublicKey) {
 
-	/**
-	 * @return the transactionsContainer
-	 */
-	public List<Transaction> getTransactionsContainer() {
+        this.minerPublicKey = minerPublicKey;
+    }
 
-		return transactionsContainer;
-	}
+    /**
+     * @return the nonce
+     */
+    public Integer getNonce() {
 
-	/**
-	 * @param transactionsContainer
-	 *            the transactionsContainer to set
-	 */
-	public void setTransactionsContainer(List<Transaction> transactionsContainer) {
+        return nonce;
+    }
 
-		this.transactionsContainer = transactionsContainer;
-	}
+    /**
+     * @param nonce
+     *            the nonce to set
+     */
+    public void setNonce(Integer nonce) {
 
-	/**
-	 * @return the fatherBlockContainer
-	 */
-	public Block getFatherBlockContainer() {
+        this.nonce = nonce;
+    }
 
-		return fatherBlockContainer;
-	}
+    /**
+     * @return the chainLevel
+     */
+    public Integer getChainLevel() {
 
-	/**
-	 * @param fatherBlockContainer
-	 *            the fatherBlockContainer to set
-	 */
-	public void setFatherBlockContainer(Block fatherBlockContainer) {
+        return chainLevel;
+    }
 
-		this.fatherBlockContainer = fatherBlockContainer;
-	}
+    /**
+     * @param chainLevel
+     *            the chainLevel to set
+     */
+    public void setChainLevel(Integer chainLevel) {
 
-	/**
-	 * @return the userContainer
-	 */
-	public User getUserContainer() {
+        this.chainLevel = chainLevel;
+    }
 
-		return userContainer;
-	}
+    /**
+     * @return the transactionsContainer
+     */
+    public List<Transaction> getTransactionsContainer() {
 
-	/**
-	 * @param userContainer the userContainer to set
-	 */
-	public void setUserContainer(User userContainer) {
+        return transactionsContainer;
+    }
 
-		this.userContainer = userContainer;
-	}
+    /**
+     * @param transactionsContainer
+     *            the transactionsContainer to set
+     */
+    public void setTransactionsContainer(List<Transaction> transactionsContainer) {
+
+        this.transactionsContainer = transactionsContainer;
+    }
+
+    /**
+     * @return the fatherBlockContainer
+     */
+    public Block getFatherBlockContainer() {
+
+        return fatherBlockContainer;
+    }
+
+    /**
+     * @param fatherBlockContainer
+     *            the fatherBlockContainer to set
+     */
+    public void setFatherBlockContainer(Block fatherBlockContainer) {
+
+        this.fatherBlockContainer = fatherBlockContainer;
+    }
+
+    /**
+     * @return the userContainer
+     */
+    public User getUserContainer() {
+
+        return userContainer;
+    }
+
+    /**
+     * @param userContainer the userContainer to set
+     */
+    public void setUserContainer(User userContainer) {
+
+        this.userContainer = userContainer;
+    }
 
     /**
      * @return the signature

@@ -6,11 +6,10 @@ import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
+import it.scrs.miner.interfaces.MinerEventsListener;
 import it.scrs.miner.models.Pairs;
-import it.scrs.miner.util.CryptoUtil;
-import it.scrs.miner.util.HttpUtil;
-import it.scrs.miner.util.IP;
-import it.scrs.miner.util.JsonUtility;
+import it.scrs.miner.util.*;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
-import java.net.SocketException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
@@ -38,11 +36,12 @@ import javax.crypto.NoSuchPaddingException;
  *
  */
 @Component
-public class Miner {
+public class Miner implements MinerEventsListener {
 
     private String ipEntryPoint;
     private String portEntryPoint;
     private String entryPointBaseUri;
+    private String poolDispatcherBaseUri;
     private String actionConnect;
 
     private String actionDisconnect;
@@ -60,6 +59,8 @@ public class Miner {
     private static final String prefixVPNet = "10.192.";// TODO mettere nel properties
     private String myPublickKey;
     private String myPrivateKey;
+    private BlockRepository blockRepository;
+    private ServiceMiner serviceMiner;
 
     /**
      *
@@ -111,6 +112,7 @@ public class Miner {
         this.setIpEntryPoint(prop.getProperty("ipEntryPoint"));
         this.setPortEntryPoint(prop.getProperty("portEntryPoint"));
         this.setEntryPointBaseUri(prop.getProperty("entryPointBaseUri"));
+        this.setPoolDispatcherBaseUri(prop.getProperty("poolDispatcherBaseUri"));
         this.setActionConnect(prop.getProperty("actionConnect"));
         this.setActionDisconnect(prop.getProperty("actionDisconnect"));
         this.setActionKeepAlive(prop.getProperty("actionKeepAlive"));
@@ -151,8 +153,8 @@ public class Miner {
 
         //ipPeers = new ArrayList<>();
         try {
-            System.out.println("url: " + url);
-            System.out.println("IL MIO IP: " + ip);
+            System.out.println("URL: " + url);
+            System.out.println("Il mio IP: " + ip);
             result = HttpUtil.doPost(url, "{\"user_ip\":\"" + this.getIp() + ":8080\"}");
             //System.out.println(result);
         } catch (Exception ex) {
@@ -175,7 +177,7 @@ public class Miner {
 //			if (ipPeers == null) {
 //				ipPeers = new ArrayList<>();
 //            } else {
-//                //TODO: IPVPN CICCIO RISERVA SERVER EP DOWN
+//                // IPVPN CICCIO RISERVA SERVER EP DOWN
 //			    ipPeers.add("10.192.0.7");
 //            }
 //		}
@@ -206,146 +208,151 @@ public class Miner {
         this.miningService = miningService;
     }
 
-//	public Block generateBlock( List<Transaction> transactions) {
-//
-//		int nonce = 0;
-//		Block block;
-//
-//		// Tutti i miei parmatetri
-//
-//		// TODO
-//
-//		// Verifica le transazioni se valide (ovvero se SHA(file) già è presente in un blocco)
-//
-//		// get trans from Dispatcher
-//
-//		// richiesta a PoolDispatcher per saper la difficolta
-//
-//		// try {
-//		// diff = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
-//		// } catch (Exception e) {
-//		// // TODO Auto-generated catch block
-//		// e.printStackTrace();
-//		// }
-//		//
-//		// getLastChainLevel l altezza massima
-//		// bf = prendi l hash del blocco piu lungo
-//		//
-//
-//		// encodeMerkleTree (Trans)
-//
-//		// minerPublic Key = me.pKey
-//		// usr = me
-//
-//		do {
-//			String merkleRoot;
-//			Integer minerPublicKey;
-//			Integer chainLevel;
-//			Block bf;
-//			User usr;
-////			block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, transactions, bf, usr);
-//			block.generateHashBlock();
-//			nonce++;
-//		} while (!block.verifyHash());
-//		return block;
-//	}
     public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
-
-        Integer chainLevel = null;
-
         // Tutti i miei parmatetri
-        // se non ho il blocco padre mi aggiorno da tutti ( e mi tornerà anche questo)
+        // se non ho il blocco padre mi aggiorno da tutti (e mi tornerà anche questo)
         if (!blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b)) {
+            // Stoppo il processo di mining
+            stopMine();
+            // Eseguo l'update della catena
             return updateFilechain(blockRepository, serviceMiner);
-        } else // altrimenti verifico il blocco
-        {
-            return trueVerify(blockRepository, b, chainLevel);
+        } else {
+            // Altrimenti verifico il blocco
+            return singleBlockVerify(blockRepository, b);
         }
 
     }
 
-    // SOLO CODICE DI VERIFICA
-    private Boolean trueVerify(BlockRepository blockRepository, Block b, Integer chainLevel) {
+    // Metodo di verifica di un singolo blocco
+    private Boolean singleBlockVerify(BlockRepository blockRepository, Block blockToVerify) {
 
-        Block block;
-        String creationTime;
-        String merkleRoot = null;
-        String minerPublicKey = null;
-        List<Transaction> trans = null;
-        Integer nonce = 0;
-        User usr = null;
-        String signature = null;
+        // Ordine di verifica migliore: Firma, PoW, Markle root, Double Trans
 
-        // Aumento performance consigli anche inutile farlo
-        // TODO COntrolla firma(trovare un ordine di controlli migliore firma, PoW, Markle root, Dobuble Trans.
-        // TODO APPENA terminato la funzione incampsuliamo i songoli controlli ognuno con un suo metodo
-        // Abbiamo stabilito di firmare solo l'hash del blocco essendo già esso fatto su tutti gli altri campi
-        // APPROVED!!
+        // Verifica firma
+        if (!verifySignature(blockToVerify)) return Boolean.FALSE;
+
+        // Verifica Proof of Work
+        if (!verifyProofOfWork(blockToVerify)) return Boolean.FALSE;
+
+        // Verifica MerkleRoot
+        if (!verifyMerkleRoot(blockToVerify)) return Boolean.FALSE;
+
+        // Verifica transazioni uniche
+        if (!verifyUniqueTransactions(blockToVerify, blockRepository)) return Boolean.FALSE;
+
+        // Se ha passato tutti i controlli allora ritorna TRUE
+        return Boolean.TRUE;
+    }
+
+    // Metodo di verifica della proof of work
+    private Boolean verifyProofOfWork(Block block) {
+        Integer complexity = -1;
         try {
-            if (!CryptoUtil.verifySignature(b.getHashBlock(), b.getSignature(), b.getMinerPublicKey())) {
-                return Boolean.FALSE;
-
-            }
-        } catch (InvalidKeyException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchAlgorithmException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (InvalidKeySpecException e) {
-            // TODO Auto-generated catch block
+            JSONObject result  = new JSONObject(HttpUtil.doPost("http://" + ipEntryPoint + ":" + portEntryPoint + poolDispatcherBaseUri +  "/get_complexity", "{\"date\" : \"" + block.getCreationTime() + "\"}"));
+            complexity = (Integer) result.get("complexity");
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // Verifica transazioni uniche
-        // Tutti i predecessori del blocco arrivato NON devono avere la transazione
-        if (b.getFatherBlockContainer() != null) {
-            List<Block> predecessori = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
+        // Se c'è stato un errore o la complessità non è stata trovata nel server
+        // allora termina con FALSE
+        if (complexity == -1) return Boolean.FALSE;
+
+        // Calcolo full mask
+        int fullMask = complexity / 8;
+
+        // Calcolo rest mask
+        int restanti = complexity % 8;
+
+        byte restMask;
+
+        if (restanti == 0) {
+            restMask = 0b000000;
+        } else {
+            restMask = (byte) 0b11111111;
+            restMask = (byte) (restMask << (8 - restanti));
+        }
+
+        byte[] hash = org.apache.commons.codec.digest.DigestUtils.sha256(block.toString() + block.getNonce());
+
+        // Verifica dei primi fullMask byte interi
+        for(int i = 0; i < fullMask; i++) {
+            if(hash[i] != 0) {
+                return false;
+            }
+        }
+
+        // Se non ci sono bit restanti allora restituisce true
+        if (restMask == 0) return true;
+
+        // Altrimenti controlla i bit rimanenti
+        return (hash[fullMask] & restMask) == 0;
+    }
+
+    // Metodo di verifica della firma di un blocco
+    // Abbiamo stabilito di firmare solo l'hash del blocco essendo già esso fatto su tutti gli altri campi
+    private Boolean verifySignature(Block block) {
+        try {
+            if (!CryptoUtil.verifySignature(block.getHashBlock(), block.getSignature(), block.getMinerPublicKey())) {
+                return Boolean.FALSE;
+            }
+        } catch (InvalidKeyException e) {
+            e.printStackTrace();
+            return Boolean.FALSE;
+        } catch (IllegalBlockSizeException e) {
+            e.printStackTrace();
+            return Boolean.FALSE;
+        } catch (BadPaddingException e) {
+            e.printStackTrace();
+            return Boolean.FALSE;
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return Boolean.FALSE;
+        } catch (NoSuchPaddingException e) {
+            e.printStackTrace();
+            return Boolean.FALSE;
+        } catch (InvalidKeySpecException e) {
+            e.printStackTrace();
+            return Boolean.FALSE;
+        }
+
+        return Boolean.TRUE;
+    }
+
+    // Metodo di verifica del merkle root di un blocco
+    private Boolean verifyMerkleRoot(Block block) {
+        ArrayList<String> transactionsHash = new ArrayList<>();
+        for (Transaction transaction : block.getTransactionsContainer()) {
+            transactionsHash.add(transaction.getHashFile());
+        }
+
+        String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
+
+        if (!checkMerkle.equals(block.getMerkleRoot())) {
+            System.err.println("MerkleRoot diverso.");
+            return Boolean.FALSE;
+        }
+
+        return Boolean.TRUE;
+    }
+
+    // Metodo di verifica della transazione unica
+    // Tutti i predecessori del blocco arrivato NON devono avere la transazione
+    private Boolean verifyUniqueTransactions(Block block, BlockRepository blockRepository) {
+        if (block.getFatherBlockContainer() != null) {
+            List<Block> predecessori = blockRepository.findByhashBlock(block.getFatherBlockContainer().getHashBlock());
 
             for (Block p : predecessori) {
-                for (Transaction t : b.getTransactionsContainer()) {
+                for (Transaction t : block.getTransactionsContainer()) {
                     if (p.getTransactionsContainer().contains(t)) {
                         System.err.println("La transazione è presente in uno dei predecessori.");
                         return Boolean.FALSE;
                     }
                 }
             }
-
         }
 
-        // Verifica MerkleRoot
-        ArrayList<String> transactionsHash = new ArrayList<>();
-        for (Transaction transaction : b.getTransactionsContainer()) {
-            transactionsHash.add(transaction.getHashFile());
-        }
-
-        String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
-
-        if (!checkMerkle.equals(b.getMerkleRoot())) {
-            System.err.println("MerkleRoot diverso.");
-            return Boolean.FALSE;
-        }
-
-        // minerPublic Key = BLOCCO.pKey
-        // usr = Blocco.User
-        // nounce = BLOCK.nOUNCE
-        // TODO: Rifare la verifica.
-        // Chiamata al PD in cui si chiede la difficolta
-        // a cui è stato fatto il blocco, dato il timestamp.
-        block = new Block(merkleRoot, minerPublicKey, nonce, chainLevel, trans, b, usr);
-        block.generateHashBlock();
-        nonce++;
-
-        return Boolean.TRUE;
+        return Boolean.FALSE;
     }
 
     /**
@@ -590,19 +597,6 @@ public class Miner {
         this.entryPointBaseUri = entryPointBaseUri;
     }
 
-//	/**
-//	 * @return the ipPeers
-//	 */
-//	public List<String> getIpPeers() {
-//		return ipPeers;
-//	}
-//	/**
-//	 * @param ipPeers
-//	 *            the ipPeers to set
-//	 */
-//	public void setIpPeers(List<String> ipPeers) {
-//		this.ipPeers = ipPeers;
-//	}
     /**
      * @return the log
      */
@@ -688,5 +682,73 @@ public class Miner {
 
     public void setMyPrivateKey(String myPrivateKey) {
         this.myPrivateKey = myPrivateKey;
+    }
+
+    public void setPoolDispatcherBaseUri(String poolDispatcherBaseUri) {
+        this.poolDispatcherBaseUri = poolDispatcherBaseUri;
+    }
+
+    @Override
+    public void onNewBlockArrived(Block block) {
+
+        System.out.println("Nuovo blocco arrivato, verifico...");
+
+        Boolean isVerified = Boolean.FALSE;
+
+        try {
+            isVerified = verifyBlock(block, blockRepository, serviceMiner);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("Blocco valido? " + isVerified);
+
+        if(isVerified) {
+            // Stoppo il processo di mining
+            stopMine();
+            // Salvo il blocco nella catena
+            blockRepository.save(block);
+            // Aggiorno il servizio di mining
+            updateMiningService();
+            // Ricomincio a minare
+            startMine();
+        }
+    }
+
+    private void updateMiningService() {
+        // Prendo l'ultmo blocco della catena
+        Block lastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
+        // Inizializzo il nuovo blocco da minare
+        Block newBlock = new Block();
+        newBlock.setFatherBlockContainer(lastBlock);
+        newBlock.setChainLevel(lastBlock.getChainLevel() + 1);
+        newBlock.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
+
+        // Prendo le transazioni dal Pool Dispatcher
+        List<Transaction> transactionsList = PoolDispatcherUtility.getTransactions();
+
+        ArrayList<String> hashTransactions = new ArrayList<>();
+        for(Transaction transaction: transactionsList) {
+            hashTransactions.add(transaction.getHashFile());
+        }
+
+        newBlock.setMerkleRoot(MerkleTree.buildMerkleTree(hashTransactions));
+
+        // Test chiamata per difficoltà
+        Integer complexity = PoolDispatcherUtility.getCurrentComplexity();
+
+        miningService.updateService(newBlock, lastBlock, complexity, transactionsList);
+    }
+
+    public void setBlockRepository(BlockRepository blockRepository) {
+        this.blockRepository = blockRepository;
+    }
+
+    public void setServiceMiner(ServiceMiner serviceMiner) {
+        this.serviceMiner = serviceMiner;
     }
 }

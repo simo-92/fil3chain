@@ -1,5 +1,7 @@
 
 package it.scrs.miner.dao.block;
+import it.scrs.miner.dao.transaction.Transaction;
+
 import java.util.List;
 import java.util.ArrayList;
 /**
@@ -37,6 +39,7 @@ public class MerkleTree {
         merkleRoot=aux.get(0);
         return merkleRoot;
     }
+
     /**
      * metodo che fonde due nodi
      * @param n1 prima nodo
