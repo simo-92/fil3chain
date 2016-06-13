@@ -223,7 +223,7 @@ public class Miner implements MinerEventsListener {
 	 */
 	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
 
-		// nell primo update
+		// nell primo updateh
 
 		if (blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock()) == null)
 			blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock());
