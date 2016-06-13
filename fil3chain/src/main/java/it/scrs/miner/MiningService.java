@@ -29,7 +29,7 @@ public class MiningService extends Thread implements Runnable {
     private Block block;
     
     //Chiave privata del creatore del blocco
-    private String prkey;
+    private String privateKey;
 
     // Difficoltà in cui si sta minando
     private Integer difficulty;
