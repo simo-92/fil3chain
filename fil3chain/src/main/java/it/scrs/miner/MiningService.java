@@ -42,8 +42,14 @@ public class MiningService extends Thread implements Runnable {
 
     // Callback chiamata dopo l'interruzione del thread
     private Runnable interruptCallback;
-    private String pukey;
-    private Block father;
+
+    // Chiave pubblica dell'autore del blocco
+    private String publicKey;
+
+    // Blocco precedente nella catena
+    private Block previousBlock;
+
+    // Lista di transazioni presente nel blocco
     private List<Transaction> transactions;
 
     /**
@@ -62,11 +68,11 @@ public class MiningService extends Thread implements Runnable {
      * @param block
      * @param difficulty
      */
-    public MiningService(List<Transaction> transactions,Block father, String prKey, String puKey, Block block, Integer difficulty, Runnable interruptCallback) {
+    public MiningService(List<Transaction> transactions, Block previousBlock, String prKey, String puKey, Block block, Integer difficulty, Runnable interruptCallback) {
         this.block = block;
-        this.prkey = prKey;
-        this.pukey = puKey;
-        this.father = father;
+        this.privateKey = prKey;
+        this.publicKey = puKey;
+        this.previousBlock = previousBlock;
         this.transactions = transactions;
         this.difficulty = difficulty;
         this.interruptCallback = interruptCallback;
@@ -114,7 +120,8 @@ public class MiningService extends Thread implements Runnable {
         Integer nonce = new Random().nextInt();
         Integer nonceStart = nonce;
         Integer nonceFinish = 0;
-        float totalTime= 0;
+        float totalTime = 0;
+
         System.out.println("Nonce di partenza: " + nonce);
 
         // Hash del blocco
@@ -136,8 +143,10 @@ public class MiningService extends Thread implements Runnable {
             // Incremento il nonce
             nonce++;
         } while (!verifyHash(hash));
-        nonceFinish=nonce-1;
-        totalTime= (new Date().getTime() - startTime)/1000.0f;
+
+        nonceFinish = nonce - 1;
+        totalTime = (new Date().getTime() - startTime)/1000.0f;
+
         // Calcolo hash corretto in esadecimale
         // Spiegazione nonce - 1: Viene fatto -1 perché nell'ultima iterazione viene incrementato anche se l'hash era corretto.
         String hexHash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(block.toString() + (nonce - 1));
@@ -145,20 +154,19 @@ public class MiningService extends Thread implements Runnable {
         // Impostazione dell'hash e del nonce
         block.setHashBlock(hexHash);
         block.setNonce(nonce - 1);
-        block.setSignature(CryptoUtil.sign(hexHash, prkey));
-        System.out.println(block.getSignature());
-        block.setMinerPublicKey(pukey);
-        block.setFatherBlockContainer(father);
+        block.setSignature(CryptoUtil.sign(hexHash, privateKey));
+        block.setMinerPublicKey(publicKey);
+        block.setFatherBlockContainer(previousBlock);
         block.setTransactionsContainer(transactions);
         block.setCreationTime(Long.toString(System.currentTimeMillis()));
         System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: " + nonce + " Tempo impiegato: " + totalTime + " secondi");
-        System.out.println("Hash provati: "+(Math.abs(nonceFinish-nonceStart))+ " HashRate: "+(((Math.abs(nonceFinish-nonceStart))/totalTime)/1000000.0f)+" MH/s");
+        System.out.println("Hash provati: " + (Math.abs(nonceFinish - nonceStart)) + " HashRate: " + (((Math.abs(nonceFinish - nonceStart))/totalTime)/1000000.0f) + " MH/s");
         // Chiude il thread
         //interrupt();
         sendBlockToMiners();
     }
 
-     @Async
+    @Async
     public Future<List<Block>> sendBlockToMiners() {
         RestTemplate restTemplate =  new RestTemplate();
         SimpleClientHttpRequestFactory requestFactory = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
@@ -180,7 +188,7 @@ public class MiningService extends Thread implements Runnable {
 
         return new AsyncResult<>(blocks);
     }
-    
+
     @Override
     public void interrupt() {
         super.interrupt();
@@ -210,13 +218,13 @@ public class MiningService extends Thread implements Runnable {
     public void setBlock(Block block) {
         this.block = block;
     }
-    
-    public String getPrkey() {
-        return prkey;
+
+    public String getPrivateKey() {
+        return privateKey;
     }
 
-    public void setPrkey(String prkey) {
-        this.prkey = prkey;
+    public void setPrivateKey(String privateKey) {
+        this.privateKey = privateKey;
     }
 
     public Integer getDifficulty() {
@@ -231,4 +239,11 @@ public class MiningService extends Thread implements Runnable {
         return (block != null && difficulty != -1);
     }
 
+    public void updateService(Block miningBlock, Block previousBlock, int difficulty, List<Transaction> transactionList) {
+        interrupt();
+        this.block = miningBlock;
+        this.previousBlock = previousBlock;
+        this.difficulty = difficulty;
+        this.transactions = transactionList;
+    }
 }

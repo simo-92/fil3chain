@@ -7,6 +7,7 @@ import it.scrs.miner.IPManager;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.scrs.miner.MinersListenerRegister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
@@ -49,8 +50,8 @@ public class ControllerBlockRequest {
 
 		return block;
 	}
-	
-//	http://localhost:8080/addJsonBlock?hashBlock=22213&merkleRoot=cad&minerPublicKey=12&nonce=1&chainLevel=1
+
+	//	http://localhost:8080/addJsonBlock?hashBlock=22213&merkleRoot=cad&minerPublicKey=12&nonce=1&chainLevel=1
 	@RequestMapping(value = "/addJsonBlock", method = RequestMethod.GET)
 	public Block addJsonBlock(String hashBlock, String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel) {
 
@@ -67,66 +68,69 @@ public class ControllerBlockRequest {
 		System.out.println("il blocco che mi è stato mandato è " + newBlock);
 		//TODO dobbiamo verificare il blocco appena arrivato se è valido
 		//blocco il thread di mining e lo riavvio sulla fil3chain aggiornata
+
+        MinersListenerRegister.getInstance().notifyListenersNewBlock(newBlock);
+
 		return newBlock;
 	}
-        
-        // Controller che intercetta la connessione di un utente
+
+	// Controller che intercetta la connessione di un utente
 	@RequestMapping(value = "/user_connect", method = RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	public void newUserConnection(@RequestBody  MultiValueMap<String,String> ip) {
-                String json=ip.keySet().iterator().next();
+		String json=ip.keySet().iterator().next();
 		JsonObject jobj = new Gson().fromJson(json,JsonObject.class);
 		String ipHost = jobj.get("user_ip").getAsString();
-                IPManager.getManager().addIP(new IP(ipHost));
-		IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
+		IPManager.getManager().addIP(new IP(ipHost));
+		// IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
 	}
-        
-        // Controller che intercetta la disconnessione di un utente
+
+	// Controller che intercetta la disconnessione di un utente
 	@RequestMapping(value = "/user_disconnect", method = RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	public void newUserDisconnection(@RequestBody  MultiValueMap<String,String> ip) {
-                String json=ip.keySet().iterator().next();
+		String json=ip.keySet().iterator().next();
 		JsonObject jobj = new Gson().fromJson(json,JsonObject.class);
 		String ipHost = jobj.get("user_ip").getAsString();
-                IPManager.getManager().removeIP(new IP(ipHost));
-		IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
+		IPManager.getManager().removeIP(new IP(ipHost));
+		// IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
 	}
 
 	@RequestMapping(value = "/fil3chain/getBlock", method = RequestMethod.GET)
 	@ResponseBody
-	public List<Block> getBlock(Integer chainLevel) {		
+	public List<Block> getBlock(Integer chainLevel) {
 		return blockRepository.findBychainLevel(chainLevel);
-	}	
-	
-	// TODO Cambiare e mettere specifiche professore
-		@RequestMapping(value = "/poolDispatcher", method = RequestMethod.GET)
-		public Integer getDifficult() {
-			return 1;
-		}
+	}
 
-		//Aggiungo delle transazioni di prova
-		@RequestMapping(value = "/JsonTransaction", method = RequestMethod.GET)
-		@ResponseBody
-		public List<Transaction> JsonTransaction(Integer nTrans) {
-			String s="";
-			Double x ;
-			List<Transaction> trans=new ArrayList<Transaction>();
-			for(int i=0;i<nTrans;i++){
-				x = Math.random() * nTrans;
-				s=org.apache.commons.codec.digest.DigestUtils.sha256Hex(x.toString());
-				Transaction transaction=new Transaction(s, "file prova numero: "+i);
-				trans.add(transaction);
-			}
-			return trans;
+	// TODO Cambiare e mettere specifiche professore
+	@RequestMapping(value = "/poolDispatcher", method = RequestMethod.GET)
+	public Integer getDifficult() {
+		return 1;
+	}
+
+	//Aggiungo delle transazioni di prova
+	@RequestMapping(value = "/JsonTransaction", method = RequestMethod.GET)
+	@ResponseBody
+	public List<Transaction> JsonTransaction(Integer nTrans) {
+		String s="";
+		Double x ;
+		List<Transaction> trans=new ArrayList<Transaction>();
+		for(int i=0;i<nTrans;i++){
+			x = Math.random() * nTrans;
+			s=org.apache.commons.codec.digest.DigestUtils.sha256Hex(x.toString());
+			Transaction transaction=new Transaction(s, "file prova numero: "+i);
+			trans.add(transaction);
 		}
-		
-		
-		
-		//Mappiamo la richiesta di invio di blocchi ad un Peer che la richiede
-		@RequestMapping(value = "/fil3chain/updateAtMaxLevel", method = RequestMethod.GET)
-		public Integer updateAtMaxLevel() {
-			//Inutile che ritorno si/no con accodato il chain level basta che torno il chain level e 
-			//il ricevente sa a chi chiedere tutti i blocchi di cui ha bisogno
-			return blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel();
-		}
+		return trans;
+	}
+
+
+
+	//Mappiamo la richiesta di invio di blocchi ad un Peer che la richiede
+	@RequestMapping(value = "/fil3chain/updateAtMaxLevel", method = RequestMethod.GET)
+	public Integer updateAtMaxLevel() {
+		//Inutile che ritorno si/no con accodato il chain level basta che torno il chain level e
+		//il ricevente sa a chi chiedere tutti i blocchi di cui ha bisogno
+		return blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel();
+	}
 		
 		
 		/*
@@ -151,6 +155,6 @@ public class ControllerBlockRequest {
 			//
 			
 			}
-			*/	
-		
+			*/
+
 }
