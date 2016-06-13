@@ -98,7 +98,7 @@ public class MinerApplication implements CommandLineRunner {
         Integer complexity = PoolDispatcherUtility.getCurrentComplexity();
 
         // TODO: Eliminare la moltiplicazione una volta che il server ha una complessità decente
-        complexity *= 8;
+        complexity *= 4;
         System.out.println("Complessità per minare: " + complexity);
 
         // Il miner inizia a minare

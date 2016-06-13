@@ -493,12 +493,13 @@ public class Miner implements MinerEventsListener {
         while (!nullResponse && (i < nBlockUpdate) && (designedMiner.getValue2() > myChainLevel)) {
             // TODO cambire la uri di richiesta
             myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
+            System.out.println("chain level aggiornato = "+myChainLevel);
             Type type = new TypeToken<List<Block>>() {
             }.getType();
             List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
 
             if (blockResponse != null) {
-                System.out.println("\nBlock response: " + blockResponse.toString());
+                System.out.println("\nBlock response: " + blockResponse.size());
                 for (Block b : blockResponse) {
                     // TODO qui dentro ora posso salvare nel mio DB tutti i blocchi appena ricevuti e verificarli
                     blockRepository.save(b);
@@ -510,10 +511,12 @@ public class Miner implements MinerEventsListener {
             i++;
 
         }
-        System.out.println("2");
+        //System.out.println("2");
 
         if (!nullResponse && designedMiner.getValue2() <= blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel()) {
             ipMiners.remove(designedMiner.getValue1());
+            System.out.println(designedMiner.getValue1().getIp());
+            System.out.println("ho rimosso ip = "+designedMiner.getValue1());
         }
     }
 

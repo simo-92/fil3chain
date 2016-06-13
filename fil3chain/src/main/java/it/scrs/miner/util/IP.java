@@ -5,11 +5,13 @@
  */
 package it.scrs.miner.util;
 
+import java.util.Objects;
+
 /**
  *
  * @author giordanocristini
  */
-public class IP implements Cloneable, Comparable{
+public class IP implements Cloneable{
     private String user_ip;
 
     public String getIp() {
@@ -34,8 +36,17 @@ public class IP implements Cloneable, Comparable{
         return user_ip;
     }
 
+    @Override 
+    public boolean equals(Object o){
+        
+        System.out.println("gli oggetti sono uguali = "+ user_ip.equals(o));
+        return user_ip.equals(((IP)o).getIp());
+    }
+
     @Override
-    public int compareTo(Object t) {
-        return user_ip.compareTo(((IP)t).getIp());
+    public int hashCode() {
+        int hash = 3;
+        hash = 13 * hash + Objects.hashCode(this.user_ip);
+        return hash;
     }
 }

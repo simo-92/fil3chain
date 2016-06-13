@@ -25,6 +25,8 @@ import org.apache.http.message.BasicNameValuePair;
 import com.fasterxml.jackson.databind.util.JSONPObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import java.io.File;
+import java.io.FileWriter;
 import org.apache.http.entity.StringEntity;
 
 
@@ -101,7 +103,10 @@ public class HttpUtil {
 		// TODO per lupo quando riuserai il fromJson , usare x.class nel caso specifico non va bene perche non riesce a
 		// ricostruire oggetto
 		// per un uso più corretto usa il la riga del Type che riesci a ricostruirlo bene
-
+                //System.out.println(result.toString());
+                File f=new File("log.txt");
+                FileWriter fw = new FileWriter(f);
+                fw.append(result.toString());
 		return JsonUtility.fromJson(result.toString(), t);
 	}
 
