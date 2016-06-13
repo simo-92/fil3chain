@@ -2,10 +2,14 @@ package it.scrs.miner;
 
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
+import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
+import it.scrs.miner.dao.user.User;
 import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.IP;
 import java.util.ArrayList;
+
+import it.scrs.miner.util.PoolDispatcherUtility;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -174,6 +178,8 @@ public class MiningService extends Thread implements Runnable {
         sendBlockToMiners();
 
         //TODO: Ricomincia a minare
+        initializeService();
+        mine();
     }
 
     @Async
@@ -257,4 +263,36 @@ public class MiningService extends Thread implements Runnable {
         this.difficulty = difficulty;
         this.transactions = transactionList;
     }
+
+    public void initializeService() {
+        // Interrompe il servizio
+        interrupt();
+
+        // Prendo l'ultmo blocco della catena
+        Block lastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
+
+        // Inizializzo il nuovo blocco da minare
+        block = new Block();
+        block.setFatherBlockContainer(lastBlock);
+        block.setChainLevel(lastBlock.getChainLevel() + 1);
+        block.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
+
+        // Prendo le transazioni dal Pool Dispatcher
+        List<Transaction> transactionsList = PoolDispatcherUtility.getTransactions();
+
+        ArrayList<String> hashTransactions = new ArrayList<>();
+        for(Transaction transaction: transactionsList) {
+            hashTransactions.add(transaction.getHashFile());
+        }
+
+        block.setMerkleRoot(MerkleTree.buildMerkleTree(hashTransactions));
+
+        // Test chiamata per difficoltà
+        Integer complexity = PoolDispatcherUtility.getCurrentComplexity();
+
+        previousBlock = lastBlock;
+        difficulty = complexity;
+        transactions = transactionsList;
+    }
+
 }

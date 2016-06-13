@@ -53,9 +53,10 @@ public class ControllerBlockRequest {
 
 	//	http://localhost:8080/addJsonBlock?hashBlock=22213&merkleRoot=cad&minerPublicKey=12&nonce=1&chainLevel=1
 	@RequestMapping(value = "/addJsonBlock", method = RequestMethod.GET)
-	public Block addJsonBlock(String hashBlock, String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel) {
+	public Block addJsonBlock(String hashBlock, String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel, String signature) {
 
 		Block block = new Block(hashBlock,merkleRoot , minerPublicKey, nonce, chainLevel);
+		block.setSignature(signature);
 		blockRepository.save(block);
 		return block;
 	}

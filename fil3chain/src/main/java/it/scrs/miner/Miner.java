@@ -1,5 +1,6 @@
 package it.scrs.miner;
 
+import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
@@ -456,6 +457,9 @@ public class Miner implements MinerEventsListener {
 
             List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
 
+            //TODO: Test
+            blockResponse = Lists.reverse(blockResponse);
+
             if (blockResponse != null) {
                 System.out.println("\nBlock response: " + blockResponse.size());
                 for (Block b : blockResponse) {
@@ -604,7 +608,7 @@ public class Miner implements MinerEventsListener {
         Block block = new Block();
         block.setHashBlock("0");
         block.setChainLevel(0);
-        block.setCreationTime(new Date(0).toString());
+        block.setCreationTime(new Date(0).getTime() + "");
         block.setMerkleRoot("0");
         block.setNonce(0);
         block.setSignature("0");
