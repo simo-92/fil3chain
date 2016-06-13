@@ -144,7 +144,7 @@ public class BlockChain {
 
 		// Rimuovo il mio IP
 		ipMiners.remove(miner.getIp());
-System.out.println("\nBranchUpdate");
+		System.out.println("\nBranchUpdate");
 		while (!ipMiners.isEmpty()) {
 			// Lista contenente le richieste asincrone ai 3 ip
 			List<Future<Pairs<IP, Block>>> minerResp = new ArrayList<>();

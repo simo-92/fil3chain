@@ -225,8 +225,10 @@ public class Miner implements MinerEventsListener {
 
 		// nell primo updateh
 		System.out.println("\n ciccio merda");
-		if (blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock()) == null)
-			System.out.println("\n " + blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock()));
+		Block bTmp = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
+		System.out.println(bTmp);
+		if (bTmp == null)
+			blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock());
 
 		Boolean bool = singleBlockVerify(blockRepository, b);
 		System.out.println("\n verify " + bool);
