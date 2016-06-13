@@ -60,7 +60,25 @@ public class ControllerBlockRequest {
 		blockRepository.save(block);
 		return block;
 	}
-
+	
+	//Aggiungo delle transazioni di prova
+	@RequestMapping(value = "/JsonTransaction", method = RequestMethod.GET)
+	@ResponseBody
+	public List<Transaction> JsonTransaction(Integer nTrans) {
+		String s="";
+		Double x ;
+		List<Transaction> trans=new ArrayList<Transaction>();
+		for(int i=0;i<nTrans;i++){
+			x = Math.random() * nTrans;
+			s=org.apache.commons.codec.digest.DigestUtils.sha256Hex(x.toString());
+			Transaction transaction=new Transaction(s, "file prova numero: "+i);
+			trans.add(transaction);
+		}
+		return trans;
+	}
+	
+//////////////////////////////////////////////////////////////////////////////////////////////////////	
+	
 	// Controller che intercetta arrivo di un nuovo blocco
 	@RequestMapping(value = "/fil3chain/newBlock", method = RequestMethod.POST)
 	@ResponseBody
@@ -75,6 +93,29 @@ public class ControllerBlockRequest {
 		return newBlock;
 	}
 
+	@RequestMapping(value = "/fil3chain/getBlockByChain", method = RequestMethod.GET)
+	@ResponseBody
+	public List<Block> getBlock(Integer chainLevel) {
+		// System.err.println("Rispondo con: " + blockRepository.findBychainLevel(chainLevel));
+		return blockRepository.findBychainLevel(chainLevel);
+	}
+
+	@RequestMapping(value = "/fil3chain/getBlockByhash", method = RequestMethod.GET)
+	@ResponseBody
+	public Block getBlock(String hash) {
+		// System.err.println("Rispondo con: " + blockRepository.findBychainLevel(chainLevel));
+		return blockRepository.findByhashBlock(hash);
+	}
+
+	
+	//Mappiamo la richiesta di invio di blocchi ad un Peer che la richiede
+	@RequestMapping(value = "/fil3chain/updateAtMaxLevel", method = RequestMethod.GET)
+	public Integer updateAtMaxLevel() {
+		//Inutile che ritorno si/no con accodato il chain level basta che torno il chain level e
+		//il ricevente sa a chi chiedere tutti i blocchi di cui ha bisogno
+		return blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel();
+	}
+	
 	// Controller che intercetta la connessione di un utente
 	@RequestMapping(value = "/user_connect", method = RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE)
 	public void newUserConnection(@RequestBody  MultiValueMap<String,String> ip) {
@@ -95,53 +136,13 @@ public class ControllerBlockRequest {
 		// IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
 	}
 
-	@RequestMapping(value = "/fil3chain/getBlockByChain", method = RequestMethod.GET)
-	@ResponseBody
-	public List<Block> getBlock(Integer chainLevel) {
-		// System.err.println("Rispondo con: " + blockRepository.findBychainLevel(chainLevel));
-		return blockRepository.findBychainLevel(chainLevel);
-	}
-
-	@RequestMapping(value = "/fil3chain/getBlockByhash", method = RequestMethod.GET)
-	@ResponseBody
-	public Block getBlock(String hash) {
-		// System.err.println("Rispondo con: " + blockRepository.findBychainLevel(chainLevel));
-		return blockRepository.findByhashBlock(hash);
-	}
-
-	
-	
-	// TODO Cambiare e mettere specifiche professore
-	@RequestMapping(value = "/poolDispatcher", method = RequestMethod.GET)
-	public Integer getDifficult() {
-		return 1;
-	}
-
-	//Aggiungo delle transazioni di prova
-	@RequestMapping(value = "/JsonTransaction", method = RequestMethod.GET)
-	@ResponseBody
-	public List<Transaction> JsonTransaction(Integer nTrans) {
-		String s="";
-		Double x ;
-		List<Transaction> trans=new ArrayList<Transaction>();
-		for(int i=0;i<nTrans;i++){
-			x = Math.random() * nTrans;
-			s=org.apache.commons.codec.digest.DigestUtils.sha256Hex(x.toString());
-			Transaction transaction=new Transaction(s, "file prova numero: "+i);
-			trans.add(transaction);
+	// Controller che intercetta i ping
+		@RequestMapping(value = "/fil3chain/user_ping", method = RequestMethod.GET)
+		public String user_ping() {
+			JsonObject x=new JsonObject();
+			x.addProperty("response", "ACK");
+			return x.toString();
 		}
-		return trans;
-	}
-
-
-
-	//Mappiamo la richiesta di invio di blocchi ad un Peer che la richiede
-	@RequestMapping(value = "/fil3chain/updateAtMaxLevel", method = RequestMethod.GET)
-	public Integer updateAtMaxLevel() {
-		//Inutile che ritorno si/no con accodato il chain level basta che torno il chain level e
-		//il ricevente sa a chi chiedere tutti i blocchi di cui ha bisogno
-		return blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel();
-	}
 		
 		
 		/*
