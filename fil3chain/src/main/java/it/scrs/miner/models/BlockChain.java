@@ -358,11 +358,10 @@ public class BlockChain {
 
 		while (!nullResponse) {
 			// TODO cambire la uri di richiesta
-			Type type = new TypeToken<List<Block>>() {
+			Type type = new TypeToken<Block>() {
 			}.getType();
 
 			Block blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlockByhash?hash=" + hash, type);
-
 
 			if (blockResponse != null) {
 				System.out.println("\nBlock response: " + blockResponse);
@@ -408,10 +407,9 @@ public class BlockChain {
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
 			Type type = new TypeToken<List<Block>>() {
 			}.getType();
-
-			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
-
-
+			
+			List<Block> blockResponse= HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlockByChain?chainLevel=" + myChainLevel, type);
+			
 			if (blockResponse != null) {
 				System.out.println("\nBlock response: " + blockResponse.size());
 				for (Block b : blockResponse) {
