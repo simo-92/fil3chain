@@ -127,31 +127,7 @@ public class Miner implements MinerEventsListener {
 
         String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri() + this.getActionConnect();
         String result = "";
-        /*
-        String myIp = "";
-		List<String> myIpS = new ArrayList<>();
-		Enumeration<NetworkInterface> e;
-		try {
-			e = NetworkInterface.getNetworkInterfaces();
-			while (e.hasMoreElements()) {
-				NetworkInterface n = (NetworkInterface) e.nextElement();
-				Enumeration<InetAddress> ee = n.getInetAddresses();
-				while (ee.hasMoreElements()) {
-					InetAddress i = (InetAddress) ee.nextElement();
-					if (i.getHostAddress().startsWith("1"))
-						;
-					myIpS.add(i.getHostAddress());
-					if (i.getHostAddress().startsWith(prefixVPNet))
-						;
-					myIp = i.getHostAddress();
-				}
-			}
-		} catch (SocketException e1) {
-			// e1.printStackTrace();
-		}
-         */
 
-        //ipPeers = new ArrayList<>();
         try {
             System.out.println("URL: " + url);
             System.out.println("Il mio IP: " + ip);
@@ -169,19 +145,9 @@ public class Miner implements MinerEventsListener {
         for (String ip : ips) {
             iplist.add(new IP(ip));
         }
-        //iplist.forEach(ip -> System.out.println("ip: "+ip));
+
         ipManager.setAllIp((List<IP>) iplist.clone());
 
-//		if (MinerApplication.testMiner == Boolean.TRUE) {
-//            // if (ipPeers == null || (ipPeers.size() == 0)) {
-//			if (ipPeers == null) {
-//				ipPeers = new ArrayList<>();
-//            } else {
-//                // IPVPN CICCIO RISERVA SERVER EP DOWN
-//			    ipPeers.add("10.192.0.7");
-//            }
-//		}
-        // ipPeers.removeAll(myIpS);
         System.out.println("Numero di IP ottenuti: " + ipManager.getIPList().size());
         ipManager.getIPList().forEach(ip -> System.out.println(ip));
 
@@ -215,7 +181,7 @@ public class Miner implements MinerEventsListener {
             // Stoppo il processo di mining
             stopMine();
             // Eseguo l'update della catena
-            return updateFilechain(blockRepository, serviceMiner);
+            return updateFilechain();
         } else {
             // Altrimenti verifico il blocco
             return singleBlockVerify(blockRepository, b);
@@ -246,13 +212,7 @@ public class Miner implements MinerEventsListener {
 
     // Metodo di verifica della proof of work
     private Boolean verifyProofOfWork(Block block) {
-        Integer complexity = -1;
-        try {
-            JSONObject result  = new JSONObject(HttpUtil.doPost("http://" + ipEntryPoint + ":" + portEntryPoint + poolDispatcherBaseUri +  "/get_complexity", "{\"date\" : \"" + block.getCreationTime() + "\"}"));
-            complexity = (Integer) result.get("complexity");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        Integer complexity = PoolDispatcherUtility.getBlockComplexity(block.getCreationTime());
 
         // Se c'è stato un errore o la complessità non è stata trovata nel server
         // allora termina con FALSE
@@ -356,14 +316,12 @@ public class Miner implements MinerEventsListener {
     }
 
     /**
-     * @param blockRepository
-     * @param serviceMiner
      * @return
      * @throws InterruptedException
      * @throws ExecutionException
      * @throws Exception
      */
-    public Boolean updateFilechain(BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
+    public Boolean updateFilechain() throws InterruptedException, ExecutionException, IOException {
 
         List<IP> ipMiners = (List<IP>) ((ArrayList<IP>) ipManager.getIPList()).clone();
 
@@ -383,18 +341,17 @@ public class Miner implements MinerEventsListener {
             askMinerChainLvl(ipMiners, minerResp, serviceMiner);
 
             // minerResp.add(serviceMiner.findMaxChainLevel("192.168.0.107"));
-            System.out.println("1");
+            // System.out.println("1");
 
             // Oggetto che contiene la coppia IP,ChainLevel del Miner designato
-            Pairs<IP, Integer> designedMiner = new Pairs<IP, Integer>();
+            Pairs<IP, Integer> designedMiner = new Pairs<>();
             waitAndChooseMiner(minerResp, designedMiner);
 
             killRequest(minerResp);
 
-            System.out.println("Il Miner designato = " + designedMiner.getValue1() + " ChainLevel = " + designedMiner.getValue2() + "\n");
-
             // Aggiorno la mia blockChain con i blocchi che mi arrivano in modo incrementale
             if (designedMiner.getValue1() != null) {
+                System.out.println("Il Miner designato = " + designedMiner.getValue1() + " con ChainLevel = " + designedMiner.getValue2() + "\n");
                 getBlocksFromMiner(ipMiners, myChainLevel, designedMiner, blockRepository);
             }
             // aspetta una risposta
@@ -490,11 +447,13 @@ public class Miner implements MinerEventsListener {
 
         Integer i = 0;
         Boolean nullResponse = Boolean.FALSE;
+
         while (!nullResponse && (i < nBlockUpdate) && (designedMiner.getValue2() > myChainLevel)) {
             // TODO cambire la uri di richiesta
             myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
             Type type = new TypeToken<List<Block>>() {
             }.getType();
+
             List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlock?chainLevel=" + myChainLevel, type);
 
             if (blockResponse != null) {
@@ -628,7 +587,7 @@ public class Miner implements MinerEventsListener {
         return !miningService.isInterrupted();
     }
 
-    public void initializeBlockChain(BlockRepository blockRepository) {
+    public void initializeBlockChain() {
         // Se non ho nessun blocco ne aggiungo uno fittizio
         if (!blockRepository.findAll().iterator().hasNext()) {
             Block block = getFirstBlock();

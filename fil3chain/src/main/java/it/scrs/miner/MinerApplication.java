@@ -63,8 +63,8 @@ public class MinerApplication implements CommandLineRunner {
         // Block block = miner.generateBlock(null, 17, 31, null, null, null);
         // System.out.println(block.generateAndGetHashBlock());
         // prendi minerReq ip a caso dalla lista dei miner
-        miner.initializeBlockChain(blockRepository);
-        miner.updateFilechain(blockRepository, serviceMiner);
+        miner.initializeBlockChain();
+        miner.updateFilechain();
 
         // Registro il miner per gli eventi
         MinersListenerRegister.getInstance().registerMiner(miner);
@@ -102,7 +102,7 @@ public class MinerApplication implements CommandLineRunner {
         System.out.println("Complessità per minare: " + complexity);
 
         // Il miner inizia a minare
-        miner.setMiningService(new MiningService(transactionsList, myLastBlock, miner.getMyPrivateKey(), miner.getMyPublickKey(), block, complexity, new Runnable() {
+        miner.setMiningService(new MiningService(transactionsList, myLastBlock, miner.getMyPrivateKey(), miner.getMyPublickKey(), block, complexity, blockRepository, new Runnable() {
             @Override
             public void run() {
                 System.out.println("Miner interrotto");
