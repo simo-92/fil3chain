@@ -69,7 +69,7 @@ public class MinerApplication implements CommandLineRunner {
         // Registro il miner per gli eventi
         MinersListenerRegister.getInstance().registerMiner(miner);
 
-        System.out.println("3");
+        // System.out.println("3");
 
         // Prendo il mio ultimo blocco
         Block myLastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
@@ -98,7 +98,7 @@ public class MinerApplication implements CommandLineRunner {
         Integer complexity = PoolDispatcherUtility.getCurrentComplexity();
 
         // TODO: Eliminare la moltiplicazione una volta che il server ha una complessità decente
-        complexity *= 4;
+        complexity *= 8;
         System.out.println("Complessità per minare: " + complexity);
 
         // Il miner inizia a minare

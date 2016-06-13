@@ -443,7 +443,7 @@ public class Miner implements MinerEventsListener {
      * @throws Exception
      */
     @SuppressWarnings("unchecked")
-    private void getBlocksFromMiner(List<IP> ipMiners, Integer myChainLevel, Pairs<IP, Integer> designedMiner, BlockRepository blockRepository) throws IOException {
+    private void getBlocksFromMiner(List<IP> ipMiners, Integer myChainLevel, Pairs<IP, Integer> designedMiner, BlockRepository blockRepository) throws IOException, ExecutionException, InterruptedException {
 
         Integer i = 0;
         Boolean nullResponse = Boolean.FALSE;
@@ -459,9 +459,14 @@ public class Miner implements MinerEventsListener {
             if (blockResponse != null) {
                 System.out.println("\nBlock response: " + blockResponse.size());
                 for (Block b : blockResponse) {
-                    // TODO qui dentro ora posso salvare nel mio DB tutti i blocchi appena ricevuti e verificarli
-                    blockRepository.save(b);
-                    System.out.println("Ho tirato fuori il blocco con chainLevel: " + b.getChainLevel() + "\n");
+                    if (verifyBlock(b, blockRepository, serviceMiner)) {
+                        blockRepository.save(b);
+                    } else {
+                        // Elimino il miner se il blocco non è verificato
+                        ipMiners.remove(designedMiner.getValue1());
+                        System.err.println("Il miner " + designedMiner.getValue1() + " ha inviato un blocco non corretto.");
+                    }
+                    //System.out.println("Ho tirato fuori il blocco con chainLevel: " + b.getChainLevel() + "\n");
                 }
             } else {
                 nullResponse = Boolean.TRUE;
