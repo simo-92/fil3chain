@@ -95,13 +95,22 @@ public class ControllerBlockRequest {
 		// IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
 	}
 
-	@RequestMapping(value = "/fil3chain/getBlock", method = RequestMethod.GET)
+	@RequestMapping(value = "/fil3chain/getBlockByChain", method = RequestMethod.GET)
 	@ResponseBody
 	public List<Block> getBlock(Integer chainLevel) {
 		// System.err.println("Rispondo con: " + blockRepository.findBychainLevel(chainLevel));
 		return blockRepository.findBychainLevel(chainLevel);
 	}
 
+	@RequestMapping(value = "/fil3chain/getBlockByhash", method = RequestMethod.GET)
+	@ResponseBody
+	public Block getBlock(String hash) {
+		// System.err.println("Rispondo con: " + blockRepository.findBychainLevel(chainLevel));
+		return blockRepository.findByhashBlock(hash);
+	}
+
+	
+	
 	// TODO Cambiare e mettere specifiche professore
 	@RequestMapping(value = "/poolDispatcher", method = RequestMethod.GET)
 	public Integer getDifficult() {

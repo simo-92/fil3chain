@@ -74,7 +74,7 @@ public class BlockchainManager implements BlockRepository {
 	}
 
 	@Override
-	public List<Block> findByhashBlock(String hashBlock) {
+	public Block findByhashBlock(String hashBlock) {
 
 		return null;
 	}

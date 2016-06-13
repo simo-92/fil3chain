@@ -15,7 +15,7 @@ public interface BlockRepository extends CrudRepository<Block, Long> {
 
 	Block findFirstByOrderByChainLevelDesc();
 
-	List<Block> findByhashBlock(@Param("hashBlock") String hashBlock);
+	Block findByhashBlock(@Param("hashBlock") String hashBlock);
 
 	List<Block> findBychainLevel(@Param("cLevel") Integer cLevel);
 	
