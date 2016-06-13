@@ -225,11 +225,11 @@ public class Miner implements MinerEventsListener {
 
 		// nell primo update
 
-		if (blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock()) != null)
-			singleBlockVerify(blockRepository, b);
-		else
+		if (blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock()) == null)
 			blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock());
 
+		return singleBlockVerify(blockRepository, b);
+		
 		// devo chiedere a tutti i miner se hanno questo blocco
 
 		// lista vuota scarto Cristo
@@ -239,13 +239,13 @@ public class Miner implements MinerEventsListener {
 
 		// Tutti i miei parmatetri
 		// se non ho il blocco padre mi aggiorno da tutti (e mi tornerà anche questo)
-		if (!blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b)) {
-			// Eseguo l'update della catena
-			return blockChain.updateFilechain();
-		} else {
-			// Altrimenti verifico il blocco
-			return singleBlockVerify(blockRepository, b);
-		}
+//		if (!blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b)) {
+//			// Eseguo l'update della catena
+//			return blockChain.updateFilechain();
+//		} else {
+//			// Altrimenti verifico il blocco
+//			return singleBlockVerify(blockRepository, b);
+//		}
 
 	}
 

@@ -145,12 +145,10 @@ public class BlockChain {
 		// Rimuovo il mio IP
 		ipMiners.remove(miner.getIp());
 
-		Integer myChainLevel = 0;
 		while (!ipMiners.isEmpty()) {
 			// Lista contenente le richieste asincrone ai 3 ip
 			List<Future<Pairs<IP, Block>>> minerResp = new ArrayList<>();
 			// Chiedi al db il valora del mio Max chainLevel
-			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel();
 
 			// Finche non sono aggiornato(ovvero mi rispondono con stringa
 			// codificata o blocco fittizio)
