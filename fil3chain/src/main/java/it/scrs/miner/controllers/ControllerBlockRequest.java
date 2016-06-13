@@ -97,6 +97,7 @@ public class ControllerBlockRequest {
 	@RequestMapping(value = "/fil3chain/getBlock", method = RequestMethod.GET)
 	@ResponseBody
 	public List<Block> getBlock(Integer chainLevel) {
+		// System.err.println("Rispondo con: " + blockRepository.findBychainLevel(chainLevel));
 		return blockRepository.findBychainLevel(chainLevel);
 	}
 

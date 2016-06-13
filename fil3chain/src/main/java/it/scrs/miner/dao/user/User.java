@@ -5,17 +5,12 @@
 package it.scrs.miner.dao.user;
 
 
-import java.util.List;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.transaction.Transaction;
 
+import javax.persistence.*;
+import java.util.List;
 
 
 /**
@@ -43,9 +38,11 @@ public class User {
 
 	// Relations
 	@OneToMany(mappedBy = "userContainer")
+    @JsonIgnore
 	private List<Block> calculatedBlocks;
 
 	@OneToMany(mappedBy = "authorContainer")
+    @JsonIgnore
 	// @JoinColumn(name = "hashFile")// Autore
 	private List<Transaction> fileContainer;
 	

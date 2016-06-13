@@ -1,6 +1,7 @@
 package it.scrs.miner;
 
 import it.scrs.miner.dao.block.Block;
+import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.IP;
@@ -52,6 +53,9 @@ public class MiningService extends Thread implements Runnable {
     // Lista di transazioni presente nel blocco
     private List<Transaction> transactions;
 
+    // Block repository
+    private BlockRepository blockRepository;
+
     /**
      * Costruttore di default (necessario)
      */
@@ -68,7 +72,7 @@ public class MiningService extends Thread implements Runnable {
      * @param block
      * @param difficulty
      */
-    public MiningService(List<Transaction> transactions, Block previousBlock, String prKey, String puKey, Block block, Integer difficulty, Runnable interruptCallback) {
+    public MiningService(List<Transaction> transactions, Block previousBlock, String prKey, String puKey, Block block, Integer difficulty, BlockRepository blockRepository, Runnable interruptCallback) {
         this.block = block;
         this.privateKey = prKey;
         this.publicKey = puKey;
@@ -76,6 +80,7 @@ public class MiningService extends Thread implements Runnable {
         this.transactions = transactions;
         this.difficulty = difficulty;
         this.interruptCallback = interruptCallback;
+        this.blockRepository = blockRepository;
     }
 
     /**
@@ -160,10 +165,15 @@ public class MiningService extends Thread implements Runnable {
         block.setTransactionsContainer(transactions);
         block.setCreationTime(Long.toString(System.currentTimeMillis()));
         System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: " + nonce + " Tempo impiegato: " + totalTime + " secondi");
-        System.out.println("Hash provati: " + (Math.abs(nonceFinish - nonceStart)) + " HashRate: " + (((Math.abs(nonceFinish - nonceStart))/totalTime)/1000000.0f) + " MH/s");
+        // System.out.println("Hash provati: " + (Math.abs(nonceFinish - nonceStart)) + " HashRate: " + (((Math.abs(nonceFinish - nonceStart))/totalTime)/1000000.0f) + " MH/s");
         // Chiude il thread
         //interrupt();
+        // Salvo il blocco
+        if (blockRepository != null) blockRepository.save(block);
+
         sendBlockToMiners();
+
+        //TODO: Ricomincia a minare
     }
 
     @Async
@@ -179,12 +189,13 @@ public class MiningService extends Thread implements Runnable {
                 Block newBlock = restTemplate.postForObject("http://" + ip.getIp() + "/fil3chain/newBlock", block, Block.class);
                 blocks.add(newBlock);
             } catch (Exception e) {
-                e.printStackTrace();
+                // e.printStackTrace();
+                System.out.println("Il miner " + ip.getIp() + " non è più connesso.");
             }
         }
 
         // Annullo il blocco appena minato
-        // block = null;
+        block = null;
 
         return new AsyncResult<>(blocks);
     }
