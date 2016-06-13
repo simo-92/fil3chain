@@ -56,7 +56,7 @@ public class Block {
     @OneToOne
     @JoinColumn(name = "Block_prevHashBlock")
     private Block fatherBlockContainer;
-    private String fatherHash;
+
     @ManyToOne
     @JoinColumn(name = "User_publicKeyHash") // Autore
     @Cascade(org.hibernate.annotations.CascadeType.ALL)

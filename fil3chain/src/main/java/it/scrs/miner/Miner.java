@@ -86,7 +86,7 @@ public class Miner implements MinerEventsListener {
 		setBlockRepository(blockRepository);
 		setServiceMiner(serviceMiner);
 		firstConnectToEntryPoint();
-		
+
 		blockChain = new BlockChain(this);
 		initializeBlockChain();
 		blockChain.updateFilechain();
@@ -224,12 +224,13 @@ public class Miner implements MinerEventsListener {
 	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
 
 		// nell primo updateh
-
+		System.out.println("\n ciccio merda");
 		if (blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock()) == null)
-			blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock());
+			System.out.println("\n " + blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock()));
 
-		return singleBlockVerify(blockRepository, b);
-		
+		Boolean bool = singleBlockVerify(blockRepository, b);
+		System.out.println("\n verify " + bool);
+		return bool;
 		// devo chiedere a tutti i miner se hanno questo blocco
 
 		// lista vuota scarto Cristo
@@ -239,13 +240,13 @@ public class Miner implements MinerEventsListener {
 
 		// Tutti i miei parmatetri
 		// se non ho il blocco padre mi aggiorno da tutti (e mi tornerà anche questo)
-//		if (!blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b)) {
-//			// Eseguo l'update della catena
-//			return blockChain.updateFilechain();
-//		} else {
-//			// Altrimenti verifico il blocco
-//			return singleBlockVerify(blockRepository, b);
-//		}
+		// if (!blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b)) {
+		// // Eseguo l'update della catena
+		// return blockChain.updateFilechain();
+		// } else {
+		// // Altrimenti verifico il blocco
+		// return singleBlockVerify(blockRepository, b);
+		// }
 
 	}
 

@@ -144,7 +144,7 @@ public class BlockChain {
 
 		// Rimuovo il mio IP
 		ipMiners.remove(miner.getIp());
-
+System.out.println("\nBranchUpdate");
 		while (!ipMiners.isEmpty()) {
 			// Lista contenente le richieste asincrone ai 3 ip
 			List<Future<Pairs<IP, Block>>> minerResp = new ArrayList<>();
@@ -154,6 +154,7 @@ public class BlockChain {
 			// codificata o blocco fittizio)
 			// Prendo k ip random da tutta la lista di Ip che mi sono stati inviati
 			askMinerBlock(ipMiners, minerResp, serviceMiner);
+			System.out.println("\nBranchUpdate REQ");
 
 			// minerResp.add(serviceMiner.findMaxChainLevel("192.168.0.107"));
 			// System.out.println("1");
@@ -162,6 +163,8 @@ public class BlockChain {
 			Pairs<IP, Block> designedMiner = new Pairs<>();
 			try {
 				waitAndChooseMinerBlock(minerResp, designedMiner);
+				System.out.println("\nBranchUpdate Wait and Choose");
+
 			} catch (InterruptedException | ExecutionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -169,6 +172,8 @@ public class BlockChain {
 
 			try {
 				killRequestBlock(minerResp);
+				System.out.println("\nBranchUpdate KILL");
+
 			} catch (InterruptedException | ExecutionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -177,8 +182,10 @@ public class BlockChain {
 			// Aggiorno la mia blockChain con i blocchi che mi arrivano in modo incrementale
 			if (designedMiner.getValue1() != null) {
 				System.out.println("Il Miner designato = " + designedMiner.getValue1() + " con ChainLevel = " + designedMiner.getValue2() + "\n");
-				try {
+				try {System.out.println("\nBranchUpdate GetBlock");
 					getBlockFromMiner(ipMiners, hash, designedMiner, blockRepository);
+					
+
 				} catch (IOException | ExecutionException | InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
