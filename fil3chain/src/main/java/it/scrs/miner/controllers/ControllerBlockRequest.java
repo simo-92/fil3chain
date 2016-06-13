@@ -117,31 +117,27 @@ public class ControllerBlockRequest {
 	}
 	
 	// Controller che intercetta la connessione di un utente
-	@RequestMapping(value = "/user_connect", method = RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	public void newUserConnection(@RequestBody  MultiValueMap<String,String> ip) {
-		String json=ip.keySet().iterator().next();
-		JsonObject jobj = new Gson().fromJson(json,JsonObject.class);
+	@RequestMapping(value = "/user_connect", method = RequestMethod.POST)
+	public void newUserConnection(@RequestBody  String ip) {     
+		JsonObject jobj = new Gson().fromJson(ip,JsonObject.class);
 		String ipHost = jobj.get("user_ip").getAsString();
 		IPManager.getManager().addIP(new IP(ipHost));
 		// IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
-	}
+	}       
 
 	// Controller che intercetta la disconnessione di un utente
-	@RequestMapping(value = "/user_disconnect", method = RequestMethod.POST, consumes=MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-	public void newUserDisconnection(@RequestBody  MultiValueMap<String,String> ip) {
-		String json=ip.keySet().iterator().next();
-		JsonObject jobj = new Gson().fromJson(json,JsonObject.class);
+	@RequestMapping(value = "/user_disconnect", method = RequestMethod.POST)
+	public void newUserDisconnection(@RequestBody String ip) {
+		JsonObject jobj = new Gson().fromJson(ip,JsonObject.class);
 		String ipHost = jobj.get("user_ip").getAsString();
 		IPManager.getManager().removeIP(new IP(ipHost));
 		// IPManager.getManager().getIPList().forEach(i -> System.out.println(i));
 	}
 
 	// Controller che intercetta i ping
-		@RequestMapping(value = "/fil3chain/user_ping", method = RequestMethod.GET)
-		public String user_ping() {
-			JsonObject x=new JsonObject();
-			x.addProperty("response", "ACK");
-			return x.toString();
+		@RequestMapping(value = "/user_ping", method = RequestMethod.POST)
+		public @ResponseBody String user_ping() { //response body fa si che il return diventa campo dati della risposta 
+			return "{\"response\":\"ACK\"}";
 		}
 		
 		
