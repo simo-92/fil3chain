@@ -151,7 +151,7 @@ public class MiningService extends Thread implements Runnable {
 
             // Incremento il nonce
             nonce++;
-        } while (!verifyHash(hash));
+		} while (!verifyHash(hash));
 
         nonceFinish = nonce - 1;
         totalTime = (new Date().getTime() - startTime)/1000.0f;

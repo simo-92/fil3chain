@@ -179,8 +179,6 @@ public class Miner implements MinerEventsListener {
         // Tutti i miei parmatetri
         // se non ho il blocco padre mi aggiorno da tutti (e mi tornerà anche questo)
         if (!blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b)) {
-            // Stoppo il processo di mining
-            stopMine();
             // Eseguo l'update della catena
             return updateFilechain();
         } else {
