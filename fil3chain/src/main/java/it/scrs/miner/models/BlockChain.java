@@ -262,26 +262,7 @@ public class BlockChain {
 		}
 	}
 	
-	/**
-	 * Restituisce la lista di miner che hanno risposto con il loro livello di block chain.
-	 *
-	 * @param ipMiners
-	 * @param minerResp
-	 */
-	private void askMinerBLock(List<IP> ipMiners, List<Future<Pairs<IP, Block>>> minerResp, ServiceMiner serviceMiner) {
-
-		for (int i = 0; i < ipMiners.size(); i++) {
-			// Double x = Math.random() * ipMiners.size();
-			Future<Pairs<IP, Block>> result = serviceMiner.findBlockByReq(ipMiners.get(i).getIp(),"getBlockByhash");
-			if (result == null) {
-				IP tmp = ipMiners.remove(i);
-				System.out.println("\nHo rimosso l'IP: " + tmp.getIp());
-			} else {
-				minerResp.add(result);
-			}
-		}
-	}
-
+	
 	/**
 	 * @param minerResp
 	 * @param designedMiner

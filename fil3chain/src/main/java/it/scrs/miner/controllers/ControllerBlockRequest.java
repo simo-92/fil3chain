@@ -87,7 +87,7 @@ public class ControllerBlockRequest {
 		System.out.println("il blocco che mi è stato mandato è " + newBlock);
 		//TODO dobbiamo verificare il blocco appena arrivato se è valido
 		//blocco il thread di mining e lo riavvio sulla fil3chain aggiornata
-
+		
         MinersListenerRegister.getInstance().notifyListenersNewBlock(newBlock);
 
 		return newBlock;
