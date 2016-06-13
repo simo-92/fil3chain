@@ -451,7 +451,6 @@ public class Miner implements MinerEventsListener {
         while (!nullResponse && (i < nBlockUpdate) && (designedMiner.getValue2() > myChainLevel)) {
             // TODO cambire la uri di richiesta
             myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel() + 1;
-            System.out.println("chain level aggiornato = "+myChainLevel);
             Type type = new TypeToken<List<Block>>() {
             }.getType();
 
@@ -474,8 +473,6 @@ public class Miner implements MinerEventsListener {
 
         if (!nullResponse && designedMiner.getValue2() <= blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel()) {
             ipMiners.remove(designedMiner.getValue1());
-            System.out.println(designedMiner.getValue1().getIp());
-            System.out.println("ho rimosso ip = "+designedMiner.getValue1());
         }
     }
 

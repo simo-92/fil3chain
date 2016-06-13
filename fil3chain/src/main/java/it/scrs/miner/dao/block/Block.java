@@ -5,16 +5,12 @@
 package it.scrs.miner.dao.block;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.Cascade;
 import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import java.math.BigInteger;
 import java.util.List;
 
 
@@ -76,7 +72,6 @@ public class Block {
 
     /**
      * @param hashBlock
-     * @param creationTime
      * @param merkleRoot
      * @param minerPublicKey
      * @param nonce
@@ -93,7 +88,6 @@ public class Block {
     }
 
     /**
-     * @param creationTime
      * @param merkleRoot
      * @param minerPublicKey
      * @param nonce
@@ -114,102 +108,10 @@ public class Block {
         this.userContainer = userContainer;
     }
 
-
-    public Boolean verifyHash(int difficulty) {
-
-        // Se non è presente alcun hash allora ritorna falso
-        if (hashBlock == null || hashBlock.isEmpty()) return Boolean.FALSE;
-
-        // Costruisco la stringa di zeri che deve essere presente
-        // all'inizio dell'hash, data la difficoltà
-        String puzzle = "";
-
-		/*
-        for(int i = 1; i <= difficulty; i++) {
-            puzzle += "1";
-        }
-        */
-
-        for(int i = 0; i < difficulty; i++) {
-            puzzle += "0";
-        }
-
-        // BigInteger puzzleInt = new BigInteger(puzzle, 2);
-        // return puzzleInt.and(new BigInteger(hashBlock, 16)).compareTo(new BigInteger("0")) == 0;
-
-        // Restituisce true se l'hash corrente inizia con la stringa definita da puzzle
-        // e se l'hash è un hash del blocco.
-        // False altrimenti
-        return (hashBlock.startsWith(puzzle));
-
-		/*
-		Integer diff, i;
-		diff = 2;
-		i = 0;
-		String s = this.getHashBlock();
-		String puzzle = "";
-
-		while (i < diff) {
-			puzzle += "0";
-			i++;
-		}
-
-		this.setHashBlock(null);
-		
-		String hash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
-		
-		this.setHashBlock(hash);
-		if (s.startsWith(puzzle) && (s.compareTo(hash) == 0))
-			return Boolean.TRUE;
-		return Boolean.FALSE;
-		*/
-    }
-
     @Override
     public String toString() {
         return fatherBlockContainer.getHashBlock() + merkleRoot + userContainer.getPublicKey();
     }
-
-    //MychainLevel=Chiedi ultimo blocco nel db
-    //se la differenza tra il mio blocco e il blocco è arrivato
-    // se è negativa
-    //ed è 1 è successivo al mio blocco
-    // facio la verifica
-
-
-
-    //verifica se esiste un padre
-    //Verify MerkleRooot
-    ////rooot = MerkleTree(getTransaction)
-    //rooot.stringCompare(MerkleTree)
-
-
-
-
-
-    // public void generateVerifiedHashBlock() {
-    //
-    // // richiesta a PoolDispatcher per saper la difficolta
-    // try {
-    // difficulty = Integer.getInteger(HttpUtil.doGet("http://localhost:8080/poolDispatcher"));
-    // } catch (Exception e) {
-    // difficulty = 0;
-    // e.printStackTrace();
-    // }
-    // String s = "";
-    // ArrayList<Integer> puzzle = new ArrayList<Integer>();
-    // for (int i = 0; i < difficulty; i++)
-    // puzzle.add(0);
-    // int j=0;
-    // this.setNonce(j);
-    // do {
-    // s = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
-    // j++;
-    // this.setNonce(j);
-    // } while (s.startsWith(puzzle.toString()));
-    // this.setHashBlock(s);
-    //
-    // }
 
     public void generateHashBlock() {
         String s = org.apache.commons.codec.digest.DigestUtils.sha256Hex(this.toString());
