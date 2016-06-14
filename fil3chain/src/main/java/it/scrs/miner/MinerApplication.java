@@ -95,7 +95,7 @@ public class MinerApplication implements CommandLineRunner {
 		block.setMerkleRoot(MerkleTree.buildMerkleTree(hashTransactions));
 
 		// Test chiamata per difficoltà TODO decommentare
-		Integer complexity = 26; //PoolDispatcherUtility.getCurrentComplexity();
+		Integer complexity = 27; //PoolDispatcherUtility.getCurrentComplexity();
 
 		// TODO: Eliminare la moltiplicazione una volta che il server ha una complessità decente
 		// complexity *= 5;

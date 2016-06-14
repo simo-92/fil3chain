@@ -416,14 +416,12 @@ public class BlockChain {
 			}.getType();
 			
 			List<Block> blockResponse= HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlockByChain?chainLevel=" + myChainLevel, type);
-			System.out.println("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlockByChain?chainLevel=" + myChainLevel);
 			if (blockResponse != null) {
 				System.out.println("\nBlock response: " + blockResponse.size());
                                 System.out.println(blockResponse.get(0).getHashBlock());
 				for (Block b : blockResponse) {
                                     System.out.println(b);
 					if (miner.verifyBlock(b, blockRepository, serviceMiner)) {
-                                                System.out.println("compatta te spacco porco dioooooooo");
                                                 for(Transaction t: b.getTransactionsContainer())
                                                     t.setBlockContainer(b);
 						blockRepository.save(b);
