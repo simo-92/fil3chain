@@ -25,6 +25,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -360,17 +362,32 @@ public class Miner implements MinerEventsListener {
 	private Boolean verifyMerkleRoot(Block block) {
 
 		ArrayList<String> transactionsHash = new ArrayList<>();
+		ArrayList<String> transactionsHashReverse = new ArrayList<>();
+		
 		for (Transaction transaction : block.getTransactionsContainer()) {
 			transactionsHash.add(transaction.getHashFile());
 		}
-
+		
+		System.out.println("Merckle Hash Block:"+block.getHashBlock());
+		
+		Collections.reverse(transactionsHash);
 		String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
-
+		
+		for (Transaction transaction : block.getTransactionsContainer()) {
+			System.out.println("Lista transazioni blocco da verificare:"+transaction.getHashFile());
+		}
+		
+		
+		System.out.println("Merkle mio1:"+checkMerkle);
+//		System.out.println("Merkle mio2:"+checkMerkle2);
+		System.out.println("Merkle suo:"+block.getMerkleRoot());
+		System.out.println("Confronto merkle:"+checkMerkle.equals(block.getMerkleRoot()));
+		
 		if (!checkMerkle.equals(block.getMerkleRoot())) {
 			System.err.println("MerkleRoot diverso.");
 			return Boolean.FALSE;
 		}
-
+		System.out.println("Lista Transazioni Merkle Root"+transactionsHash.toString());
 		return Boolean.TRUE;
 	}
 

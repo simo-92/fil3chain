@@ -358,10 +358,11 @@ public class BlockChain {
 			Type type = new TypeToken<Block>() {
 			}.getType();
 
+			System.out.println("Hash richiesta:"+hash+"\n");
 			Block blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlockByhash?hash=" + hash, type);
 
 			if (blockResponse != null) {
-				System.out.println("\nBlock response: " + blockResponse);
+				System.out.println("\n Block response branch: " + blockResponse.getHashBlock()+"\n");
 
 				if (miner.verifyBlock(blockResponse, blockRepository, serviceMiner)) {
 					blockRepository.save(blockResponse);
@@ -406,8 +407,8 @@ public class BlockChain {
 
 			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlockByChain?chainLevel=" + myChainLevel, type);
 			if (blockResponse != null) {
-				System.out.println("\nBlock response: " + blockResponse.size());
-				System.out.println(blockResponse.get(0).getHashBlock());
+				System.out.println("\n Block response: " + blockResponse.size());
+				System.out.println("\n Hash Block response"+blockResponse.get(0).getHashBlock()+"\n");
 				for (Block b : blockResponse) {
 					System.out.println(b);
 					if (miner.verifyBlock(b, blockRepository, serviceMiner)) {
