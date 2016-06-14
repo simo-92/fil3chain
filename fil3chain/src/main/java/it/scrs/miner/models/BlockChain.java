@@ -351,7 +351,7 @@ public class BlockChain {
 	@SuppressWarnings("unchecked")
 	private Boolean getBlockFromMiner(List<IP> ipMiners, String hash, Pairs<IP, Block> designedMiner, BlockRepository blockRepository) throws IOException, ExecutionException, InterruptedException {
 
-		// TODO cambire la uri di richiesta
+		// TODO cambire la uri di richiesta    
 		Type type = new TypeToken<Block>() {
 		}.getType();
 
