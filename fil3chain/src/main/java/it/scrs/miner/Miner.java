@@ -369,9 +369,9 @@ public class Miner implements MinerEventsListener {
 		}
 		
 		System.out.println("Merckle Hash Block:"+block.getHashBlock());
-		
-		Collections.reverse(transactionsHash);
 		String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
+		Collections.reverse(transactionsHash);
+		String checkMerkle2 = MerkleTree.buildMerkleTree(transactionsHash);
 		
 		for (Transaction transaction : block.getTransactionsContainer()) {
 			System.out.println("Lista transazioni blocco da verificare:"+transaction.getHashFile());
@@ -379,11 +379,11 @@ public class Miner implements MinerEventsListener {
 		
 		
 		System.out.println("Merkle mio1:"+checkMerkle);
-//		System.out.println("Merkle mio2:"+checkMerkle2);
+		System.out.println("Merkle mio2:"+checkMerkle2);
 		System.out.println("Merkle suo:"+block.getMerkleRoot());
 		System.out.println("Confronto merkle:"+checkMerkle.equals(block.getMerkleRoot()));
 		
-		if (!checkMerkle.equals(block.getMerkleRoot())) {
+		if (!checkMerkle.equals(block.getMerkleRoot())||!checkMerkle2.equals(block.getMerkleRoot())) {
 			System.err.println("MerkleRoot diverso.");
 			return Boolean.FALSE;
 		}
