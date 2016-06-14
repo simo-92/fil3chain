@@ -362,7 +362,6 @@ public class Miner implements MinerEventsListener {
 	private Boolean verifyMerkleRoot(Block block) {
 
 		ArrayList<String> transactionsHash = new ArrayList<>();
-		ArrayList<String> transactionsHashReverse = new ArrayList<>();
 		
 		for (Transaction transaction : block.getTransactionsContainer()) {
 			transactionsHash.add(transaction.getHashFile());
@@ -383,7 +382,7 @@ public class Miner implements MinerEventsListener {
 		System.out.println("Merkle suo:"+block.getMerkleRoot());
 		System.out.println("Confronto merkle:"+checkMerkle.equals(block.getMerkleRoot()));
 		
-		if (!checkMerkle.equals(block.getMerkleRoot())||!checkMerkle2.equals(block.getMerkleRoot())) {
+		if ((!checkMerkle.equals(block.getMerkleRoot()))&&(!checkMerkle2.equals(block.getMerkleRoot()))) {
 			System.err.println("MerkleRoot diverso.");
 			return Boolean.FALSE;
 		}
