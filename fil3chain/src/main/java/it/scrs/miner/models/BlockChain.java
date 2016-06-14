@@ -352,7 +352,6 @@ public class BlockChain {
 	private Boolean getBlockFromMiner(List<IP> ipMiners, String hash, Pairs<IP, Block> designedMiner, BlockRepository blockRepository) throws IOException, ExecutionException, InterruptedException {
 
 		Boolean nullResponse = Boolean.FALSE;
-		Boolean flag = Boolean.FALSE;
 
 		while (!nullResponse) {
 			// TODO cambire la uri di richiesta
@@ -366,12 +365,14 @@ public class BlockChain {
 				System.out.println("\n Block response branch: " + blockResponse.getHashBlock()+"\n");
 
 				if (miner.verifyBlock(blockResponse, blockRepository, serviceMiner)) {
+					System.out.println("salvo il blocco");
 					blockRepository.save(blockResponse);
-					flag = Boolean.TRUE;
+					return  Boolean.TRUE;
 				} else {
 					// Elimino il miner se il blocco non è verificato
 					ipMiners.remove(designedMiner.getValue1());
 					System.err.println("Il miner " + designedMiner.getValue1() + " ha inviato un blocco non corretto.");
+					
 				}
 				// System.out.println("Ho tirato fuori il blocco con chainLevel: " + b.getChainLevel() + "\n");
 
@@ -380,12 +381,12 @@ public class BlockChain {
 			}
 
 		}
-		// System.out.println("2");
+		 System.out.println("2");
 
 		if (!nullResponse) {
 			ipMiners.remove(designedMiner.getValue1());
 		}
-		return flag;
+		return nullResponse;
 	}
 
 	/**
