@@ -310,6 +310,7 @@ public class BlockChain {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
+	
 	private void waitAndChooseMinerBlock(List<Future<Pairs<IP, Block>>> minerResp, Pairs<IP, Block> designedMiner) throws InterruptedException, ExecutionException {
 
 		Boolean flag = Boolean.TRUE;
