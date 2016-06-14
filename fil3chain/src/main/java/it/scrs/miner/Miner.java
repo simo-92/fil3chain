@@ -224,9 +224,8 @@ public class Miner implements MinerEventsListener {
 	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
 
 		// nell primo updateh
-		System.out.println("\n ciccio merda");
 		Block bTmp = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
-		System.out.println(bTmp);
+		//System.out.println(bTmp); se null crash tutto... non si puo fga il to string di un oggetto null
 		if (bTmp == null)
 			blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock());
 
@@ -265,20 +264,27 @@ public class Miner implements MinerEventsListener {
 		// COntrolla se il apdre è ad un livello meno 1 del mio chain level
 
 		// Verifica firma
-		if (!verifySignature(blockToVerify))
-			return Boolean.FALSE;
-
+		if (!verifySignature(blockToVerify)){       
+		    System.out.println("problemi sulla firma");	
+                    return Boolean.FALSE;
+                     
+                }
 		// Verifica Proof of Work
-		if (!verifyProofOfWork(blockToVerify))
-			return Boolean.FALSE;
-
+		if (!verifyProofOfWork(blockToVerify)){
+		    System.out.println("problema con la proof of work")	;
+                    return Boolean.FALSE;
+                }
 		// Verifica MerkleRoot
-		if (!verifyMerkleRoot(blockToVerify))
+		if (!verifyMerkleRoot(blockToVerify)){
+                        System.out.println("problema merkle tree");
 			return Boolean.FALSE;
+                }       
 
 		// Verifica transazioni uniche
-		if (!verifyUniqueTransactions(blockToVerify, blockRepository))
+		if (!verifyUniqueTransactions(blockToVerify, blockRepository)){
+                        System.out.println("problema con transazioni uniche");
 			return Boolean.FALSE;
+                }
 
 		// Se ha passato tutti i controlli allora ritorna TRUE
 		return Boolean.TRUE;

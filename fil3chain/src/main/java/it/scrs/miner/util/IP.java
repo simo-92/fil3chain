@@ -38,8 +38,6 @@ public class IP implements Cloneable{
 
     @Override 
     public boolean equals(Object o){
-        
-        System.out.println("gli oggetti sono uguali = "+ user_ip.equals(o));
         return user_ip.equals(((IP)o).getIp());
     }
 

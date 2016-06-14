@@ -421,6 +421,7 @@ public class BlockChain {
 				System.out.println("\nBlock response: " + blockResponse.size());
 				for (Block b : blockResponse) {
 					if (miner.verifyBlock(b, blockRepository, serviceMiner)) {
+                                                System.out.println("compatta te spacco porco dioooooooo");
 						blockRepository.save(b);
 					} else {
 						// Elimino il miner se il blocco non è verificato

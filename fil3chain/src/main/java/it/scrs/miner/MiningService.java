@@ -169,7 +169,7 @@ public class MiningService extends Thread implements Runnable {
         block.setTransactionsContainer(transactions);
         block.setCreationTime(Long.toString(System.currentTimeMillis()));
         System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: " + nonce + " Tempo impiegato: " + totalTime + " secondi");
-        // System.out.println("Hash provati: " + (Math.abs(nonceFinish - nonceStart)) + " HashRate: " + (((Math.abs(nonceFinish - nonceStart))/totalTime)/1000000.0f) + " MH/s");
+        System.out.println("Hash provati: " + (Math.abs(nonceFinish - nonceStart)) + " HashRate: " + (((Math.abs(nonceFinish - nonceStart))/totalTime)/1000000.0f) + " MH/s");
         // Chiude il thread
         //interrupt();
         // Salvo il blocco
