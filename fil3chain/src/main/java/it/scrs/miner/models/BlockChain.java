@@ -387,6 +387,9 @@ public class BlockChain {
 	 * @param designedMiner
 	 * @throws Exception
 	 */
+	//TODO da rivalutare questo metodo, più in particolare la questione del while visto che  è  stata ereditata duratente una modifica di pezzi di codice
+	//TODO probabilmente il while non serve perchè le richieste vengono fatte da fuori tramite un ciclo quindi qui dentro non serve anche se cmq dovrei uscire
+	//TODO valutare bene 
 	@SuppressWarnings("unchecked")
 	private void getBlocksFromMiner(List<IP> ipMiners, Integer myChainLevel, Pairs<IP, Integer> designedMiner, BlockRepository blockRepository) throws IOException, ExecutionException, InterruptedException {
 
@@ -402,7 +405,7 @@ public class BlockChain {
 			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlockByChain?chainLevel=" + myChainLevel, type);
 			if (blockResponse != null) {
 				System.out.println("\n Block response: " + blockResponse.size());
-				System.out.println("\n Hash Block response" + blockResponse.get(0).getHashBlock() + "\n");
+				System.out.println("\n Hash Block response " + blockResponse.get(0).getHashBlock() + "\n");
 				for (Block b : blockResponse) {
 					System.out.println(b);
 					if (miner.verifyBlock(b, blockRepository, serviceMiner)) {
