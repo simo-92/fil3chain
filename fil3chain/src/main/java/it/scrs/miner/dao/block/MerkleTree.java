@@ -19,6 +19,14 @@ public class MerkleTree {
         List<String> aux=new ArrayList<String>();
         aux.addAll(hashTransactions);
         //finche' non rimane solo un nodo radice
+        if(aux.size()==1){
+            System.out.println("una sola foglia");
+            String n1=aux.get(0);
+            aux.remove(0);
+            aux.add(0, MerkleTree.joinNodes(n1, n1));
+            return aux.get(0);
+        }
+        System.out.println("transazioni numero: "+aux.size());
         while(aux.size()!=1){
             for(int j=0;j<aux.size();j++){
                 

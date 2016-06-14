@@ -262,30 +262,33 @@ public class Miner implements MinerEventsListener {
 		// Ordine di verifica migliore: Firma, PoW, Markle root, Double Trans
 		// TODO
 		// COntrolla se il apdre è ad un livello meno 1 del mio chain level
-
+                System.out.println("inizio verify");
 		// Verifica firma
 		if (!verifySignature(blockToVerify)){       
 		    System.out.println("problemi sulla firma");	
                     return Boolean.FALSE;
                      
                 }
+                System.out.println("firma ok");
 		// Verifica Proof of Work
 		if (!verifyProofOfWork(blockToVerify)){
 		    System.out.println("problema con la proof of work")	;
                     return Boolean.FALSE;
                 }
+                
+                System.out.println("pow ok");
 		// Verifica MerkleRoot
 		if (!verifyMerkleRoot(blockToVerify)){
                         System.out.println("problema merkle tree");
 			return Boolean.FALSE;
                 }       
-
+                System.out.println("merkle ok");
 		// Verifica transazioni uniche
 		if (!verifyUniqueTransactions(blockToVerify, blockRepository)){
                         System.out.println("problema con transazioni uniche");
 			return Boolean.FALSE;
                 }
-
+                System.out.println("finito verify");
 		// Se ha passato tutti i controlli allora ritorna TRUE
 		return Boolean.TRUE;
 	}

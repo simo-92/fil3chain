@@ -94,15 +94,15 @@ public class MinerApplication implements CommandLineRunner {
 
 		block.setMerkleRoot(MerkleTree.buildMerkleTree(hashTransactions));
 
-		// Test chiamata per difficoltà
-		Integer complexity = PoolDispatcherUtility.getCurrentComplexity();
+		// Test chiamata per difficoltà TODO decommentare
+		Integer complexity = 16;//PoolDispatcherUtility.getCurrentComplexity();
 
 		// TODO: Eliminare la moltiplicazione una volta che il server ha una complessità decente
 		// complexity *= 5;
 		System.out.println("Complessità per minare: " + complexity);
 
 		// Il miner inizia a minare
-		miner.setMiningService(new MiningService(transactionsList, myLastBlock, miner.getMyPrivateKey(), miner.getMyPublickKey(), block, complexity, blockRepository, new Runnable() {
+		miner.setMiningService(new MiningService(transactionsList, myLastBlock, miner.getMyPrivateKey(), miner.getMyPublickKey(), block, complexity, blockRepository,transRepo, new Runnable() {
 
 			@Override
 			public void run() {

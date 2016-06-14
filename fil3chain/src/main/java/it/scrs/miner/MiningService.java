@@ -4,6 +4,7 @@ import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
+import it.scrs.miner.dao.transaction.TransactionRepository;
 import it.scrs.miner.dao.user.User;
 import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.IP;
@@ -59,6 +60,7 @@ public class MiningService extends Thread implements Runnable {
 
     // Block repository
     private BlockRepository blockRepository;
+    private TransactionRepository transRepo;
 
     /**
      * Costruttore di default (necessario)
@@ -76,7 +78,7 @@ public class MiningService extends Thread implements Runnable {
      * @param block
      * @param difficulty
      */
-    public MiningService(List<Transaction> transactions, Block previousBlock, String prKey, String puKey, Block block, Integer difficulty, BlockRepository blockRepository, Runnable interruptCallback) {
+    public MiningService(List<Transaction> transactions, Block previousBlock, String prKey, String puKey, Block block, Integer difficulty, BlockRepository blockRepository,TransactionRepository transRepo, Runnable interruptCallback) {
         this.block = block;
         this.privateKey = prKey;
         this.publicKey = puKey;
@@ -85,6 +87,7 @@ public class MiningService extends Thread implements Runnable {
         this.difficulty = difficulty;
         this.interruptCallback = interruptCallback;
         this.blockRepository = blockRepository;
+        this.transRepo=transRepo;
     }
 
     /**
@@ -167,6 +170,7 @@ public class MiningService extends Thread implements Runnable {
         block.setMinerPublicKey(publicKey);
         block.setFatherBlockContainer(previousBlock);
         block.setTransactionsContainer(transactions);
+        
         block.setCreationTime(Long.toString(System.currentTimeMillis()));
         System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: " + nonce + " Tempo impiegato: " + totalTime + " secondi");
         System.out.println("Hash provati: " + (Math.abs(nonceFinish - nonceStart)) + " HashRate: " + (((Math.abs(nonceFinish - nonceStart))/totalTime)/1000000.0f) + " MH/s");
@@ -174,7 +178,11 @@ public class MiningService extends Thread implements Runnable {
         //interrupt();
         // Salvo il blocco
         if (blockRepository != null) blockRepository.save(block);
-
+        //per ogni transazione mette il riferimento al blocco container
+        for(Transaction trans: transactions){
+            trans.setBlockContainer(block);
+            transRepo.save(trans);
+        }
         sendBlockToMiners();
 
         //TODO: Ricomincia a minare
