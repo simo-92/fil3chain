@@ -43,6 +43,7 @@ public class Transaction {
 
 	@ManyToOne
 	@JoinColumn(name = "Block_hashBlock")
+        @JsonIgnore
 	private Block blockContainer;
 
 	@ManyToOne
