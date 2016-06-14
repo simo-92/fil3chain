@@ -273,9 +273,10 @@ public class MiningService extends Thread implements Runnable {
     }
 
     public void initializeService() {
+        System.out.println("\n interrupt1");
         // Interrompe il servizio
         interrupt();
-
+        System.out.println("\n interrupt2");
         // Prendo l'ultmo blocco della catena
         Block lastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
 

@@ -42,6 +42,7 @@ public class MinersListenerRegister {
     public void notifyListenersNewBlock(Block verifiedBlock) {
         for(Miner miner: registeredMiners) {
             miner.onNewBlockArrived(verifiedBlock);
+            System.out.println("\n Listener blocco e lo gestisco ");
         }
     }
 

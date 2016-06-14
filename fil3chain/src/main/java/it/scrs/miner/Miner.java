@@ -223,31 +223,21 @@ public class Miner implements MinerEventsListener {
 	 */
 	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
 
+		Boolean result = Boolean.TRUE;
 		// nell primo updateh
-		Block bTmp = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
-		//System.out.println(bTmp); se null crash tutto... non si puo fga il to string di un oggetto null
-		if (bTmp == null)
-			blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock());
+		System.out.println("\n" + b.getFatherBlockContainer().getHashBlock());
 
-		Boolean bool = singleBlockVerify(blockRepository, b);
-		System.out.println("\n verify " + bool);
-		return bool;
-		// devo chiedere a tutti i miner se hanno questo blocco
+		// cerco il padre nel mio db
+		Block bFather = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
+		// non lo trovo lo cerco dai miner
+		if (bFather == null)
+			result = blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock());
+		// se io ce l ho oppure l hotrovato in rete controllo il figlio e torno true
+	
+		if ((bFather != null || result) && singleBlockVerify(blockRepository, b))
+			return Boolean.TRUE;
 
-		// lista vuota scarto Cristo
-		// lista piena
-		// Controllar DB Se ho blocco se si verifica e convalida!
-		// Altrimenti devi chiedere ricorsivamente per il padre del current
-
-		// Tutti i miei parmatetri
-		// se non ho il blocco padre mi aggiorno da tutti (e mi tornerà anche questo)
-		// if (!blockRepository.findBychainLevel(b.getChainLevel() - 1).contains(b)) {
-		// // Eseguo l'update della catena
-		// return blockChain.updateFilechain();
-		// } else {
-		// // Altrimenti verifico il blocco
-		// return singleBlockVerify(blockRepository, b);
-		// }
+		return Boolean.FALSE;
 
 	}
 
@@ -262,33 +252,33 @@ public class Miner implements MinerEventsListener {
 		// Ordine di verifica migliore: Firma, PoW, Markle root, Double Trans
 		// TODO
 		// COntrolla se il apdre è ad un livello meno 1 del mio chain level
-                System.out.println("inizio verify");
+		System.out.println("inizio verify");
 		// Verifica firma
-		if (!verifySignature(blockToVerify)){       
-		    System.out.println("problemi sulla firma");	
-                    return Boolean.FALSE;
-                     
-                }
-                System.out.println("firma ok");
+		if (!verifySignature(blockToVerify)) {
+			System.out.println("problemi sulla firma");
+			return Boolean.FALSE;
+
+		}
+		System.out.println("firma ok");
 		// Verifica Proof of Work
-		if (!verifyProofOfWork(blockToVerify)){
-		    System.out.println("problema con la proof of work")	;
-                    return Boolean.FALSE;
-                }
-                
-                System.out.println("pow ok");
+		if (!verifyProofOfWork(blockToVerify)) {
+			System.out.println("problema con la proof of work");
+			return Boolean.FALSE;
+		}
+
+		System.out.println("pow ok");
 		// Verifica MerkleRoot
-		if (!verifyMerkleRoot(blockToVerify)){
-                        System.out.println("problema merkle tree");
+		if (!verifyMerkleRoot(blockToVerify)) {
+			System.out.println("problema merkle tree");
 			return Boolean.FALSE;
-                }       
-                System.out.println("merkle ok");
+		}
+		System.out.println("merkle ok");
 		// Verifica transazioni uniche
-		if (!verifyUniqueTransactions(blockToVerify, blockRepository)){
-                        System.out.println("problema con transazioni uniche");
+		if (!verifyUniqueTransactions(blockToVerify, blockRepository)) {
+			System.out.println("problema con transazioni uniche");
 			return Boolean.FALSE;
-                }
-                System.out.println("finito verify");
+		}
+		System.out.println("finito verify");
 		// Se ha passato tutti i controlli allora ritorna TRUE
 		return Boolean.TRUE;
 	}
