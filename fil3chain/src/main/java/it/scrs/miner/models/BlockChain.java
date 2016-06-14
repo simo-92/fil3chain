@@ -310,7 +310,7 @@ public class BlockChain {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
-	
+
 	private void waitAndChooseMinerBlock(List<Future<Pairs<IP, Block>>> minerResp, Pairs<IP, Block> designedMiner) throws InterruptedException, ExecutionException {
 
 		Boolean flag = Boolean.TRUE;
@@ -351,42 +351,34 @@ public class BlockChain {
 	@SuppressWarnings("unchecked")
 	private Boolean getBlockFromMiner(List<IP> ipMiners, String hash, Pairs<IP, Block> designedMiner, BlockRepository blockRepository) throws IOException, ExecutionException, InterruptedException {
 
-		Boolean nullResponse = Boolean.FALSE;
+		// TODO cambire la uri di richiesta
+		Type type = new TypeToken<Block>() {
+		}.getType();
 
-		while (!nullResponse) {
-			// TODO cambire la uri di richiesta
-			Type type = new TypeToken<Block>() {
-			}.getType();
+		System.out.println("Hash richiesta:" + hash + "\n");
+		Block blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlockByhash?hash=" + hash, type);
 
-			System.out.println("Hash richiesta:"+hash+"\n");
-			Block blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlockByhash?hash=" + hash, type);
+		if (blockResponse != null) {
+			System.out.println("\n Block response branch: " + blockResponse.getHashBlock() + "\n");
 
-			if (blockResponse != null) {
-				System.out.println("\n Block response branch: " + blockResponse.getHashBlock()+"\n");
-
-				if (miner.verifyBlock(blockResponse, blockRepository, serviceMiner)) {
-					System.out.println("salvo il blocco");
-					blockRepository.save(blockResponse);
-					return  Boolean.TRUE;
-				} else {
-					// Elimino il miner se il blocco non è verificato
-					ipMiners.remove(designedMiner.getValue1());
-					System.err.println("Il miner " + designedMiner.getValue1() + " ha inviato un blocco non corretto.");
-					
-				}
-				// System.out.println("Ho tirato fuori il blocco con chainLevel: " + b.getChainLevel() + "\n");
-
+			if (miner.verifyBlock(blockResponse, blockRepository, serviceMiner)) {
+				System.out.println("salvo il blocco");
+				blockRepository.save(blockResponse);
+				return Boolean.TRUE;
 			} else {
-				nullResponse = Boolean.TRUE;
+				// Elimino il miner se il blocco non è verificato
+				ipMiners.remove(designedMiner.getValue1());
+				System.err.println("Il miner " + designedMiner.getValue1() + " ha inviato un blocco non corretto.");
+				return Boolean.FALSE;
+
 			}
+			// System.out.println("Ho tirato fuori il blocco con chainLevel: " + b.getChainLevel() + "\n");
 
-		}
-		 System.out.println("2");
-
-		if (!nullResponse) {
+		} else {
 			ipMiners.remove(designedMiner.getValue1());
+			return Boolean.FALSE;
 		}
-		return nullResponse;
+
 	}
 
 	/**
@@ -410,7 +402,7 @@ public class BlockChain {
 			List<Block> blockResponse = HttpUtil.doGetJSON("http://" + designedMiner.getValue1().getIp() + "/fil3chain/getBlockByChain?chainLevel=" + myChainLevel, type);
 			if (blockResponse != null) {
 				System.out.println("\n Block response: " + blockResponse.size());
-				System.out.println("\n Hash Block response"+blockResponse.get(0).getHashBlock()+"\n");
+				System.out.println("\n Hash Block response" + blockResponse.get(0).getHashBlock() + "\n");
 				for (Block b : blockResponse) {
 					System.out.println(b);
 					if (miner.verifyBlock(b, blockRepository, serviceMiner)) {
