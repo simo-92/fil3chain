@@ -42,11 +42,15 @@ public class Transaction {
         @Column(name="index_in_block")
         private Integer indexInBlock;
 	// Relations
-
+         
+        /*
 	@ManyToOne
 	@JoinColumn(name = "Block_hashBlock")
         @JsonIgnore
 	private Block blockContainer;
+        */
+        @Column(name = "blockContainer")
+	private String blockContainer;
 
 	@ManyToOne
 	@JoinColumn(name = "User_publicKeyHash") // Autore
@@ -108,7 +112,7 @@ public class Transaction {
 	/**
 	 * @return the blockContainer
 	 */
-	public Block getBlockContainer() {
+	public String getBlockContainer() {
 
 		return blockContainer;
 	}
@@ -117,7 +121,7 @@ public class Transaction {
 	 * @param blockContainer
 	 *            the blockContainer to set
 	 */
-	public void setBlockContainer(Block blockContainer) {
+	public void setBlockContainer(String blockContainer) {
 
 		this.blockContainer = blockContainer;
 	}

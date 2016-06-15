@@ -410,7 +410,7 @@ public class BlockChain {
 					System.out.println(b);
 					if (miner.verifyBlock(b, blockRepository, serviceMiner)) {
 						for (Transaction t : b.getTransactionsContainer())
-							t.setBlockContainer(b);
+							t.setBlockContainer(b.getHashBlock());
 						blockRepository.save(b);
 					} else {
 						// Elimino il miner se il blocco non è verificato

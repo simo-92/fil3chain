@@ -37,7 +37,7 @@ public class PoolDispatcherUtility {
     public static Integer getBlockComplexity(String blockCreationTime) {
         try {
             JSONObject result  = new JSONObject(HttpUtil.doPost("http://vmanager:80/sdcmgr/PD/get_complexity", "{\"date\" : \"" + blockCreationTime + "\"}"));
-            return (Integer) result.get("complexity");
+            return ((Integer) (result.get("complexity")))/2;
         } catch (Exception e) {
             e.printStackTrace();
             return -1;

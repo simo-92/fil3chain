@@ -181,7 +181,7 @@ public class MiningService extends Thread implements Runnable {
         //per ogni transazione mette il riferimento al blocco container
         int indexInBlock=0;
         for(Transaction trans: transactions){
-            trans.setBlockContainer(block);
+            trans.setBlockContainer(block.getHashBlock());
             trans.setIndexInBlock(indexInBlock);
             System.out.println(trans.getIndexInBlock());
             transRepo.save(trans);
