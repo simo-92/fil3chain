@@ -51,6 +51,7 @@ public class Block {
     // Relationship
 
     @OneToMany(mappedBy = "blockContainer", fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
+    @OrderBy("index_in_block")
     private List<Transaction> transactionsContainer;
 
     @OneToOne

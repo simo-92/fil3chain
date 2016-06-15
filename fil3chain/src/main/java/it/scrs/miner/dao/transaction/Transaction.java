@@ -38,7 +38,9 @@ public class Transaction {
 	// @Column(name = "continues") // Serve per avere blocchi di dimensione fissa
 	// private Transaction continues; // True se il numero di citazioni non entra nel blocco e questa è una
 	// continuazione di un altra.
-
+        //ci serve per recuperare le transazioni nell'ordine stabilito dal merkle tree
+        @Column(name="index_in_block")
+        private Integer indexInBlock;
 	// Relations
 
 	@ManyToOne
@@ -153,5 +155,13 @@ public class Transaction {
 
 		this.citationsContainer = citationsContainer;
 	}
+
+    public Integer getIndexInBlock() {
+        return indexInBlock;
+    }
+
+    public void setIndexInBlock(Integer indexInBlock) {
+        this.indexInBlock = indexInBlock;
+    }
 
 }
