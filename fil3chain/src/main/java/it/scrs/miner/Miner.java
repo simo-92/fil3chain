@@ -43,6 +43,7 @@ import javax.crypto.NoSuchPaddingException;
 @Component
 public class Miner implements MinerEventsListener {
 
+	private static Miner miner;
 	private String ipEntryPoint;
 	private String portEntryPoint;
 	private String entryPointBaseUri;
@@ -73,12 +74,12 @@ public class Miner implements MinerEventsListener {
 	/**
 	 *
 	 */
-	public Miner() {
+	private Miner() {
 		super();
 		// TODO PRendi dal database ME USER
 	}
 
-	public Miner(String ip, BlockRepository blockRepository, ServiceMiner serviceMiner) {
+	private Miner(String ip, BlockRepository blockRepository, ServiceMiner serviceMiner) {
 		super();
 		loadNetworkConfig();
 		loadKeyConfig(); // carica le chiavi dal file properties
@@ -644,5 +645,20 @@ public class Miner implements MinerEventsListener {
 	public void setServiceMiner(ServiceMiner serviceMiner) {
 
 		this.serviceMiner = serviceMiner;
+
 	}
+
+	public static Miner getInstance(String ip, BlockRepository blockRepository, ServiceMiner serviceMiner) {
+		if (miner == null) {
+			miner = new Miner( ip,  blockRepository,  serviceMiner);
+		}
+
+		return miner;
+	}
+
+	public static Miner getInstance() {
+		
+		return miner;
+	}
+
 }

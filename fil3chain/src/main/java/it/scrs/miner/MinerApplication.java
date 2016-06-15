@@ -55,7 +55,7 @@ public class MinerApplication implements CommandLineRunner {
 		// Seleziona l'IP da utilizzare per la sessione corrente
 		String myIp = selectIp();
 
-		Miner miner = new Miner(myIp, blockRepository, serviceMiner);
+		Miner miner = Miner.getInstance(myIp, blockRepository, serviceMiner);
 
 		// Mino per prova
 		// Block block = miner.generateBlock(null, 17, 31, null, null, null);

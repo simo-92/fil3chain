@@ -35,13 +35,23 @@ public class PoolDispatcherUtility {
      * @return La complessoità al tempo della creazione del blocco o -1 nel caso di errore
      */
     public static Integer getBlockComplexity(String blockCreationTime) {
-        try {
+    	Boolean flag = Boolean.TRUE;
+        while(flag)
+    	try {
             JSONObject result  = new JSONObject(HttpUtil.doPost("http://vmanager:80/sdcmgr/PD/get_complexity", "{\"date\" : \"" + blockCreationTime + "\"}"));
+            flag= Boolean.FALSE;
             return ((Integer) (result.get("complexity")));
         } catch (Exception e) {
             e.printStackTrace();
+            try {
+				Thread.sleep(250);
+			} catch (InterruptedException e1) {
+				
+				e1.printStackTrace();
+			}
             return -1;
         }
+        return -1;
     }
 
     public static List<Transaction> getTransactions() {

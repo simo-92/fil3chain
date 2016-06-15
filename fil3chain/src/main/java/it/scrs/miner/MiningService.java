@@ -198,6 +198,7 @@ public class MiningService extends Thread implements Runnable {
 			transRepo.save(trans);
 			indexInBlock++;
 		}
+		
 		sendBlockToMiners();
 
 		// TODO: Ricomincia a minare
@@ -211,9 +212,11 @@ public class MiningService extends Thread implements Runnable {
 		List<Block> blocks = new ArrayList<>();
 		String bool = Boolean.FALSE.toString();
 		ArrayList<Pairs<IP, Integer>> counter = new ArrayList<Pairs<IP, Integer>>();
+		Miner.getInstance().firstConnectToEntryPoint();
 		for (IP ip : IPManager.getManager().getIPList()) {
 			counter.add(new Pairs<IP, Integer>(ip, 0));
 		}
+		
 
 		while (!counter.isEmpty()) {
 			for (IP ip : IPManager.getManager().getIPList()) {
@@ -232,7 +235,7 @@ public class MiningService extends Thread implements Runnable {
 					}
 				} catch (Exception e) {
 					// e.printStackTrace();
-					sleep(1000);
+					sleep(250);
 					System.out.println("Il miner " + ip.getIp() + " non è più connesso.");
 					System.out.println("Errore invio blocco" + bool);
 					for (Pairs<IP, Integer> c : counter) {
