@@ -82,7 +82,7 @@ public class ControllerBlockRequest {
 	// Controller che intercetta arrivo di un nuovo blocco
 	@RequestMapping(value = "/fil3chain/newBlock", method = RequestMethod.POST)
 	@ResponseBody
-	public Block newBlock(@RequestBody Block block) {
+	public String newBlock(@RequestBody Block block) {
 		Block newBlock = block;
 		System.out.println("il blocco che mi è stato mandato è " + newBlock);
 		//TODO dobbiamo verificare il blocco appena arrivato se è valido
@@ -90,7 +90,7 @@ public class ControllerBlockRequest {
 		
         MinersListenerRegister.getInstance().notifyListenersNewBlock(newBlock);
 
-		return newBlock;
+		return Boolean.TRUE.toString() ;
 	}
 
 	@RequestMapping(value = "/fil3chain/getBlockByChain", method = RequestMethod.GET)
