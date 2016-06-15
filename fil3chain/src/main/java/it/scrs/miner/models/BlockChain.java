@@ -14,11 +14,14 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.springframework.scheduling.annotation.AsyncResult;
+
 import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
 
 import it.scrs.miner.IPManager;
 import it.scrs.miner.Miner;
+import it.scrs.miner.MiningService;
 import it.scrs.miner.ServiceMiner;
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
@@ -182,6 +185,8 @@ public class BlockChain {
 			// Aggiorno la mia blockChain con i blocchi che mi arrivano in modo incrementale
 			if (designedMiner.getValue1() != null) {
 				System.out.println("Il Miner designato = " + designedMiner.getValue1() + " con ChainLevel = " + designedMiner.getValue2() + "\n");
+				Integer counter=0;
+				while (counter <= ServiceMiner.nReqProp) {
 				try {
 					System.out.println("\nBranchUpdate GetBlock");
 					flag = !getBlockFromMiner(ipMiners, hash, designedMiner, blockRepository);
@@ -189,8 +194,13 @@ public class BlockChain {
 				} catch (IOException | ExecutionException | InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					counter++;
 				}
 			}
+			}
+			
+			
+			
 			// aspetta una risposta
 			// verifico i blocchi e aggiungo al db
 

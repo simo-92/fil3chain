@@ -1,5 +1,6 @@
 package it.scrs.miner;
 
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -15,12 +16,17 @@ import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.models.Pairs;
 import it.scrs.miner.util.IP;
 
+
+
 @Service
 public class ServiceMiner {
+
+	public static final Integer nReqProp = 5;//TODO al properties
 
 	private int timeoutSeconds;
 
 	RestTemplate restTemplate = new RestTemplate();
+
 
 	@Async
 	public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner) {
@@ -35,6 +41,8 @@ public class ServiceMiner {
 
 		String result = "";
 		Integer level = -1;
+		Integer counter =0;
+		while (counter <= nReqProp) {
 		try {
 			System.out.println("\nRichiesta ad :" + uriMiner);
 			result = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/updateAtMaxLevel", String.class);
@@ -43,11 +51,17 @@ public class ServiceMiner {
 		} catch (Exception e) {
 			// e.printStackTrace();
 			System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
+			counter++;
 			return null;
 		}
-
+		}
 	}
 
+	/**
+	 * @param uriMiner
+	 * @param req
+	 * @return
+	 */
 	@Async
 	public Future<Pairs<IP, Block>> findBlockByReq(String uriMiner, String req) {
 
@@ -58,20 +72,29 @@ public class ServiceMiner {
 		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
 		rf.setReadTimeout(1000 * timeoutSeconds);
 		rf.setConnectTimeout(1000 * timeoutSeconds);
+		Integer counter =0;
+		while (counter <= nReqProp) {
+			try {
+				System.out.println("\nRichiesta ad :" + uriMiner);
+				Block block = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/" + req, Block.class);
+				return new AsyncResult<>(new Pairs<>(new IP(uriMiner), block));
+			} catch (Exception e) {
+				// e.printStackTrace();
+				System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
+				counter++;
+				return null;
+				
+			}
 
-		try {
-			System.out.println("\nRichiesta ad :" + uriMiner);
-			Block block = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/" + req, Block.class);
-			return new AsyncResult<>(new Pairs<>(new IP(uriMiner), block));
-		} catch (Exception e) {
-			// e.printStackTrace();
-			System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
-			return null;
 		}
-
+		return null;
 	}
 
+	/**
+	 * 
+	 */
 	private void loadConfiguration() {
+
 		// Carica la configurazione
 		Properties prop = new Properties();
 		InputStream in = ServiceMiner.class.getResourceAsStream("/network.properties");
