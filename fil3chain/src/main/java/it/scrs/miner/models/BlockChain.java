@@ -85,6 +85,7 @@ public class BlockChain {
 
 		Integer myChainLevel = 0;
 		while (!ipMiners.isEmpty()) {
+			System.out.println("1");
 			// Lista contenente le richieste asincrone ai 3 ip
 			List<Future<Pairs<IP, Integer>>> minerResp = new ArrayList<>();
 			// Chiedi al db il valora del mio Max chainLevel
@@ -94,19 +95,19 @@ public class BlockChain {
 			// codificata o blocco fittizio)
 			// Prendo k ip random da tutta la lista di Ip che mi sono stati inviati
 			askMinerChainLvl(ipMiners, minerResp, serviceMiner);
-
+			System.out.println("2");
 			// minerResp.add(serviceMiner.findMaxChainLevel("192.168.0.107"));
 			// System.out.println("1");
 
 			// Oggetto che contiene la coppia IP,ChainLevel del Miner designato
 			Pairs<IP, Integer> designedMiner = new Pairs<>();
 			try {
-				waitAndChooseMiner(myChainLevel, minerResp, designedMiner);
+				waitAndChooseMiner(ipMiners, myChainLevel, minerResp, designedMiner);
 			} catch (InterruptedException | ExecutionException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
+			System.out.println("3");
 			try {
 				killRequest(minerResp);
 			} catch (InterruptedException | ExecutionException e) {
@@ -289,31 +290,41 @@ public class BlockChain {
 	 * @throws InterruptedException
 	 * @throws ExecutionException
 	 */
-	private void waitAndChooseMiner(Integer myChainLevel, List<Future<Pairs<IP, Integer>>> minerResp, Pairs<IP, Integer> designedMiner) throws InterruptedException, ExecutionException {
+	private void waitAndChooseMiner(List<IP> ipMiners, Integer myChainLevel, List<Future<Pairs<IP, Integer>>> minerResp, Pairs<IP, Integer> designedMiner) throws InterruptedException, ExecutionException {
 
 		Boolean flag = Boolean.TRUE;
 		while (flag && !minerResp.isEmpty()) {
-			System.out.print("1.5");
+			System.out.println("1.1");
 			System.out.println("size: " + minerResp.size());
 			// Controlliamo se uno dei nostri messaggi di richiesta è tornato
 			// indietro con successo
-			Thread.sleep(250L);
-			for (Future<Pairs<IP, Integer>> f : minerResp) {
+			System.out.println("SCHIFO" + myChainLevel);
+			System.out.println(minerResp.get(0).get().getValue2());
+			Future<Pairs<IP, Integer>> f;
+			for (Integer i = 0; i < minerResp.size(); i++) {
+				System.out.println("1.5");
+				f = minerResp.get(i);
 				// facciamo un For per ciclare tutte richieste attive
 				// all'interno del nostro array e controlliamo se
 				// sono arrivate le risposte
-
-				if (f != null && f.isDone() && f.get().getValue2() > myChainLevel) {
-					// IP del miner designato da cui prendere la blockchain
-					designedMiner.setValue1(f.get().getValue1());
-					// ChainLevel del miner designato
-					designedMiner.setValue2(f.get().getValue2());
-					System.out.println("\nRisposto da: " + f.get().getValue1() + "chain level " + f.get().getValue2());
+				if (f != null && f.isDone()) {
 					flag = Boolean.FALSE;
+					if (f.get().getValue2() > myChainLevel) {
+						// IP del miner designato da cui prendere la blockchain
+						designedMiner.setValue1(f.get().getValue1());
+						// ChainLevel del miner designato
+						designedMiner.setValue2(f.get().getValue2());
+						System.out.println("\nRisposto da: " + f.get().getValue1() + "chain level " + f.get().getValue2());
 
+					} else {
+						// TODO rivedere questa cosa wait/////
+						ipMiners.remove(f.get().getValue1());
+
+					}
 				} else {
 					// TODO rivedere questa cosa wait/////
 					minerResp.remove(f);
+
 				}
 
 			}

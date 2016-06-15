@@ -248,7 +248,8 @@ public class MiningService extends Thread implements Runnable {
 
 				}finally{
 					
-					for (Pairs<IP, Integer> c : counter) {
+					for (Integer i =0; i<counter.size();i++) {
+						Pairs<IP, Integer> c = counter.get(i);
 						if (c.isValue1(ip)) {
 							counter.remove(c);
 							c.setValue2(c.getValue2() + 1);
