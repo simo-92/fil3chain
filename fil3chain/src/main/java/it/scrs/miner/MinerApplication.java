@@ -79,7 +79,7 @@ public class MinerApplication implements CommandLineRunner {
 
 		// Inizializzo il nuovo blocco da minare
 		Block block = new Block();
-		block.setFatherBlockContainer(myLastBlock);
+		block.setFatherBlockContainer(myLastBlock.getHashBlock());
 		block.setChainLevel(myLastBlock.getChainLevel() + 1);
 		block.setUserContainer(me);
 

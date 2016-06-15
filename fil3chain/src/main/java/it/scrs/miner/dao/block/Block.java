@@ -54,9 +54,10 @@ public class Block {
     @OrderBy("index_in_block")
     private List<Transaction> transactionsContainer;
     //TODO PROVE
-    @OneToOne
-    @PrimaryKeyJoinColumn
-    private Block fatherBlockContainer;
+//    @OneToOne
+//    @PrimaryKeyJoinColumn
+    @Column(name="Block_prevHashBlock")
+    private String fatherBlockContainer;
     
 //    @OneToOne
 //    @JoinColumn(name = "Block_prevHashBlock")
@@ -101,7 +102,7 @@ public class Block {
      * @param fatherBlockContainer
      * @param userContainer
      */
-    public Block(String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel, List<Transaction> transactionsContainer, Block fatherBlockContainer, User userContainer) {
+    public Block(String merkleRoot, String minerPublicKey, Integer nonce, Integer chainLevel, List<Transaction> transactionsContainer, String fatherBlockContainer, User userContainer) {
         super();
         this.creationTime = Long.toString(System.currentTimeMillis());
         this.merkleRoot = merkleRoot;
@@ -115,7 +116,7 @@ public class Block {
 
     @Override
     public String toString() {
-        return fatherBlockContainer.getHashBlock() + merkleRoot + userContainer.getPublicKey();
+        return fatherBlockContainer + merkleRoot + userContainer.getPublicKey();
     }
 
     public void generateHashBlock() {
@@ -266,7 +267,7 @@ public class Block {
     /**
      * @return the fatherBlockContainer
      */
-    public Block getFatherBlockContainer() {
+    public String getFatherBlockContainer() {
 
         return fatherBlockContainer;
     }
@@ -275,7 +276,7 @@ public class Block {
      * @param fatherBlockContainer
      *            the fatherBlockContainer to set
      */
-    public void setFatherBlockContainer(Block fatherBlockContainer) {
+    public void setFatherBlockContainer(String fatherBlockContainer) {
 
         this.fatherBlockContainer = fatherBlockContainer;
     }

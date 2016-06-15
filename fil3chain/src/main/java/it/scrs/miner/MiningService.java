@@ -176,7 +176,7 @@ public class MiningService extends Thread implements Runnable {
 		block.setNonce(nonce - 1);
 		block.setSignature(CryptoUtil.sign(hexHash, privateKey));
 		block.setMinerPublicKey(publicKey);
-		block.setFatherBlockContainer(previousBlock);
+		block.setFatherBlockContainer(previousBlock.getHashBlock());
 		block.setTransactionsContainer(transactions);
 
 		block.setCreationTime(Long.toString(System.currentTimeMillis()));
@@ -341,7 +341,7 @@ public class MiningService extends Thread implements Runnable {
 
 		// Inizializzo il nuovo blocco da minare
 		block = new Block();
-		block.setFatherBlockContainer(lastBlock);
+		block.setFatherBlockContainer(lastBlock.getHashBlock());
 		block.setChainLevel(lastBlock.getChainLevel() + 1);
 		block.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
 

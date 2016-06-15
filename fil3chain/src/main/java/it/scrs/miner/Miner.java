@@ -232,13 +232,13 @@ public class Miner implements MinerEventsListener {
 
 		Boolean result = Boolean.TRUE;
 		// nell primo updateh
-		System.out.println("\n" + b.getFatherBlockContainer().getHashBlock());
+		System.out.println("\n" + b.getFatherBlockContainer());
 
 		// cerco il padre nel mio db
-		Block bFather = blockRepository.findByhashBlock(b.getFatherBlockContainer().getHashBlock());
+		Block bFather = blockRepository.findByhashBlock(b.getFatherBlockContainer());
 		// non lo trovo lo cerco dai miner
 		if (bFather == null)
-			result = blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock());
+			result = blockChain.updateBranChain(b.getFatherBlockContainer());
 		// se io ce l ho oppure l hotrovato in rete controllo il figlio e torno
 		// true
 
@@ -408,8 +408,8 @@ public class Miner implements MinerEventsListener {
 		List<Block> predecessori = new ArrayList<Block>();
 		Block currentBlock = block;
 		while (currentBlock.getFatherBlockContainer() != null) {
-			predecessori.add(blockRepository.findByhashBlock(currentBlock.getFatherBlockContainer().getHashBlock()));
-			currentBlock = currentBlock.getFatherBlockContainer();
+			predecessori.add(blockRepository.findByhashBlock(currentBlock.getFatherBlockContainer()));
+			currentBlock = blockRepository.findByhashBlock(currentBlock.getFatherBlockContainer());
 		}
 		for (Block p : predecessori) {
 			for (Transaction t : block.getTransactionsContainer()) {
@@ -618,7 +618,7 @@ public class Miner implements MinerEventsListener {
 		Block lastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
 		// Inizializzo il nuovo blocco da minare
 		Block newBlock = new Block();
-		newBlock.setFatherBlockContainer(lastBlock);
+		newBlock.setFatherBlockContainer(lastBlock.getHashBlock());
 		newBlock.setChainLevel(lastBlock.getChainLevel() + 1);
 		newBlock.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
 
