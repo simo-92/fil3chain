@@ -55,6 +55,7 @@ public class ServiceMiner {
 			return null;
 		}
 		}
+		return null;
 	}
 
 	/**
