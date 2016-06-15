@@ -588,6 +588,7 @@ public class Miner implements MinerEventsListener {
 		Boolean isVerified = Boolean.FALSE;
 
 		try {
+			firstConnectToEntryPoint();
 			isVerified = verifyBlock(block, blockRepository, serviceMiner);
 		} catch (InterruptedException e) {
 			e.printStackTrace();

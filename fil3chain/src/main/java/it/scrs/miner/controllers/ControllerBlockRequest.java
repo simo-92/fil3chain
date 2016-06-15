@@ -3,6 +3,8 @@ package it.scrs.miner.controllers;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import it.scrs.miner.IPManager;
+import it.scrs.miner.Miner;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,8 +88,10 @@ public class ControllerBlockRequest {
 		// TODO dobbiamo verificare il blocco appena arrivato se è valido
 		// blocco il thread di mining e lo riavvio sulla fil3chain aggiornata
 
-		MinersListenerRegister.getInstance().notifyListenersNewBlock(newBlock);
-
+		//MinersListenerRegister.getInstance().notifyListenersNewBlock(newBlock);
+		//TODO POSSIAMO TOGLIERE IL LISTENER E FARE COSI
+		Miner.getInstance().onNewBlockArrived(block);
+		
 		return Boolean.TRUE.toString();
 	}
 

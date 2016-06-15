@@ -235,9 +235,13 @@ public class MiningService extends Thread implements Runnable {
 					}
 				} catch (Exception e) {
 					// e.printStackTrace();
-					sleep(250);
+//					sleep(250);
 					System.out.println("Il miner " + ip.getIp() + " non è più connesso.");
 					System.out.println("Errore invio blocco" + bool);
+
+
+				}finally{
+					
 					for (Pairs<IP, Integer> c : counter) {
 						if (c.isValue1(ip)) {
 							counter.remove(c);
@@ -247,7 +251,7 @@ public class MiningService extends Thread implements Runnable {
 							}
 						}
 					}
-
+					
 				}
 			}
 
