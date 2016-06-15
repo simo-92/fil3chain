@@ -211,8 +211,9 @@ public class MiningService extends Thread implements Runnable {
 		RestTemplate restTemplate = new RestTemplate();
 		List<Block> blocks = new ArrayList<>();
 		String bool = Boolean.FALSE.toString();
-		ArrayList<Pairs<IP, Integer>> counter = new ArrayList<Pairs<IP, Integer>>();
+		ArrayList<Pairs<IP, Integer>> cTmp = new ArrayList<Pairs<IP, Integer>>();
 		Miner.getInstance().firstConnectToEntryPoint();
+		List<Pairs<IP, Integer>> counter= (List<Pairs<IP, Integer>>) Collections.synchronizedCollection(cTmp);
 		for (IP ip : IPManager.getManager().getIPList()) {
 			counter.add(new Pairs<IP, Integer>(ip, 0));
 		}
