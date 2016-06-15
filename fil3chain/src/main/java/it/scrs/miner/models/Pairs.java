@@ -9,7 +9,6 @@ public class Pairs<K, V> {
 	private K value1;
 	private V value2;
 
-
 	public Pairs(K value1, V value2) {
 		this.value1 = value1;
 		this.value2 = value2;
@@ -51,6 +50,12 @@ public class Pairs<K, V> {
 	public void setValue2(V value2) {
 
 		this.value2 = value2;
+	}
+
+	public Boolean isValue1(K value1) {
+		if (this.value1.equals(value1))
+			return Boolean.TRUE;
+		return Boolean.FALSE;
 	}
 
 }

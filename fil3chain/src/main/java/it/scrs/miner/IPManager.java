@@ -14,44 +14,47 @@ import java.util.List;
  * @author giordanocristini
  */
 public class IPManager {
-    private final List<IP> ipList;
-    private static IPManager ipm;
-    private IPManager() {
-        ipList = new ArrayList<>();
-    }
+	private final List<IP> ipList;
+	private static IPManager ipm;
 
-    public static IPManager getManager() {
-        if(ipm == null){
-            ipm = new IPManager();
-        }
-        return ipm;
+	private IPManager() {
+		ipList = new ArrayList<>();
+	}
 
-    }
-    public synchronized List<IP> getIPList() {
-        return ipList;
+	public static IPManager getManager() {
+		if (ipm == null) {
+			ipm = new IPManager();
+		}
+		return ipm;
 
-    }
-    public synchronized void setAllIp(List<IP> ips){
-        ipm.getIPList().clear();
-        ipm.getIPList().addAll(ips);
+	}
 
-    }
+	public synchronized List<IP> getIPList() {
+		return ipList;
 
-    public synchronized int indexOf(String ip){
-        for(int i=0;i<ipList.size();i++)
-            if(ipList.get(i).getIp().equals(ip))
-                return i;
-        return -1;
-    }
+	}
 
-    public synchronized void addIP(IP ip){
-        if(ipm.indexOf(ip.getIp())<0)
-            ipm.getIPList().add(ip);
-    }
+	public synchronized void setAllIp(List<IP> ips) {
+		ipm.getIPList().clear();
+		ipm.getIPList().addAll(ips);
 
-    public synchronized  void removeIP(IP ip){
-        int index=indexOf(ip.getIp());
-        if(index>=0)
-            ipm.getIPList().remove(index);
-    }
+	}
+
+	public synchronized int indexOf(String ip) {
+		for (int i = 0; i < ipList.size(); i++)
+			if (ipList.get(i).getIp().equals(ip))
+				return i;
+		return -1;
+	}
+
+	public synchronized void addIP(IP ip) {
+		if (ipm.indexOf(ip.getIp()) < 0)
+			ipm.getIPList().add(ip);
+	}
+
+	public synchronized void removeIP(IP ip) {
+		int index = indexOf(ip.getIp());
+		if (index >= 0)
+			ipm.getIPList().remove(index);
+	}
 }

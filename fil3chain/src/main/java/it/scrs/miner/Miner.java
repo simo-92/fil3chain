@@ -1,6 +1,5 @@
 package it.scrs.miner;
 
-
 import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
 
@@ -36,8 +35,6 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
-
-
 // import java.util.logging.Logger;
 /**
  *
@@ -55,7 +52,8 @@ public class Miner implements MinerEventsListener {
 	private String actionDisconnect;
 	private String actionKeepAlive;
 
-	// private List<String> ipPeers; // contiene gli ip degli altri miner nella rete
+	// private List<String> ipPeers; // contiene gli ip degli altri miner nella
+	// rete
 	private String ip;
 	private User me;
 
@@ -63,14 +61,14 @@ public class Miner implements MinerEventsListener {
 
 	private static final Logger log = LoggerFactory.getLogger(Miner.class);
 
-	private static final String prefixVPNet = "10.192.";// TODO mettere nel properties
+	private static final String prefixVPNet = "10.192.";// TODO mettere nel
+														// properties
 
 	private String myPublickKey;
 	private String myPrivateKey;
 	private BlockRepository blockRepository;
 	private ServiceMiner serviceMiner;
 	private BlockChain blockChain;
-
 
 	/**
 	 *
@@ -128,10 +126,13 @@ public class Miner implements MinerEventsListener {
 	}
 
 	/*
-	 * public void loadMinerConfiguration() { // Carica la configurazione Properties prop = new Properties();
-	 * InputStream in = Miner.class.getResourceAsStream("/miner.properties"); try { prop.load(in); // Imposta il timeout
-	 * blockChain.setnBlockUpdate(Integer.parseInt(prop.getProperty("nBlockUpdate", "10"))); } catch (IOException e) {
-	 * e.printStackTrace(); } }
+	 * public void loadMinerConfiguration() { // Carica la configurazione
+	 * Properties prop = new Properties(); InputStream in =
+	 * Miner.class.getResourceAsStream("/miner.properties"); try {
+	 * prop.load(in); // Imposta il timeout
+	 * blockChain.setnBlockUpdate(Integer.parseInt(prop.getProperty(
+	 * "nBlockUpdate", "10"))); } catch (IOException e) { e.printStackTrace(); }
+	 * }
 	 */
 
 	public void loadNetworkConfig() {
@@ -159,7 +160,8 @@ public class Miner implements MinerEventsListener {
 	@SuppressWarnings("unchecked")
 	public boolean firstConnectToEntryPoint() {
 
-		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri() + this.getActionConnect();
+		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri()
+				+ this.getActionConnect();
 		String result = "";
 
 		try {
@@ -169,7 +171,8 @@ public class Miner implements MinerEventsListener {
 			// System.out.println(result);
 		} catch (Exception ex) {
 			System.err.println("Errore durante la richiesta di IP\n" + ex);
-			// Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null, ex);
+			// Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null,
+			// ex);
 		}
 
 		Type type = new TypeToken<ArrayList<String>>() {
@@ -223,7 +226,8 @@ public class Miner implements MinerEventsListener {
 	 * @throws ExecutionException
 	 * @throws IOException
 	 */
-	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
+	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner)
+			throws InterruptedException, ExecutionException, IOException {
 
 		Boolean result = Boolean.TRUE;
 		// nell primo updateh
@@ -234,8 +238,9 @@ public class Miner implements MinerEventsListener {
 		// non lo trovo lo cerco dai miner
 		if (bFather == null)
 			result = blockChain.updateBranChain(b.getFatherBlockContainer().getHashBlock());
-		// se io ce l ho oppure l hotrovato in rete controllo il figlio e torno true
-	
+		// se io ce l ho oppure l hotrovato in rete controllo il figlio e torno
+		// true
+
 		if ((bFather != null || result) && singleBlockVerify(blockRepository, b))
 			return Boolean.TRUE;
 
@@ -290,7 +295,8 @@ public class Miner implements MinerEventsListener {
 
 		Integer complexity = PoolDispatcherUtility.getBlockComplexity(block.getCreationTime());
 
-		// Se c'è stato un errore o la complessità non è stata trovata nel server
+		// Se c'è stato un errore o la complessità non è stata trovata nel
+		// server
 		// allora termina con FALSE
 		if (complexity == -1)
 			return Boolean.FALSE;
@@ -328,7 +334,8 @@ public class Miner implements MinerEventsListener {
 	}
 
 	// Metodo di verifica della firma di un blocco
-	// Abbiamo stabilito di firmare solo l'hash del blocco essendo già esso fatto su tutti gli altri campi
+	// Abbiamo stabilito di firmare solo l'hash del blocco essendo già esso
+	// fatto su tutti gli altri campi
 	private Boolean verifySignature(Block block) {
 
 		try {
@@ -362,33 +369,34 @@ public class Miner implements MinerEventsListener {
 	private Boolean verifyMerkleRoot(Block block) {
 
 		ArrayList<String> transactionsHash = new ArrayList<>();
-		
+
 		for (Transaction transaction : block.getTransactionsContainer()) {
-                        System.out.println(transaction.getIndexInBlock());
+			System.out.println(transaction.getIndexInBlock());
 			transactionsHash.add(transaction.getHashFile());
 		}
-		if(transactionsHash.size()==0)
-                    return Boolean.FALSE;
-		System.out.println("Merckle Hash Block:"+block.getHashBlock());
+		if (transactionsHash.size() == 0)
+			return Boolean.FALSE;
+		System.out.println("Merckle Hash Block:" + block.getHashBlock());
 		String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
-//		Collections.reverse(transactionsHash);
-//		String checkMerkle2 = MerkleTree.buildMerkleTree(transactionsHash);
-//		
-//		for (Transaction transaction : block.getTransactionsContainer()) {
-//			System.out.println("Lista transazioni blocco da verificare:"+transaction.getHashFile());
-//		}
-		
-		
-		System.out.println("Merkle mio1:"+checkMerkle);
-		//System.out.println("Merkle mio2:"+checkMerkle2);
-		System.out.println("Merkle suo:"+block.getMerkleRoot());
-		System.out.println("Confronto merkle:"+checkMerkle.equals(block.getMerkleRoot()));
-		
+		// Collections.reverse(transactionsHash);
+		// String checkMerkle2 = MerkleTree.buildMerkleTree(transactionsHash);
+		//
+		// for (Transaction transaction : block.getTransactionsContainer()) {
+		// System.out.println("Lista transazioni blocco da
+		// verificare:"+transaction.getHashFile());
+		// }
+
+		System.out.println("Merkle mio1:" + checkMerkle);
+		// System.out.println("Merkle mio2:"+checkMerkle2);
+		System.out.println("Merkle suo:" + block.getMerkleRoot());
+		System.out.println("Confronto merkle:" + checkMerkle.equals(block.getMerkleRoot()));
+
 		if ((!checkMerkle.equals(block.getMerkleRoot()))) {
 			System.err.println("MerkleRoot diverso.");
 			return Boolean.FALSE;
 		}
-		//System.out.println("Lista Transazioni Merkle Root"+transactionsHash.toString());
+		// System.out.println("Lista Transazioni Merkle
+		// Root"+transactionsHash.toString());
 		return Boolean.TRUE;
 	}
 

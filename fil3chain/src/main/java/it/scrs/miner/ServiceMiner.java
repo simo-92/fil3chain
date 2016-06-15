@@ -17,17 +17,17 @@ import it.scrs.miner.util.IP;
 
 @Service
 public class ServiceMiner {
-	
+
 	private int timeoutSeconds;
 
-	RestTemplate restTemplate=  new RestTemplate();
-	
+	RestTemplate restTemplate = new RestTemplate();
+
 	@Async
-	public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner)  {
+	public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner) {
 
-		loadConfiguration();//TODO Cosa è
+		loadConfiguration();// TODO Cosa è
 
-        System.out.println("Timeout: " + timeoutSeconds);
+		System.out.println("Timeout: " + timeoutSeconds);
 
 		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
 		rf.setReadTimeout(1000 * timeoutSeconds);
@@ -41,23 +41,19 @@ public class ServiceMiner {
 			level = Integer.decode(result);
 			return new AsyncResult<>(new Pairs<>(new IP(uriMiner), level));
 		} catch (Exception e) {
-            // e.printStackTrace();
+			// e.printStackTrace();
 			System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
 			return null;
 		}
-		
+
 	}
-	
-	
-	
-	
-	
+
 	@Async
-	public Future<Pairs<IP, Block>> findBlockByReq(String uriMiner,String req)  {
+	public Future<Pairs<IP, Block>> findBlockByReq(String uriMiner, String req) {
 
 		loadConfiguration();
 
-        System.out.println("Timeout: " + timeoutSeconds);
+		System.out.println("Timeout: " + timeoutSeconds);
 
 		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
 		rf.setReadTimeout(1000 * timeoutSeconds);
@@ -65,14 +61,14 @@ public class ServiceMiner {
 
 		try {
 			System.out.println("\nRichiesta ad :" + uriMiner);
-			Block block = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/"+req, Block.class);
+			Block block = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/" + req, Block.class);
 			return new AsyncResult<>(new Pairs<>(new IP(uriMiner), block));
 		} catch (Exception e) {
-            // e.printStackTrace();
+			// e.printStackTrace();
 			System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
 			return null;
 		}
-		
+
 	}
 
 	private void loadConfiguration() {
@@ -88,6 +84,3 @@ public class ServiceMiner {
 		}
 	}
 }
-
-
-

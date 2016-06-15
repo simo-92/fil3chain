@@ -140,6 +140,7 @@ public class BlockChain {
 	public Boolean updateBranChain(String hash) {
 
 		@SuppressWarnings("unchecked")
+
 		List<IP> ipMiners = (List<IP>) ((ArrayList<IP>) IPManager.getManager().getIPList()).clone();
 		Boolean flag = Boolean.TRUE;
 		// Rimuovo il mio IP
