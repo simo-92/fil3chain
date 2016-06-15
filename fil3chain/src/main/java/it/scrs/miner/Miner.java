@@ -364,9 +364,11 @@ public class Miner implements MinerEventsListener {
 		ArrayList<String> transactionsHash = new ArrayList<>();
 		
 		for (Transaction transaction : block.getTransactionsContainer()) {
+                        System.out.println(transaction.getIndexInBlock());
 			transactionsHash.add(transaction.getHashFile());
 		}
-		
+		if(transactionsHash.size()==0)
+                    return Boolean.FALSE;
 		System.out.println("Merckle Hash Block:"+block.getHashBlock());
 		String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
 //		Collections.reverse(transactionsHash);

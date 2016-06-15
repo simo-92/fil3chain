@@ -183,6 +183,7 @@ public class MiningService extends Thread implements Runnable {
         for(Transaction trans: transactions){
             trans.setBlockContainer(block);
             trans.setIndexInBlock(indexInBlock);
+            System.out.println(trans.getIndexInBlock());
             transRepo.save(trans);
             indexInBlock++;
         }
@@ -296,7 +297,7 @@ public class MiningService extends Thread implements Runnable {
         for(Transaction transaction: transactionsList) {
             hashTransactions.add(transaction.getHashFile());
         }
-
+        block.setTransactionsContainer(transactionsList);
         block.setMerkleRoot(MerkleTree.buildMerkleTree(hashTransactions));
 
         // Test chiamata per difficoltà
