@@ -53,10 +53,14 @@ public class Block {
     @OneToMany(mappedBy = "blockContainer", fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
     @OrderBy("index_in_block")
     private List<Transaction> transactionsContainer;
-
+    //TODO PROVE
     @OneToOne
-    @JoinColumn(name = "Block_prevHashBlock")
+    @PrimaryKeyJoinColumn
     private Block fatherBlockContainer;
+    
+//    @OneToOne
+//    @JoinColumn(name = "Block_prevHashBlock")
+//    private Block fatherBlockContainer;
 
     @ManyToOne
     @JoinColumn(name = "User_publicKeyHash") // Autore
