@@ -304,8 +304,10 @@ public class Miner implements MinerEventsListener {
 		// Se c'è stato un errore o la complessità non è stata trovata nel
 		// server
 		// allora termina con FALSE
-		if (complexity == -1)
-			return Boolean.FALSE;
+		if (complexity == -1) {
+            System.err.println("Verify Proof Of Work: Errore nella complessità, impossibile verificare blocco");
+            return Boolean.FALSE;
+        }
 
 		// Calcolo full mask
 		int fullMask = complexity / 8;
