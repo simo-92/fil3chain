@@ -5,6 +5,16 @@
 package it.scrs.miner.models;
 
 
+import com.google.gson.reflect.TypeToken;
+import it.scrs.miner.IPManager;
+import it.scrs.miner.Miner;
+import it.scrs.miner.ServiceMiner;
+import it.scrs.miner.dao.block.Block;
+import it.scrs.miner.dao.block.BlockRepository;
+import it.scrs.miner.dao.transaction.Transaction;
+import it.scrs.miner.util.HttpUtil;
+import it.scrs.miner.util.IP;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
@@ -13,21 +23,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-
-import org.springframework.scheduling.annotation.AsyncResult;
-
-import com.google.common.collect.Lists;
-import com.google.gson.reflect.TypeToken;
-
-import it.scrs.miner.IPManager;
-import it.scrs.miner.Miner;
-import it.scrs.miner.MiningService;
-import it.scrs.miner.ServiceMiner;
-import it.scrs.miner.dao.block.Block;
-import it.scrs.miner.dao.block.BlockRepository;
-import it.scrs.miner.dao.transaction.Transaction;
-import it.scrs.miner.util.HttpUtil;
-import it.scrs.miner.util.IP;
 
 
 
@@ -154,7 +149,7 @@ public class BlockChain {
 		List<IP> ipMiners = (List<IP>) ((ArrayList<IP>) IPManager.getManager().getIPList()).clone();
 		Boolean flag = Boolean.TRUE;
 		// Rimuovo il mio IP
-		ipMiners.remove(miner.getIp());
+		// ipMiners.remove(miner.getIp());
 		System.out.println("\nBranchUpdate");
 		while (!ipMiners.isEmpty() && flag) {
 			// Lista contenente le richieste asincrone ai 3 ip
@@ -253,11 +248,17 @@ public class BlockChain {
 		for (int i = 0; i < ipMiners.size(); i++) {
 			// Double x = Math.random() * ipMiners.size();
 			Future<Pairs<IP, Integer>> result = serviceMiner.findMaxChainLevel(ipMiners.get(i).getIp());
-			if (result == null) {
-				IP tmp = ipMiners.remove(i);
-				System.out.println("\nHo rimosso l'IP: " + tmp.getIp());
-			} else {
-				minerResp.add(result);
+			try {
+				if (result == null || result.get() == null || result.get().getValue1() == null || result.get().getValue2() == null) {
+                    IP tmp = ipMiners.remove(i);
+                    System.out.println("\nHo rimosso l'IP: " + tmp.getIp());
+                } else {
+                    minerResp.add(result);
+                }
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -272,12 +273,18 @@ public class BlockChain {
 
 		for (int i = 0; i < ipMiners.size(); i++) {
 			// Double x = Math.random() * ipMiners.size();
-			Future<Pairs<IP, Block>> result = serviceMiner.findBlockByReq(ipMiners.get(i).getIp(), "getBlockByhash");
-			if (result == null) {
-				IP tmp = ipMiners.remove(i);
-				System.out.println("\nHo rimosso l'IP: " + tmp.getIp());
-			} else {
-				minerResp.add(result);
+			Future<Pairs<IP, Block>> result = serviceMiner.findBlockByReq(ipMiners.get(i).getIp(), "getBlockByhash?hash=0");
+			try {
+				if (result == null || result.get() == null || result.get().getValue1() == null || result.get().getValue2() == null) {
+                    IP tmp = ipMiners.remove(i);
+                    System.out.println("\nHo rimosso l'IP: " + tmp.getIp());
+                } else {
+                    minerResp.add(result);
+                }
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
 			}
 		}
 	}
@@ -370,7 +377,6 @@ public class BlockChain {
 
 	/**
 	 * @param ipMiners
-	 * @param myChainLevel
 	 * @param designedMiner
 	 * @throws Exception
 	 */
