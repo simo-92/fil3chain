@@ -34,7 +34,7 @@ import org.apache.http.entity.StringEntity;
 /** classe di utilita per effettuare richieste http verso il sistema legacy */
 public class HttpUtil {
 
-	private static final int TIMEOUT_MILLIS = 3000;
+	private static final int TIMEOUT_MILLIS = 5000;
 
 
 	/**

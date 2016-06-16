@@ -134,6 +134,8 @@ public class MiningService extends Thread implements Runnable {
             return;
         }
 
+        if (block == null) initializeService();
+
         // Calcolo le maschere per il check dell'hash.
         calculateMasks();
 
@@ -213,7 +215,7 @@ public class MiningService extends Thread implements Runnable {
         List<Block> blocks = new ArrayList<>();
         String bool = Boolean.FALSE.toString();
 
-        ArrayList<Pairs<IP, Integer>> counter = new ArrayList<Pairs<IP, Integer>>();
+        ArrayList<Pairs<IP, Integer>> counter = new ArrayList<>();
         Miner.getInstance().firstConnectToEntryPoint();
 
         for (IP ip : IPManager.getManager().getIPList()) {
@@ -233,12 +235,10 @@ public class MiningService extends Thread implements Runnable {
                         }
                     }
                 } catch (Exception e) {
-                    // e.printStackTrace();
-//					sleep(250);
+                    e.printStackTrace();
+                    sleep(1000);
                     System.out.println("Il miner " + ip.getIp() + " non è più connesso.");
                     System.out.println("Errore invio blocco: " + bool);
-
-
                 } finally {
 
                     for (Integer i =0; i<counter.size();i++) {
@@ -326,10 +326,7 @@ public class MiningService extends Thread implements Runnable {
     }
 
     public void initializeService() {
-        System.out.println("\n interrupt1");
-        // Interrompe il servizio
-        interrupt();
-        System.out.println("\n interrupt2");
+        System.out.println("Inizializza servizio");
         // Prendo l'ultmo blocco della catena
         Block lastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
 
