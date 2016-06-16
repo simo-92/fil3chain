@@ -323,13 +323,15 @@ public class BlockChain {
 			System.out.println("Size del numero di risposte dei miner: " + minerResp.size());
 			// Controlliamo se uno dei nostri messaggi di richiesta è tornato
 			// indietro con successo
-			System.out.println("Il mio chain level: " + myChainLevel);
-			System.out.println("Il chain level dell'altro miner: " + minerResp.get(0).get().getValue2());
+
 			Future<Pairs<IP, Integer>> future;
 
 			for (Integer i = 0; i < minerResp.size(); i++) {
-				// System.out.println("1.5");
-				future = minerResp.get(i);
+				System.out.println("1.5");
+                System.out.println("Il mio chain level: " + myChainLevel);
+                System.out.println("Il chain level dell'altro miner: " + minerResp.get(i).get().getValue2()+ " ip miner " + minerResp.get(i).get().getValue1());
+                System.out.println("Size del numero di risposte dei miner: " + minerResp.size());
+                future = minerResp.get(i);
 				// facciamo un For per ciclare tutte richieste attive
 				// all'interno del nostro array e controlliamo se
 				// sono arrivate le risposte
@@ -344,12 +346,17 @@ public class BlockChain {
                             System.out.println("\nRisposto da: " + future.get().getValue1() + " Chain level: " + future.get().getValue2());
                         } else {
                             // Miner ha livello minore del mio, allora elimino
-                            ipMiners.remove(future);
+                            ipMiners.remove(future.get().getValue1());
+                            minerResp.remove(future);
+                            System.out.println("Elimino il miner perche ha chain level minore uguale al mio " + future.get().getValue2() + " e la dimensione della lista " + minerResp.size());
                         }
+                    } else {
+                        System.out.println("Richiesta non pronta");
                     }
                 } else {
                     // Future nulla, elimino il miner dalla lista
-                    ipMiners.remove(future);
+                    // ipMiners.remove(future.get().getValue1());
+                    System.out.println("Elimino il miner perche future nulla e la dimensione della lista " + minerResp.size());
                 }
 			}
 		}
@@ -363,8 +370,8 @@ public class BlockChain {
 
 	private IP waitAndChooseMinerBlock(List<Pairs<Future<String>, IP>> minerResp) throws InterruptedException, ExecutionException {
 
-		Boolean flag = Boolean.TRUE;
-		while (flag && !minerResp.isEmpty()) {
+		// Boolean flag = Boolean.TRUE;
+		while (!minerResp.isEmpty()) {
 			System.out.println("size: " + minerResp.size());
 			// Controlliamo se uno dei nostri messaggi di richiesta è tornato
 			// indietro con successo
