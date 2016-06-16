@@ -82,6 +82,7 @@ public class MinerApplication implements CommandLineRunner {
 		block.setFatherBlockContainer(myLastBlock.getHashBlock());
 		block.setChainLevel(myLastBlock.getChainLevel() + 1);
 		block.setUserContainer(me);
+		block.setMinerPublicKey(miner.getMyPublickKey());
 
 		// TODO: Dopo che?
 		// Prendo le transazioni dal Pool Dispatcher
