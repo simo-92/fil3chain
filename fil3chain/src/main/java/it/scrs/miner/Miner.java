@@ -632,6 +632,7 @@ public class Miner implements MinerEventsListener {
 		Block newBlock = new Block();
 		newBlock.setFatherBlockContainer(lastBlock.getHashBlock());
 		newBlock.setChainLevel(lastBlock.getChainLevel() + 1);
+        newBlock.setMinerPublicKey(myPublickKey);
 		newBlock.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
 
 		// Prendo le transazioni dal Pool Dispatcher

@@ -337,6 +337,7 @@ public class MiningService extends Thread implements Runnable {
         block = new Block();
         block.setFatherBlockContainer(lastBlock.getHashBlock());
         block.setChainLevel(lastBlock.getChainLevel() + 1);
+        block.setMinerPublicKey(publicKey);
         block.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
 
         // Prendo le transazioni dal Pool Dispatcher
