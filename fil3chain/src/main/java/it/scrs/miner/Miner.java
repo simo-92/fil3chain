@@ -180,8 +180,10 @@ public class Miner implements MinerEventsListener {
 		}.getType();
 		List<String> ips = JsonUtility.fromJson(result, type);
 		ArrayList<IP> iplist = new ArrayList<>();
-		for (String ip : ips) {
-			iplist.add(new IP(ip));
+		if(ips != null && ips.size() != 0) {
+			for (String ip : ips) {
+				iplist.add(new IP(ip));
+			}
 		}
 
 		IPManager.getManager().setAllIp((List<IP>) iplist.clone());
@@ -483,7 +485,7 @@ public class Miner implements MinerEventsListener {
 
 	public void startMine() {
 
-		if (miningService == null && miningService.isInitialized()) {
+		if (miningService == null && !miningService.isInitialized()) {
 			return;
 		}
 
@@ -492,7 +494,7 @@ public class Miner implements MinerEventsListener {
 
 	public void stopMine() {
 
-		if (miningService == null && miningService.isInitialized()) {
+		if (miningService == null && !miningService.isInitialized()) {
 			return;
 		}
 
@@ -501,7 +503,7 @@ public class Miner implements MinerEventsListener {
 
 	public Boolean isMining() {
 
-		if (miningService == null && miningService.isInitialized()) {
+		if (miningService == null && !miningService.isInitialized()) {
 			return Boolean.FALSE;
 		}
 

@@ -88,7 +88,7 @@ public class BlockChain {
 			System.out.println("1");
 			// Lista contenente le richieste asincrone ai 3 ip
 			List<Future<Pairs<IP, Integer>>> minerResp = new ArrayList<>();
-			// Chiedi al db il valora del mio Max chainLevel
+			// Chiedi al db il valore del mio Max chainLevel
 			myChainLevel = blockRepository.findFirstByOrderByChainLevelDesc().getChainLevel();
 
 			// Finche non sono aggiornato(ovvero mi rispondono con stringa
@@ -124,12 +124,10 @@ public class BlockChain {
 					try {
 						System.out.println("\nBranchUpdate GetBlock");
 						flag = !getBlocksFromMiner(ipMiners, myChainLevel, designedMiner, blockRepository);
-
 					} catch (IOException | ExecutionException | InterruptedException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
-						counter++;
 					}
+					counter++;
 				}
 
 			}
@@ -298,7 +296,7 @@ public class BlockChain {
 			System.out.println("size: " + minerResp.size());
 			// Controlliamo se uno dei nostri messaggi di richiesta è tornato
 			// indietro con successo
-			System.out.println("SCHIFO" + myChainLevel);
+			System.out.println("Il mio chain level: " + myChainLevel);
 			System.out.println(minerResp.get(0).get().getValue2());
 			Future<Pairs<IP, Integer>> f;
 			for (Integer i = 0; i < minerResp.size(); i++) {
@@ -314,7 +312,7 @@ public class BlockChain {
 						designedMiner.setValue1(f.get().getValue1());
 						// ChainLevel del miner designato
 						designedMiner.setValue2(f.get().getValue2());
-						System.out.println("\nRisposto da: " + f.get().getValue1() + "chain level " + f.get().getValue2());
+						System.out.println("\nRisposto da: " + f.get().getValue1() + " Chain level: " + f.get().getValue2());
 
 					} else {
 						// TODO rivedere questa cosa wait/////
