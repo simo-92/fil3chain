@@ -329,6 +329,7 @@ public class Miner implements MinerEventsListener {
 		// Verifica dei primi fullMask byte interi
 		for (int i = 0; i < fullMask; i++) {
 			if (hash[i] != 0) {
+                System.err.println("Verify Proof Of Work: Errore nei primi zeri " + hash[i] + " " + i + " Fullmask " + fullMask);
 				return false;
 			}
 		}
@@ -338,6 +339,10 @@ public class Miner implements MinerEventsListener {
 			return true;
 
 		// Altrimenti controlla i bit rimanenti
+        boolean result = (hash[fullMask] & restMask) == 0;
+        if(!result) {
+            System.err.println("Verify Proof Of Work: Errore nei restanti bit " + hash[fullMask] + " " + restMask);
+        }
 		return (hash[fullMask] & restMask) == 0;
 	}
 
