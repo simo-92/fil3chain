@@ -188,10 +188,11 @@ public class BlockChain {
 			if (designedMiner.getValue1() != null) {
 				System.out.println("Il Miner designato = " + designedMiner.getValue1() + " con ChainLevel = " + designedMiner.getValue2() + "\n");
 				Integer counter = 0;
+				flag = Boolean.TRUE;
 				while (counter <= ServiceMiner.nReqProp && flag) {
 					try {
 						System.out.println("\nBranchUpdate GetBlock");
-						flag = !getBlockFromMiner(ipMiners, hash, designedMiner, blockRepository);
+						flag = getBlockFromMiner(ipMiners, hash, designedMiner, blockRepository);
 
 					} catch (IOException | ExecutionException | InterruptedException e) {
 						// TODO Auto-generated catch block
