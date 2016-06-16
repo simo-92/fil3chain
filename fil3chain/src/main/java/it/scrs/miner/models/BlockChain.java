@@ -362,7 +362,7 @@ public class BlockChain {
 					designedMiner.setValue1(f.get().getValue1());
 					// ChainLevel del miner designato
 					designedMiner.setValue2(f.get().getValue2());
-					// System.out.println("\nRisposto da: " + f.get().getValue1() + "Block Block " + f.get().getValue2());
+					System.out.println("\nRisposto da: " + f.get().getValue1() + " con Block: " + f.get().getValue2());
 					flag = Boolean.FALSE;
 
 				} else {
