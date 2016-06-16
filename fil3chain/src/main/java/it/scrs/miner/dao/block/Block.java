@@ -53,9 +53,14 @@ public class Block {
     @OneToMany(mappedBy = "blockContainer", fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
     @OrderBy("index_in_block")
     private List<Transaction> transactionsContainer;
-    //TODO PROVE
-//    @OneToOne
-//    @PrimaryKeyJoinColumn
+
+    
+    
+//    TODO PROVARE
+//    @ManyToOne
+//    private Block children;
+//    @OneToMany(mappedBy="children")
+//    private List<Block> parent;
     @Column(name="Block_prevHashBlock")
     private String fatherBlockContainer;
     

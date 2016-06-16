@@ -49,6 +49,8 @@ public class Transaction {
         @JsonIgnore
 	private Block blockContainer;
         */
+        
+        //TODO AGGIUNGERE ONETOMANY MAPPEDBYBLOCKCONTSINER
         @Column(name = "blockContainer")
 	private String blockContainer;
 
