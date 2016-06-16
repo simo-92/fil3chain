@@ -224,7 +224,8 @@ public class MiningService extends Thread implements Runnable {
             for (IP ip : IPManager.getManager().getIPList()) {
                 System.out.println("Invio blocco a: " + ip.getIp());
                 try {
-                    String response = HttpUtil.doPost("http://" + ip.getIp() + "/fil3chain/newBlock", JsonUtility.toJson(block));
+                    // String response = HttpUtil.doPost("http://" + ip.getIp() + "/fil3chain/newBlock", JsonUtility.toJson(block));
+                    String response = restTemplate.postForObject("http://" + ip.getIp() + "/fil3chain/newBlock", block, String.class);
                     System.out.println("Ho inviato il blocco e mi è ritornato come risposta: " + response);
                     for (Pairs<IP, Integer> c : counter) {
                         if (c.isValue1(ip)) {
