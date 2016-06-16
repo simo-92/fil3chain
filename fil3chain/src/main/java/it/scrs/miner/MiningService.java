@@ -7,6 +7,7 @@ import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.transaction.TransactionRepository;
 import it.scrs.miner.dao.user.User;
 import it.scrs.miner.models.Pairs;
+import it.scrs.miner.util.AudioUtil;
 import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.IP;
 import it.scrs.miner.util.PoolDispatcherUtility;
@@ -155,7 +156,7 @@ public class MiningService extends Thread implements Runnable {
             // Incremento il nonce
             nonce++;
         } while (!verifyHash(hash));
-
+        AudioUtil.alert(); //avviso sonoro
         nonceFinish = nonce - 1;
         totalTime = (new Date().getTime() - startTime) / 1000.0f;
 
