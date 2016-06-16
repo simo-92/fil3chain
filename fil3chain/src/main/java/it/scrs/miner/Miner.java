@@ -167,34 +167,43 @@ public class Miner implements MinerEventsListener {
 		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri()
 				+ this.getActionConnect();
 		String result = "";
+        Integer counter = 0;
 
-		try {
-			System.out.println("URL: " + url);
-			System.out.println("Il mio IP: " + ip);
-			result = HttpUtil.doPost(url, "{\"user_ip\":\"" + this.getIp() + ":8080\"}");
-			// System.out.println(result);
-		} catch (Exception ex) {
-			System.err.println("Errore durante la richiesta di IP\n" + ex);
-			// Logger.getLogger(Miner.class.getName()).log(Level.SEVERE, null,
-			// ex);
-		}
+        while (counter <= ServiceMiner.nReqProp) {
+            try {
+                System.out.println("URL: " + url);
+                System.out.println("Il mio IP: " + ip);
+                result = HttpUtil.doPost(url, "{\"user_ip\":\"" + this.getIp() + ":8080\"}");
 
-		Type type = new TypeToken<ArrayList<String>>() {
-		}.getType();
-		List<String> ips = JsonUtility.fromJson(result, type);
-		ArrayList<IP> iplist = new ArrayList<>();
-		if(ips != null && ips.size() != 0) {
-			for (String ip : ips) {
-				iplist.add(new IP(ip));
-			}
-		}
+                Type type = new TypeToken<ArrayList<String>>() {
+                }.getType();
+                List<String> ips = JsonUtility.fromJson(result, type);
+                ArrayList<IP> iplist = new ArrayList<>();
+                if(ips != null && ips.size() != 0) {
+                    for (String ip : ips) {
+                        iplist.add(new IP(ip));
+                    }
+                }
 
-		IPManager.getManager().setAllIp((List<IP>) iplist.clone());
+                IPManager.getManager().setAllIp((List<IP>) iplist.clone());
 
-		System.out.println("Numero di IP ottenuti: " + IPManager.getManager().getIPList().size());
-		IPManager.getManager().getIPList().forEach(ip -> System.out.println(ip));
+                System.out.println("Numero di IP ottenuti: " + IPManager.getManager().getIPList().size());
+                IPManager.getManager().getIPList().forEach(ip -> System.out.println(ip));
 
-		return true;
+                return Boolean.TRUE;
+            } catch (Exception ex) {
+                System.err.println("Errore durante la richiesta di IP\n" + ex);
+                counter++;
+            }
+
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return Boolean.FALSE;
 	}
 
 	public void setActionConnect(String actionConnect) {
@@ -600,33 +609,41 @@ public class Miner implements MinerEventsListener {
 	@Override
 	public void onNewBlockArrived(Block block) {
 
-		System.out.println("Nuovo blocco arrivato, verifico...");
+        VerifyBlockService verifyBlockService = new VerifyBlockService(new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("Nuovo blocco arrivato, verifico...");
 
-		Boolean isVerified = Boolean.FALSE;
+                Boolean isVerified = Boolean.FALSE;
 
-		try {
-			firstConnectToEntryPoint();
-			isVerified = verifyBlock(block, blockRepository, serviceMiner);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+                try {
+                    firstConnectToEntryPoint();
+                    isVerified = verifyBlock(block, blockRepository, serviceMiner);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-		System.out.println("Blocco valido? " + isVerified);
+                System.out.println("Blocco valido? " + isVerified);
 
-		if (isVerified) {
-			// Stoppo il processo di mining
-			stopMine();
-			// Salvo il blocco nella catena
-			blockRepository.save(block);
-			// Aggiorno il servizio di mining
-			updateMiningService();
-			// Ricomincio a minare
-			miningService.run();
-		}
+                if (isVerified) {
+                    // Stoppo il processo di mining
+                    stopMine();
+                    // Salvo il blocco nella catena
+                    blockRepository.save(block);
+                    // Aggiorno il servizio di mining
+                    updateMiningService();
+                    // Ricomincio a minare
+                    miningService.run();
+                }
+            }
+        });
+
+        verifyBlockService.run();
+
 	}
 
 	private void updateMiningService() {

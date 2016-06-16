@@ -8,26 +8,21 @@ import it.scrs.miner.dao.transaction.TransactionRepository;
 import it.scrs.miner.dao.user.User;
 import it.scrs.miner.models.Pairs;
 import it.scrs.miner.util.CryptoUtil;
-import it.scrs.miner.util.HttpUtil;
 import it.scrs.miner.util.IP;
-import it.scrs.miner.util.JsonUtility;
+import it.scrs.miner.util.PoolDispatcherUtility;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.Collections;
-
-import it.scrs.miner.util.PoolDispatcherUtility;
-import org.springframework.stereotype.Service;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * Created by Marco Date: 08/06/2016
