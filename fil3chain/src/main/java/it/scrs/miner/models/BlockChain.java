@@ -356,13 +356,13 @@ public class BlockChain {
 				// facciamo un For per ciclare tutte richieste attive
 				// all'interno del nostro array e controlliamo se
 				// sono arrivate le risposte
-				System.out.println("\n sono in attesa di branch miner");
+				System.out.println("\nSono in attesa di branch miner");
 				if (f != null && f.isDone()) {
 					// IP del miner designato da cui prendere la blockchain
 					designedMiner.setValue1(f.get().getValue1());
 					// ChainLevel del miner designato
 					designedMiner.setValue2(f.get().getValue2());
-					System.out.println("\nRisposto da: " + f.get().getValue1() + "Block Block " + f.get().getValue2());
+					// System.out.println("\nRisposto da: " + f.get().getValue1() + "Block Block " + f.get().getValue2());
 					flag = Boolean.FALSE;
 
 				} else {
