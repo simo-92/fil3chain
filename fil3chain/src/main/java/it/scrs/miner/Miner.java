@@ -616,6 +616,9 @@ public class Miner implements MinerEventsListener {
 
                 Boolean isVerified = Boolean.FALSE;
 
+                // Se ho già il blocco nella catena termina.
+                if (blockRepository.findByhashBlock(block.getHashBlock()) != null) return;
+
                 try {
                     firstConnectToEntryPoint();
                     isVerified = verifyBlock(block, blockRepository, serviceMiner);
