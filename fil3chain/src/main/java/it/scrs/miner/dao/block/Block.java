@@ -121,7 +121,7 @@ public class Block {
 
     @Override
     public String toString() {
-        return fatherBlockContainer + merkleRoot + userContainer.getPublicKey();
+        return fatherBlockContainer + merkleRoot + minerPublicKey;
     }
 
     public void generateHashBlock() {
