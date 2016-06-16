@@ -7,6 +7,7 @@ package it.scrs.miner;
 
 import it.scrs.miner.util.IP;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,7 +19,7 @@ public class IPManager {
 	private static IPManager ipm;
 
 	private IPManager() {
-		ipList = new ArrayList<>();
+		ipList = Collections.synchronizedList(new ArrayList<>());
 	}
 
 	public static IPManager getManager() {
@@ -29,13 +30,13 @@ public class IPManager {
 
 	}
 
-	public synchronized List<IP> getIPList() {
+	public List<IP> getIPList() {
         synchronized (ipList) {
-		    return ipList;
+		    return new ArrayList<>(ipList);
         }
 	}
 
-	public synchronized void setAllIp(List<IP> ips) {
+	public void setAllIp(List<IP> ips) {
 		synchronized (ipList) {
             ipList.clear();
             ipList.addAll(ips);

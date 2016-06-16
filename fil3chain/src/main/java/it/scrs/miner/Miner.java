@@ -235,7 +235,7 @@ public class Miner implements MinerEventsListener {
 	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner)
 			throws InterruptedException, ExecutionException, IOException {
 
-		Boolean result = Boolean.TRUE;
+		Boolean result = Boolean.FALSE;
 		// nell primo updateh
 		System.out.println("\n" + b.getFatherBlockContainer());
 
@@ -246,6 +246,8 @@ public class Miner implements MinerEventsListener {
 			result = blockChain.updateBranChain(b.getFatherBlockContainer());
 		// se io ce l ho oppure l hotrovato in rete controllo il figlio e torno
 		// true
+
+        bFather = blockRepository.findByhashBlock(b.getFatherBlockContainer());
 
 		if ((bFather != null || result) && singleBlockVerify(blockRepository, b))
 			return Boolean.TRUE;
@@ -387,8 +389,10 @@ public class Miner implements MinerEventsListener {
 			System.out.println(transaction.getIndexInBlock());
 			transactionsHash.add(transaction.getHashFile());
 		}
-		if (transactionsHash.size() == 0)
-			return Boolean.FALSE;
+		if (transactionsHash.size() == 0) {
+            System.out.println("Merkle root verify: Nessuna transazione nel blocco con hash: " + block.getHashBlock());
+            return Boolean.FALSE;
+        }
 		System.out.println("Merckle Hash Block:" + block.getHashBlock());
 		String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
 		// Collections.reverse(transactionsHash);
@@ -399,13 +403,13 @@ public class Miner implements MinerEventsListener {
 		// verificare:"+transaction.getHashFile());
 		// }
 
-		System.out.println("Merkle mio1:" + checkMerkle);
+		System.out.println("Merkle mio: " + checkMerkle);
 		// System.out.println("Merkle mio2:"+checkMerkle2);
-		System.out.println("Merkle suo:" + block.getMerkleRoot());
-		System.out.println("Confronto merkle:" + checkMerkle.equals(block.getMerkleRoot()));
+		System.out.println("Merkle suo: " + block.getMerkleRoot());
+		System.out.println("Confronto merkle: " + checkMerkle.equals(block.getMerkleRoot()));
 
 		if ((!checkMerkle.equals(block.getMerkleRoot()))) {
-			System.err.println("MerkleRoot diverso.");
+			System.err.println("MerkleRoot diverso. Mio: " + checkMerkle + " Suo: " + block.getMerkleRoot());
 			return Boolean.FALSE;
 		}
 		// System.out.println("Lista Transazioni Merkle
@@ -417,8 +421,9 @@ public class Miner implements MinerEventsListener {
 	// Tutti i predecessori del blocco arrivato NON devono avere la transazione
 	private Boolean verifyUniqueTransactions(Block block, BlockRepository blockRepository) {
 
-		List<Block> predecessori = new ArrayList<Block>();
+		List<Block> predecessori = new ArrayList<>();
 		Block currentBlock = block;
+
 		while (currentBlock.getFatherBlockContainer() != null) {
 			predecessori.add(blockRepository.findByhashBlock(currentBlock.getFatherBlockContainer()));
 			currentBlock = blockRepository.findByhashBlock(currentBlock.getFatherBlockContainer());

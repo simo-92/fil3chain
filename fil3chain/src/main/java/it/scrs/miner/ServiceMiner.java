@@ -29,62 +29,72 @@ public class ServiceMiner {
 
 
 	@Async
-	public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner) {
+    public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner) {
 
-		loadConfiguration();// TODO Cosa è
+        loadConfiguration();
 
-		System.out.println("Timeout: " + timeoutSeconds);
+        // System.out.println("Timeout: " + timeoutSeconds);
 
-		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-		rf.setReadTimeout(1000 * timeoutSeconds);
-		rf.setConnectTimeout(1000 * timeoutSeconds);
+        SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+        rf.setReadTimeout(1000 * timeoutSeconds);
+        rf.setConnectTimeout(1000 * timeoutSeconds);
 
-		String result = "";
-		Integer level = -1;
-		Integer counter =0;
-		while (counter <= nReqProp) {
-		try {
-			System.out.println("\nRichiesta ad :" + uriMiner);
-			result = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/updateAtMaxLevel", String.class);
-			level = Integer.decode(result);
-			return new AsyncResult<>(new Pairs<>(new IP(uriMiner), level));
-		} catch (Exception e) {
-			// e.printStackTrace();
-			System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
-			counter++;
-			return null;
-		}
-		}
-		return null;
-	}
+        String result = "";
+        Integer level = -1;
+        Integer counter =0;
+        while (counter <= nReqProp) {
+            try {
+                System.out.println("\nRichiesta ad :" + uriMiner);
+                result = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/updateAtMaxLevel", String.class);
+                level = Integer.decode(result);
+                return new AsyncResult<>(new Pairs<>(new IP(uriMiner), level));
+            } catch (Exception e) {
+                // e.printStackTrace();
+                System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
+                counter++;
+            }
+
+            try {
+                Thread.sleep(250);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+        return null;
+    }
 
 	/**
 	 * @param uriMiner
-	 * @param req
 	 * @return
 	 */
 	@Async
-	public Future<Pairs<IP, Block>> findBlockByReq(String uriMiner, String req) {
+	public Future<String> pingUser(String uriMiner) {
 
 		loadConfiguration();
 
-		System.out.println("Timeout: " + timeoutSeconds);
+		// System.out.println("Timeout: " + timeoutSeconds);
 
 		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
 		rf.setReadTimeout(1000 * timeoutSeconds);
 		rf.setConnectTimeout(1000 * timeoutSeconds);
-		Integer counter =0;
+		Integer counter = 0;
 		while (counter <= nReqProp) {
 			try {
 				System.out.println("\nRichiesta ad :" + uriMiner);
-				Block block = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/" + req, Block.class);
-				return new AsyncResult<>(new Pairs<>(new IP(uriMiner), block));
+				String response = restTemplate.postForObject("http://" + uriMiner + "/user_ping", null, String.class);
+				return new AsyncResult<>(response);
 			} catch (Exception e) {
 				// e.printStackTrace();
 				System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
 				counter++;
-				return null;
-				
+			}
+
+			// Aspetto prima della prossima richiesta
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
 
 		}

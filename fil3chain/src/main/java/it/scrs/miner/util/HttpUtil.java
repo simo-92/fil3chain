@@ -83,13 +83,13 @@ public class HttpUtil {
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpGet request = new HttpGet(url);
 
-		// RequestConfig requestConfig = RequestConfig.custom()
-		// .setSocketTimeout(TIMEOUT_MILLIS)
-		// .setConnectTimeout(TIMEOUT_MILLIS)
-		// .setConnectionRequestTimeout(TIMEOUT_MILLIS)
-		// .build();
-		//
-		// request.setConfig(requestConfig);
+		RequestConfig requestConfig = RequestConfig.custom()
+			.setSocketTimeout(TIMEOUT_MILLIS)
+			.setConnectTimeout(TIMEOUT_MILLIS)
+			.setConnectionRequestTimeout(TIMEOUT_MILLIS)
+			.build();
+
+		request.setConfig(requestConfig);
 
 		HttpResponse response;
 		response = client.execute(request);
@@ -104,9 +104,6 @@ public class HttpUtil {
 		// ricostruire oggetto
 		// per un uso più corretto usa il la riga del Type che riesci a ricostruirlo bene
                 //System.out.println(result.toString());
-                File f=new File("log.txt");
-                FileWriter fw = new FileWriter(f);
-                fw.append(result.toString());
 		return JsonUtility.fromJson(result.toString(), t);
 	}
 
