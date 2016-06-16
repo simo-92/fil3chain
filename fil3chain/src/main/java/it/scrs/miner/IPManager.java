@@ -30,31 +30,40 @@ public class IPManager {
 	}
 
 	public synchronized List<IP> getIPList() {
-		return ipList;
-
+        synchronized (ipList) {
+		    return ipList;
+        }
 	}
 
 	public synchronized void setAllIp(List<IP> ips) {
-		ipm.getIPList().clear();
-		ipm.getIPList().addAll(ips);
+		synchronized (ipList) {
+            ipList.clear();
+            ipList.addAll(ips);
+        }
 
 	}
 
-	public synchronized int indexOf(String ip) {
-		for (int i = 0; i < ipList.size(); i++)
-			if (ipList.get(i).getIp().equals(ip))
-				return i;
-		return -1;
+	public int indexOf(String ip) {
+        synchronized (ipList) {
+            for (int i = 0; i < ipList.size(); i++)
+                if (ipList.get(i).getIp().equals(ip))
+                    return i;
+            return -1;
+        }
 	}
 
-	public synchronized void addIP(IP ip) {
-		if (ipm.indexOf(ip.getIp()) < 0)
-			ipm.getIPList().add(ip);
+	public void addIP(IP ip) {
+        synchronized (ipList) {
+            if (ipList.indexOf(ip.getIp()) < 0)
+                ipList.add(ip);
+        }
 	}
 
-	public synchronized void removeIP(IP ip) {
-		int index = indexOf(ip.getIp());
-		if (index >= 0)
-			ipm.getIPList().remove(index);
+	public void removeIP(IP ip) {
+        synchronized (ipList) {
+            int index = indexOf(ip.getIp());
+            if (index >= 0)
+                ipList.remove(index);
+        }
 	}
 }
