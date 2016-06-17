@@ -18,8 +18,8 @@ public class AudioUtil {
     
     public static void alert(){
         try{
-            InputStream in = AudioUtil.class.getResourceAsStream("/airhorn_3.au");
-            System.out.println(in.available());
+            InputStream in = AudioUtil.class.getResourceAsStream("/clip/airhorn_3.au");
+            //System.out.println(in.available());
             AudioStream audioStream = new AudioStream(in);
             AudioPlayer.player.start(audioStream);
         }catch(Exception e){
