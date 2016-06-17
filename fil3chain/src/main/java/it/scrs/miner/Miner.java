@@ -390,7 +390,7 @@ public class Miner implements MinerEventsListener {
 		return Boolean.TRUE;
 	}
 
-	// Metodo di verifica del merkle root di un blocco
+	// Metodo di verifica del merkle root di un bloccok
 	private Boolean verifyMerkleRoot(Block block) {
 
 		ArrayList<String> transactionsHash = new ArrayList<>();
