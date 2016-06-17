@@ -23,7 +23,7 @@ public class ServiceMiner {
 
 	public static final Integer nReqProp = 5;//TODO al properties
 
-	private int timeoutSeconds;
+
 
 	RestTemplate restTemplate = new RestTemplate();
 
@@ -31,13 +31,12 @@ public class ServiceMiner {
 	@Async
     public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner) {
 
-        loadConfiguration();
-
+      
         // System.out.println("Timeout: " + timeoutSeconds);
 
         SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-        rf.setReadTimeout(1000 * timeoutSeconds);
-        rf.setConnectTimeout(1000 * timeoutSeconds);
+        rf.setReadTimeout(Miner.timeoutSeconds);
+        rf.setConnectTimeout(Miner.timeoutSeconds);
 
         String result = "";
         Integer level = -1;
@@ -71,13 +70,12 @@ public class ServiceMiner {
 	@Async
 	public Future<String> pingUser(String uriMiner) {
 
-		loadConfiguration();
 
 		// System.out.println("Timeout: " + timeoutSeconds);
 
 		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-		rf.setReadTimeout(1000 * timeoutSeconds);
-		rf.setConnectTimeout(1000 * timeoutSeconds);
+		rf.setReadTimeout(Miner.timeoutSeconds);
+		rf.setConnectTimeout(Miner.timeoutSeconds);
 		Integer counter = 0;
 		while (counter <= nReqProp) {
 			try {
@@ -101,20 +99,4 @@ public class ServiceMiner {
 		return null;
 	}
 
-	/**
-	 * 
-	 */
-	private void loadConfiguration() {
-
-		// Carica la configurazione
-		Properties prop = new Properties();
-		InputStream in = ServiceMiner.class.getResourceAsStream("/network.properties");
-		try {
-			prop.load(in);
-			// Imposta il timeout
-			this.timeoutSeconds = Integer.parseInt(prop.getProperty("timeoutSeconds", "3"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
 }

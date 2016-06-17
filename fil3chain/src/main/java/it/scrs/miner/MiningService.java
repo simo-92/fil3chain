@@ -12,6 +12,8 @@ import it.scrs.miner.util.AudioUtil;
 import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.IP;
 import it.scrs.miner.util.PoolDispatcherUtility;
+
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -207,35 +209,38 @@ public class MiningService extends Thread implements Runnable {
 	@Async
 	public Future<List<Block>> sendBlockToMiners() throws InterruptedException {
 
-		RestTemplate restTemplate = new RestTemplate();
+		HttpComponentsClientHttpRequestFactory rf = new HttpComponentsClientHttpRequestFactory();
+		rf.setConnectionRequestTimeout(Miner.timeoutSeconds);
+		rf.setReadTimeout(Miner.timeoutSeconds);
+		rf.setConnectTimeout(Miner.timeoutSeconds);
 
-		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-		rf.setReadTimeout(1000 * 5);
-		rf.setConnectTimeout(1000 * 5);
-
+		RestTemplate restTemplate = new RestTemplate(rf);
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();
 
-		ArrayList<Pairs<IP, Integer>> counter = new ArrayList<Pairs<IP, Integer>>();
+		ArrayList<Pairs<IP, Integer>> counter = (ArrayList<Pairs<IP, Integer>>) Collections.synchronizedCollection(new ArrayList<Pairs<IP, Integer>>());
 		Miner.getInstance().firstConnectToEntryPoint();
 
-		for (IP ip : IPManager.getManager().getIPList()) {
-			counter.add(new Pairs<>(ip, 0));
+		synchronized (counter) {
+			for (IP ip : IPManager.getManager().getIPList()) {
+				counter.add(new Pairs<>(ip, 0));
+			}
 		}
-
 		while (!counter.isEmpty()) {
 
 			for (IP ip : IPManager.getManager().getIPList()) {
 				System.out.println("Invio blocco a: " + ip.getIp());
 				try {
-					// String response = HttpUtil.doPost("http://" + ip.getIp() + "/fil3chain/newBlock",
-					// JsonUtility.toJson(block));
+					// String response = HttpUtil.doPost("http://" + ip.getIp() + "/fil3chain/newBlock", JsonUtility.toJson(block));
 					String response = restTemplate.postForObject("http://" + ip.getIp() + "/fil3chain/newBlock", block, String.class);
+
 					System.out.println("Ho inviato il blocco e mi è ritornato come risposta: " + response);
 					synchronized (counter) {
 						for (Pairs<IP, Integer> c : counter) {
 							if (c.isValue1(ip)) {
-								counter.remove(c);
+								//synchronized (counter) {
+									counter.remove(c);
+								//}
 							}
 						}
 					}
