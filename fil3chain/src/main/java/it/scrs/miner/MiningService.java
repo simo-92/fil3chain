@@ -1,5 +1,6 @@
 package it.scrs.miner;
 
+
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.block.MerkleTree;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -25,329 +27,345 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
+
 /**
  * Created by Marco Date: 08/06/2016
  */
 @Service
 public class MiningService extends Thread implements Runnable {
 
-    // Blocco da minare
-    private Block block;
+	// Blocco da minare
+	private Block block;
 
-    // Chiave privata del creatore del blocco
-    private String privateKey;
+	// Chiave privata del creatore del blocco
+	private String privateKey;
 
-    // Difficoltà in cui si sta minando
-    private Integer difficulty;
+	// Difficoltà in cui si sta minando
+	private Integer difficulty;
 
-    // Maschera per il check dell'hash nei byte interi
-    private Integer fullMask;
+	// Maschera per il check dell'hash nei byte interi
+	private Integer fullMask;
 
-    // Maschera per il check dell'hash nel byte di "resto"
-    private byte restMask;
+	// Maschera per il check dell'hash nel byte di "resto"
+	private byte restMask;
 
-    // Callback chiamata dopo l'interruzione del thread
-    private Runnable interruptCallback;
+	// Callback chiamata dopo l'interruzione del thread
+	private Runnable interruptCallback;
 
-    // Chiave pubblica dell'autore del blocco
-    private String publicKey;
+	// Chiave pubblica dell'autore del blocco
+	private String publicKey;
 
-    // Blocco precedente nella catena
-    private Block previousBlock;
+	// Blocco precedente nella catena
+	private Block previousBlock;
 
-    // Lista di transazioni presente nel blocco
-    private List<Transaction> transactions;
+	// Lista di transazioni presente nel blocco
+	private List<Transaction> transactions;
 
-    // Block repository
-    private BlockRepository blockRepository;
-    private TransactionRepository transRepo;
+	// Block repository
+	private BlockRepository blockRepository;
+	private TransactionRepository transRepo;
 
-    /**
-     * Costruttore di default (necessario)
-     */
-    public MiningService() {
-        block = null;
-        difficulty = -1;
-        fullMask = 0;
-        restMask = 0b1111111;
-        interruptCallback = null;
-    }
 
-    /**
-     * Costruttore
-     *
-     * @param block
-     * @param difficulty
-     */
-    public MiningService(List<Transaction> transactions, Block previousBlock, String prKey, String puKey, Block block,
-                         Integer difficulty, BlockRepository blockRepository, TransactionRepository transRepo,
-                         Runnable interruptCallback) {
-        this.block = block;
-        this.privateKey = prKey;
-        this.publicKey = puKey;
-        this.previousBlock = previousBlock;
-        this.transactions = transactions;
-        this.difficulty = difficulty;
-        this.interruptCallback = interruptCallback;
-        this.blockRepository = blockRepository;
-        this.transRepo = transRepo;
-    }
+	/**
+	 * Costruttore di default (necessario)
+	 */
+	public MiningService() {
+		block = null;
+		difficulty = -1;
+		fullMask = 0;
+		restMask = 0b1111111;
+		interruptCallback = null;
+	}
 
-    /**
-     * Metodo per calcolare le maschere per effettuare il check dell'hash
-     */
-    private void calculateMasks() {
-        // Calcolo full mask
-        fullMask = difficulty / 8;
+	/**
+	 * Costruttore
+	 *
+	 * @param block
+	 * @param difficulty
+	 */
+	public MiningService(List<Transaction> transactions, Block previousBlock, String prKey, String puKey, Block block, Integer difficulty, BlockRepository blockRepository, TransactionRepository transRepo, Runnable interruptCallback) {
+		this.block = block;
+		this.privateKey = prKey;
+		this.publicKey = puKey;
+		this.previousBlock = previousBlock;
+		this.transactions = transactions;
+		this.difficulty = difficulty;
+		this.interruptCallback = interruptCallback;
+		this.blockRepository = blockRepository;
+		this.transRepo = transRepo;
+	}
 
-        // Calcolo rest mask
-        int restanti = difficulty % 8;
+	/**
+	 * Metodo per calcolare le maschere per effettuare il check dell'hash
+	 */
+	private void calculateMasks() {
 
-        if (restanti == 0) {
-            restMask = 0b000000;
-        } else {
-            restMask = (byte) 0b11111111;
-            restMask = (byte) (restMask << (8 - restanti));
-        }
-    }
+		// Calcolo full mask
+		fullMask = difficulty / 8;
 
-    @Override
-    public void run() {
-        try {
-            mine();
-        } catch (Exception ex) {
-            Logger.getLogger(MiningService.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+		// Calcolo rest mask
+		int restanti = difficulty % 8;
 
-    /**
-     * Metodo per minare un blocco
-     */
-    public void mine() throws Exception {
+		if (restanti == 0) {
+			restMask = 0b000000;
+		} else {
+			restMask = (byte) 0b11111111;
+			restMask = (byte) (restMask << (8 - restanti));
+		}
+	}
 
-        if(difficulty == -1) {
-            System.err.println("Complessità per il calcolo del blocco errata, impossibile minare");
-            return;
-        }
+	@Override
+	public void run() {
 
-        if (block == null) initializeService();
+		try {
+			mine();
+		} catch (Exception ex) {
+			Logger.getLogger(MiningService.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
 
-        // Calcolo le maschere per il check dell'hash.
-        calculateMasks();
+	/**
+	 * Metodo per minare un blocco
+	 */
+	public void mine() throws Exception {
 
-        // Tempo di inizio mining
-        long startTime = new Date().getTime();
+		if (difficulty == -1) {
+			System.err.println("Complessità per il calcolo del blocco errata, impossibile minare");
+			return;
+		}
 
-        // Nonce
-        Integer nonce = new Random().nextInt();
-        Integer nonceStart = nonce;
-        Integer nonceFinish = 0;
-        float totalTime = 0;
+		if (block == null)
+			initializeService();
 
-        System.out.println("Nonce di partenza: " + nonce);
+		// Calcolo le maschere per il check dell'hash.
+		calculateMasks();
 
-        // Hash del blocco
-        byte[] hash;
+		// Tempo di inizio mining
+		long startTime = new Date().getTime();
 
-        do {
-            // Genera nuovo hash
-            hash = org.apache.commons.codec.digest.DigestUtils.sha256(block.toString() + nonce);
+		// Nonce
+		Integer nonce = new Random().nextInt();
+		Integer nonceStart = nonce;
+		Integer nonceFinish = 0;
+		float totalTime = 0;
 
-            // Incremento il nonce
-            nonce++;
-        } while (!verifyHash(hash));
-        AudioUtil.alert(); //avviso sonoro
-        nonceFinish = nonce - 1;
-        totalTime = (new Date().getTime() - startTime) / 1000.0f;
+		System.out.println("Nonce di partenza: " + nonce);
 
-        // Calcolo hash corretto in esadecimale
-        // Spiegazione nonce - 1: Viene fatto -1 perché nell'ultima iterazione
-        // viene incrementato anche se l'hash era corretto.
-        String hexHash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(block.toString() + (nonce - 1));
+		// Hash del blocco
+		byte[] hash;
 
-        // Impostazione dell'hash e del nonce
-        block.setHashBlock(hexHash);
-        block.setNonce(nonce - 1);
-        block.setSignature(CryptoUtil.sign(hexHash, privateKey));
-        block.setMinerPublicKey(publicKey);
-        block.setFatherBlockContainer(previousBlock.getHashBlock());
-        block.setTransactionsContainer(transactions);
+		do {
+			// Genera nuovo hash
+			hash = org.apache.commons.codec.digest.DigestUtils.sha256(block.toString() + nonce);
 
-        block.setCreationTime(Long.toString(System.currentTimeMillis()));
-        System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: "
-                + nonce + " Tempo impiegato: " + totalTime + " secondi");
-        System.out.println("Hash provati: " + (Math.abs(nonceFinish - nonceStart)) + " HashRate: "
-                + (((Math.abs(nonceFinish - nonceStart)) / totalTime) / 1000000.0f) + " MH/s");
-        // Chiude il thread
-        // interrupt();
-        // Salvo il blocco
-        if (blockRepository != null)
-            blockRepository.save(block);
-        // per ogni transazione mette il riferimento al blocco container
-        int indexInBlock = 0;
-        for (Transaction trans : transactions) {
-            trans.setBlockContainer(block.getHashBlock());
-            trans.setIndexInBlock(indexInBlock);
-            System.out.println(trans.getIndexInBlock());
-            transRepo.save(trans);
-            indexInBlock++;
-        }
+			// Incremento il nonce
+			nonce++;
+		} while (!verifyHash(hash));
+		AudioUtil.alert(); // avviso sonoro
+		nonceFinish = nonce - 1;
+		totalTime = (new Date().getTime() - startTime) / 1000.0f;
 
-        sendBlockToMiners();
+		// Calcolo hash corretto in esadecimale
+		// Spiegazione nonce - 1: Viene fatto -1 perché nell'ultima iterazione
+		// viene incrementato anche se l'hash era corretto.
+		String hexHash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(block.toString() + (nonce - 1));
 
-        // TODO: Ricomincia a minare
-        initializeService();
-        mine();
-    }
+		// Impostazione dell'hash e del nonce
+		block.setHashBlock(hexHash);
+		block.setNonce(nonce - 1);
+		block.setSignature(CryptoUtil.sign(hexHash, privateKey));
+		block.setMinerPublicKey(publicKey);
+		block.setFatherBlockContainer(previousBlock.getHashBlock());
+		block.setTransactionsContainer(transactions);
 
-    @Async
-    public Future<List<Block>> sendBlockToMiners() throws InterruptedException {
-        RestTemplate restTemplate = new RestTemplate();
+		block.setCreationTime(Long.toString(System.currentTimeMillis()));
+		System.out.println("Hash trovato: " + block.getHashBlock() + " con difficoltà: " + difficulty + " Nonce: " + nonce + " Tempo impiegato: " + totalTime + " secondi");
+		System.out.println("Hash provati: " + (Math.abs(nonceFinish - nonceStart)) + " HashRate: " + (((Math.abs(nonceFinish - nonceStart)) / totalTime) / 1000000.0f) + " MH/s");
+		// Chiude il thread
+		// interrupt();
+		// Salvo il blocco
+		if (blockRepository != null)
+			blockRepository.save(block);
+		// per ogni transazione mette il riferimento al blocco container
+		int indexInBlock = 0;
+		for (Transaction trans : transactions) {
+			trans.setBlockContainer(block.getHashBlock());
+			trans.setIndexInBlock(indexInBlock);
+			System.out.println(trans.getIndexInBlock());
+			transRepo.save(trans);
+			indexInBlock++;
+		}
 
-        SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-        rf.setReadTimeout(1000 * 5);
-        rf.setConnectTimeout(1000 * 5);
+		sendBlockToMiners();
 
-        List<Block> blocks = new ArrayList<>();
-        String bool = Boolean.FALSE.toString();
+		// TODO: Ricomincia a minare
+		initializeService();
+		mine();
+	}
 
-        ArrayList<Pairs<IP, Integer>> counter = new ArrayList<>();
-        Miner.getInstance().firstConnectToEntryPoint();
+	@Async
+	public Future<List<Block>> sendBlockToMiners() throws InterruptedException {
 
-        for (IP ip : IPManager.getManager().getIPList()) {
-            counter.add(new Pairs<>(ip, 0));
-        }
+		RestTemplate restTemplate = new RestTemplate();
 
-        while (!counter.isEmpty()) {
-            for (IP ip : IPManager.getManager().getIPList()) {
-                System.out.println("Invio blocco a: " + ip.getIp());
-                try {
-                    // String response = HttpUtil.doPost("http://" + ip.getIp() + "/fil3chain/newBlock", JsonUtility.toJson(block));
-                    String response = restTemplate.postForObject("http://" + ip.getIp() + "/fil3chain/newBlock", block, String.class);
-                    System.out.println("Ho inviato il blocco e mi è ritornato come risposta: " + response);
-                    for (Pairs<IP, Integer> c : counter) {
-                        if (c.isValue1(ip)) {
-                            counter.remove(c);
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    sleep(1000);
-                    System.out.println("Il miner " + ip.getIp() + " non è più connesso.");
-                    System.out.println("Errore invio blocco: " + bool);
-                } finally {
+		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+		rf.setReadTimeout(1000 * 5);
+		rf.setConnectTimeout(1000 * 5);
 
-                    for (Integer i =0; i<counter.size();i++) {
-                        Pairs<IP, Integer> c = counter.get(i);
-                        if (c.isValue1(ip)) {
-                            counter.remove(c);
-                            c.setValue2(c.getValue2() + 1);
-                            if (c.getValue2() < 3) {
-                                counter.add(c);
-                            }
-                        }
-                    }
+		List<Block> blocks = new ArrayList<Block>();
+		String bool = Boolean.FALSE.toString();
 
-                }
-            }
+		ArrayList<Pairs<IP, Integer>> counter = new ArrayList<Pairs<IP, Integer>>();
+		Miner.getInstance().firstConnectToEntryPoint();
 
-        }
+		for (IP ip : IPManager.getManager().getIPList()) {
+			counter.add(new Pairs<>(ip, 0));
+		}
 
-        // Annullo il blocco appena minato
-        block = null;
+		while (!counter.isEmpty()) {
 
-        return new AsyncResult<>(blocks);
-    }
+			for (IP ip : IPManager.getManager().getIPList()) {
+				System.out.println("Invio blocco a: " + ip.getIp());
+				try {
+					// String response = HttpUtil.doPost("http://" + ip.getIp() + "/fil3chain/newBlock",
+					// JsonUtility.toJson(block));
+					String response = restTemplate.postForObject("http://" + ip.getIp() + "/fil3chain/newBlock", block, String.class);
+					System.out.println("Ho inviato il blocco e mi è ritornato come risposta: " + response);
+					synchronized (counter) {
+						for (Pairs<IP, Integer> c : counter) {
+							if (c.isValue1(ip)) {
+								counter.remove(c);
+							}
+						}
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+					sleep(1000);
+					System.out.println("Il miner " + ip.getIp() + " non è più connesso.");
+					System.out.println("Errore invio blocco: " + bool);
+				} finally {
+					synchronized (counter) {
+						for (Integer i = 0; i < counter.size(); i++) {
+							Pairs<IP, Integer> c = counter.get(i);
+							if (c.isValue1(ip)) {
+								counter.remove(c);
+								c.setValue2(c.getValue2() + 1);
+								if (c.getValue2() < 3) {
+									counter.add(c);
+								}
+							}
+						}
+					}
+				}
+			}
 
-    @Override
-    public void interrupt() {
-        super.interrupt();
-        if (interruptCallback != null)
-            interruptCallback.run();
-    }
+		}
 
-    private Boolean verifyHash(byte[] hash) {
+		// Annullo il blocco appena minato
+		block = null;
 
-        // Verifica dei primi fullMask byte interi
-        for (int i = 0; i < fullMask; i++) {
-            if (hash[i] != 0) {
-                return false;
-            }
-        }
+		return new AsyncResult<>(blocks);
+	}
 
-        // Se non ci sono bit restanti allora restituisce true
-        if (restMask == 0)
-            return true;
+	@Override
+	public void interrupt() {
 
-        // Altrimenti controlla i bit rimanenti
-        return (hash[fullMask] & restMask) == 0;
-    }
+		super.interrupt();
+		if (interruptCallback != null)
+			interruptCallback.run();
+	}
 
-    public Block getBlock() {
-        return block;
-    }
+	private Boolean verifyHash(byte[] hash) {
 
-    public void setBlock(Block block) {
-        this.block = block;
-    }
+		// Verifica dei primi fullMask byte interi
+		for (int i = 0; i < fullMask; i++) {
+			if (hash[i] != 0) {
+				return false;
+			}
+		}
 
-    public String getPrivateKey() {
-        return privateKey;
-    }
+		// Se non ci sono bit restanti allora restituisce true
+		if (restMask == 0)
+			return true;
 
-    public void setPrivateKey(String privateKey) {
-        this.privateKey = privateKey;
-    }
+		// Altrimenti controlla i bit rimanenti
+		return (hash[fullMask] & restMask) == 0;
+	}
 
-    public Integer getDifficulty() {
-        return difficulty;
-    }
+	public Block getBlock() {
 
-    public void setDifficulty(Integer difficulty) {
-        this.difficulty = difficulty;
-    }
+		return block;
+	}
 
-    public Boolean isInitialized() {
-        return (block != null && difficulty != -1);
-    }
+	public void setBlock(Block block) {
 
-    public void updateService(Block miningBlock, Block previousBlock, int difficulty,
-                              List<Transaction> transactionList) {
-        System.out.println("Update service");
-        interrupt();
-        this.block = miningBlock;
-        this.previousBlock = previousBlock;
-        this.difficulty = difficulty;
-        this.transactions = transactionList;
-    }
+		this.block = block;
+	}
 
-    public void initializeService() {
-        System.out.println("Inizializza servizio");
-        // Prendo l'ultmo blocco della catena
-        Block lastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
+	public String getPrivateKey() {
 
-        // Inizializzo il nuovo blocco da minare
-        block = new Block();
-        block.setFatherBlockContainer(lastBlock.getHashBlock());
-        block.setChainLevel(lastBlock.getChainLevel() + 1);
-        block.setMinerPublicKey(publicKey);
-        block.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
+		return privateKey;
+	}
 
-        // Prendo le transazioni dal Pool Dispatcher
-        List<Transaction> transactionsList = PoolDispatcherUtility.getTransactions();
+	public void setPrivateKey(String privateKey) {
 
-        ArrayList<String> hashTransactions = new ArrayList<>();
-        for (Transaction transaction : transactionsList) {
-            hashTransactions.add(transaction.getHashFile());
-        }
-        block.setMerkleRoot(MerkleTree.buildMerkleTree(hashTransactions));
+		this.privateKey = privateKey;
+	}
 
-        // Test chiamata per difficoltà
-        Integer complexity = PoolDispatcherUtility.getCurrentComplexity();
+	public Integer getDifficulty() {
 
-        previousBlock = lastBlock;
-        difficulty = complexity;
-        transactions = transactionsList;
-    }
+		return difficulty;
+	}
+
+	public void setDifficulty(Integer difficulty) {
+
+		this.difficulty = difficulty;
+	}
+
+	public Boolean isInitialized() {
+
+		return (block != null && difficulty != -1);
+	}
+
+	public void updateService(Block miningBlock, Block previousBlock, int difficulty, List<Transaction> transactionList) {
+
+		System.out.println("Update service");
+		interrupt();
+		this.block = miningBlock;
+		this.previousBlock = previousBlock;
+		this.difficulty = difficulty;
+		this.transactions = transactionList;
+	}
+
+	public void initializeService() {
+
+		System.out.println("Inizializza servizio");
+		// Prendo l'ultmo blocco della catena
+		Block lastBlock = blockRepository.findFirstByOrderByChainLevelDesc();
+
+		// Inizializzo il nuovo blocco da minare
+		block = new Block();
+		block.setFatherBlockContainer(lastBlock.getHashBlock());
+		block.setChainLevel(lastBlock.getChainLevel() + 1);
+		block.setMinerPublicKey(publicKey);
+		block.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
+
+		// Prendo le transazioni dal Pool Dispatcher
+		List<Transaction> transactionsList = PoolDispatcherUtility.getTransactions();
+
+		ArrayList<String> hashTransactions = new ArrayList<>();
+		for (Transaction transaction : transactionsList) {
+			hashTransactions.add(transaction.getHashFile());
+		}
+		block.setMerkleRoot(MerkleTree.buildMerkleTree(hashTransactions));
+
+		// Test chiamata per difficoltà
+		Integer complexity = PoolDispatcherUtility.getCurrentComplexity();
+
+		previousBlock = lastBlock;
+		difficulty = complexity;
+		transactions = transactionsList;
+	}
 
 }

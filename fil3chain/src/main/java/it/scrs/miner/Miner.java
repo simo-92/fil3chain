@@ -1,5 +1,6 @@
 package it.scrs.miner;
 
+
 import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
 
@@ -35,6 +36,8 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
+
+
 // import java.util.logging.Logger;
 /**
  *
@@ -44,10 +47,10 @@ import javax.crypto.NoSuchPaddingException;
 public class Miner implements MinerEventsListener {
 
 	private static Miner miner;
-    private static String minerIp;
-    private static BlockRepository minerBlockRepository;
-    private static ServiceMiner minerService;
-    private String ipEntryPoint;
+	private static String minerIp;
+	private static BlockRepository minerBlockRepository;
+	private static ServiceMiner minerService;
+	private String ipEntryPoint;
 	private String portEntryPoint;
 	private String entryPointBaseUri;
 	private String poolDispatcherBaseUri;
@@ -73,6 +76,7 @@ public class Miner implements MinerEventsListener {
 	private BlockRepository blockRepository;
 	private ServiceMiner serviceMiner;
 	private BlockChain blockChain;
+
 
 	/**
 	 *
@@ -130,13 +134,10 @@ public class Miner implements MinerEventsListener {
 	}
 
 	/*
-	 * public void loadMinerConfiguration() { // Carica la configurazione
-	 * Properties prop = new Properties(); InputStream in =
-	 * Miner.class.getResourceAsStream("/miner.properties"); try {
-	 * prop.load(in); // Imposta il timeout
-	 * blockChain.setnBlockUpdate(Integer.parseInt(prop.getProperty(
-	 * "nBlockUpdate", "10"))); } catch (IOException e) { e.printStackTrace(); }
-	 * }
+	 * public void loadMinerConfiguration() { // Carica la configurazione Properties prop = new Properties();
+	 * InputStream in = Miner.class.getResourceAsStream("/miner.properties"); try { prop.load(in); // Imposta il timeout
+	 * blockChain.setnBlockUpdate(Integer.parseInt(prop.getProperty( "nBlockUpdate", "10"))); } catch (IOException e) {
+	 * e.printStackTrace(); } }
 	 */
 
 	public void loadNetworkConfig() {
@@ -164,46 +165,45 @@ public class Miner implements MinerEventsListener {
 	@SuppressWarnings("unchecked")
 	public boolean firstConnectToEntryPoint() {
 
-		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri()
-				+ this.getActionConnect();
+		String url = "http://" + this.getIpEntryPoint() + ":" + this.getPortEntryPoint() + this.getEntryPointBaseUri() + this.getActionConnect();
 		String result = "";
-        Integer counter = 0;
+		Integer counter = 0;
 
-        while (counter <= ServiceMiner.nReqProp) {
-            try {
-                System.out.println("URL: " + url);
-                System.out.println("Il mio IP: " + ip);
-                result = HttpUtil.doPost(url, "{\"user_ip\":\"" + this.getIp() + ":8080\"}");
+		while (counter <= ServiceMiner.nReqProp) {
+			try {
+				System.out.println("URL: " + url);
+				System.out.println("Il mio IP: " + ip);
+				result = HttpUtil.doPost(url, "{\"user_ip\":\"" + this.getIp() + ":8080\"}");
 
-                Type type = new TypeToken<ArrayList<String>>() {
-                }.getType();
-                List<String> ips = JsonUtility.fromJson(result, type);
-                ArrayList<IP> iplist = new ArrayList<>();
-                if(ips != null && ips.size() != 0) {
-                    for (String ip : ips) {
-                        iplist.add(new IP(ip));
-                    }
-                }
+				Type type = new TypeToken<ArrayList<String>>() {
+				}.getType();
+				List<String> ips = JsonUtility.fromJson(result, type);
+				ArrayList<IP> iplist = new ArrayList<>();
+				if (ips != null && ips.size() != 0) {
+					for (String ip : ips) {
+						iplist.add(new IP(ip));
+					}
+				}
 
-                IPManager.getManager().setAllIp((List<IP>) iplist.clone());
+				IPManager.getManager().setAllIp((List<IP>) iplist.clone());
 
-                System.out.println("Numero di IP ottenuti: " + IPManager.getManager().getIPList().size());
-                IPManager.getManager().getIPList().forEach(ip -> System.out.println(ip));
+				System.out.println("Numero di IP ottenuti: " + IPManager.getManager().getIPList().size());
+				IPManager.getManager().getIPList().forEach(ip -> System.out.println(ip));
 
-                return Boolean.TRUE;
-            } catch (Exception ex) {
-                System.err.println("Errore durante la richiesta di IP\n" + ex);
-                counter++;
-            }
+				return Boolean.TRUE;
+			} catch (Exception ex) {
+				System.err.println("Errore durante la richiesta di IP\n" + ex);
+				counter++;
+			}
 
-            try {
-                Thread.sleep(250);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 
-        return Boolean.FALSE;
+		return Boolean.FALSE;
 	}
 
 	public void setActionConnect(String actionConnect) {
@@ -241,8 +241,7 @@ public class Miner implements MinerEventsListener {
 	 * @throws ExecutionException
 	 * @throws IOException
 	 */
-	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner)
-			throws InterruptedException, ExecutionException, IOException {
+	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
 
 		Boolean result = Boolean.FALSE;
 		// nell primo updateh
@@ -251,12 +250,14 @@ public class Miner implements MinerEventsListener {
 		// cerco il padre nel mio db
 		Block bFather = blockRepository.findByhashBlock(b.getFatherBlockContainer());
 		// non lo trovo lo cerco dai miner
-		if (bFather == null)
+		if (bFather == null) {
+			firstConnectToEntryPoint();
 			result = blockChain.updateBranChain(b.getFatherBlockContainer());
+		}
 		// se io ce l ho oppure l hotrovato in rete controllo il figlio e torno
 		// true
 
-        bFather = blockRepository.findByhashBlock(b.getFatherBlockContainer());
+		bFather = blockRepository.findByhashBlock(b.getFatherBlockContainer());
 
 		if ((bFather != null || result) && singleBlockVerify(blockRepository, b))
 			return Boolean.TRUE;
@@ -316,9 +317,9 @@ public class Miner implements MinerEventsListener {
 		// server
 		// allora termina con FALSE
 		if (complexity == -1) {
-            System.err.println("Verify Proof Of Work: Errore nella complessità, impossibile verificare blocco");
-            return Boolean.FALSE;
-        }
+			System.err.println("Verify Proof Of Work: Errore nella complessità, impossibile verificare blocco");
+			return Boolean.FALSE;
+		}
 
 		// Calcolo full mask
 		int fullMask = complexity / 8;
@@ -340,7 +341,7 @@ public class Miner implements MinerEventsListener {
 		// Verifica dei primi fullMask byte interi
 		for (int i = 0; i < fullMask; i++) {
 			if (hash[i] != 0) {
-                System.err.println("Verify Proof Of Work: Errore nei primi zeri " + hash[i] + " " + i + " Fullmask " + fullMask);
+				System.err.println("Verify Proof Of Work: Errore nei primi zeri " + hash[i] + " " + i + " Fullmask " + fullMask);
 				return false;
 			}
 		}
@@ -350,10 +351,10 @@ public class Miner implements MinerEventsListener {
 			return true;
 
 		// Altrimenti controlla i bit rimanenti
-        boolean result = (hash[fullMask] & restMask) == 0;
-        if(!result) {
-            System.err.println("Verify Proof Of Work: Errore nei restanti bit " + hash[fullMask] + " " + restMask);
-        }
+		boolean result = (hash[fullMask] & restMask) == 0;
+		if (!result) {
+			System.err.println("Verify Proof Of Work: Errore nei restanti bit " + hash[fullMask] + " " + restMask);
+		}
 		return (hash[fullMask] & restMask) == 0;
 	}
 
@@ -399,9 +400,9 @@ public class Miner implements MinerEventsListener {
 			transactionsHash.add(transaction.getHashFile());
 		}
 		if (transactionsHash.size() == 0) {
-            System.out.println("Merkle root verify: Nessuna transazione nel blocco con hash: " + block.getHashBlock());
-            return Boolean.FALSE;
-        }
+			System.out.println("Merkle root verify: Nessuna transazione nel blocco con hash: " + block.getHashBlock());
+			return Boolean.FALSE;
+		}
 		System.out.println("Merckle Hash Block:" + block.getHashBlock());
 		String checkMerkle = MerkleTree.buildMerkleTree(transactionsHash);
 		// Collections.reverse(transactionsHash);
@@ -609,43 +610,46 @@ public class Miner implements MinerEventsListener {
 	@Override
 	public void onNewBlockArrived(Block block) {
 
-        VerifyBlockService verifyBlockService = new VerifyBlockService(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("Nuovo blocco arrivato, verifico...");
+		VerifyBlockService verifyBlockService = new VerifyBlockService(new Runnable() {
 
-                Boolean isVerified = Boolean.FALSE;
+			@Override
+			public void run() {
 
-                // Se ho già il blocco nella catena termina.
-                if (blockRepository.findByhashBlock(block.getHashBlock()) != null) return;
+				System.out.println("Nuovo blocco arrivato, verifico...");
 
-                try {
-                    firstConnectToEntryPoint();
-                    isVerified = verifyBlock(block, blockRepository, serviceMiner);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+				Boolean isVerified = Boolean.FALSE;
 
-                System.out.println("Blocco valido? " + isVerified);
+				// Se ho già il blocco nella catena termina.
+				if (blockRepository.findByhashBlock(block.getHashBlock()) != null)
+					return;
 
-                if (isVerified) {
-                    // Stoppo il processo di mining
-                    stopMine();
-                    // Salvo il blocco nella catena
-                    blockRepository.save(block);
-                    // Aggiorno il servizio di mining
-                    updateMiningService();
-                    // Ricomincio a minare
-                    miningService.run();
-                }
-            }
-        });
+				try {
 
-        verifyBlockService.run();
+					isVerified = verifyBlock(block, blockRepository, serviceMiner);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				System.out.println("Blocco valido? " + isVerified);
+
+				if (isVerified) {
+					// Stoppo il processo di mining
+					stopMine();
+					// Salvo il blocco nella catena
+					blockRepository.save(block);
+					// Aggiorno il servizio di mining
+					updateMiningService();
+					// Ricomincio a minare
+					miningService.run();
+				}
+			}
+		});
+
+		verifyBlockService.run();
 
 	}
 
@@ -657,7 +661,7 @@ public class Miner implements MinerEventsListener {
 		Block newBlock = new Block();
 		newBlock.setFatherBlockContainer(lastBlock.getHashBlock());
 		newBlock.setChainLevel(lastBlock.getChainLevel() + 1);
-        newBlock.setMinerPublicKey(myPublickKey);
+		newBlock.setMinerPublicKey(myPublickKey);
 		newBlock.setUserContainer(new User("", "Ciano", "Bug", "Miner", "Mail", "Cianone"));
 
 		// Prendo le transazioni dal Pool Dispatcher
@@ -688,11 +692,12 @@ public class Miner implements MinerEventsListener {
 	}
 
 	public static Miner getInstance(String ip, BlockRepository blockRepository, ServiceMiner serviceMiner) {
+
 		if (miner == null) {
-			miner = new Miner(ip,  blockRepository,  serviceMiner);
-            minerIp = ip;
-            minerBlockRepository = blockRepository;
-            minerService = serviceMiner;
+			miner = new Miner(ip, blockRepository, serviceMiner);
+			minerIp = ip;
+			minerBlockRepository = blockRepository;
+			minerService = serviceMiner;
 		}
 
 		return miner;
@@ -700,9 +705,9 @@ public class Miner implements MinerEventsListener {
 
 	public static Miner getInstance() {
 
-        if(miner == null) {
-            miner = new Miner(minerIp, minerBlockRepository, minerService);
-        }
+		if (miner == null) {
+			miner = new Miner(minerIp, minerBlockRepository, minerService);
+		}
 
 		return miner;
 	}
