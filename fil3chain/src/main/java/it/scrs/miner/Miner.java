@@ -311,7 +311,7 @@ public class Miner implements MinerEventsListener {
 	// Metodo di verifica della proof of work
 	private Boolean verifyProofOfWork(Block block) {
 
-		Integer complexity = PoolDispatcherUtility.getBlockComplexity(block.getCreationTime());
+		Integer complexity = PoolDispatcherUtility.getBlockComplexity(block.getCreationTime())-10;//TODO SEMPLIFICATO LA DIFF
 
 		// Se c'è stato un errore o la complessità non è stata trovata nel
 		// server
