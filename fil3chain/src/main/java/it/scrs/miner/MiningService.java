@@ -216,7 +216,7 @@ public class MiningService extends Thread implements Runnable {
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();
 
-		ArrayList<Pairs<IP, Integer>> counter = new ArrayList<Pairs<IP, Integer>>();
+		ArrayList<Pairs<IP, Integer>> counter = (ArrayList<Pairs<IP, Integer>>) Collections.synchronizedCollection(new ArrayList<Pairs<IP, Integer>>());
 		Miner.getInstance().firstConnectToEntryPoint();
 
 		for (IP ip : IPManager.getManager().getIPList()) {
