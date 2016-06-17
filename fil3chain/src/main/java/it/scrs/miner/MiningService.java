@@ -12,16 +12,23 @@ import it.scrs.miner.util.AudioUtil;
 import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.IP;
 import it.scrs.miner.util.PoolDispatcherUtility;
+
+import org.h2.command.dml.Set;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.mysql.cj.api.x.Collection;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -215,15 +222,19 @@ public class MiningService extends Thread implements Runnable {
 
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();
-
-		List<Pairs<IP, Integer>> counter =  (List<Pairs<IP, Integer>>) Collections.synchronizedCollection(new ArrayList<Pairs<IP, Integer>>());
+		Map<IP, Integer> map = new HashMap<IP, Integer>();
+		Map<IP, Integer> counter = Collections.synchronizedMap(map);
 		Miner.getInstance().firstConnectToEntryPoint();
+		synchronized (counter) {
+			for (IP ip : IPManager.getManager().getIPList()) {
+				counter.put(ip, 0);
+			}
 
-		for (IP ip : IPManager.getManager().getIPList()) {
-			counter.add(new Pairs<>(ip, 0));
+			System.out.println("dimensione lista hashmap " + counter.size());
+
 		}
 
-		while (!counter.isEmpty()) {
+		while (counter.size() > 0) {
 
 			for (IP ip : IPManager.getManager().getIPList()) {
 				System.out.println("Invio blocco a: " + ip.getIp());
@@ -233,11 +244,10 @@ public class MiningService extends Thread implements Runnable {
 					String response = restTemplate.postForObject("http://" + ip.getIp() + "/fil3chain/newBlock", block, String.class);
 					System.out.println("Ho inviato il blocco e mi è ritornato come risposta: " + response);
 					synchronized (counter) {
-						for (Pairs<IP, Integer> c : counter) {
-							if (c.isValue1(ip)) {
-								counter.remove(c);
-							}
-						}
+
+						// Se ho mandato il blocco rimuovo il miner
+						counter.remove(ip);
+
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -246,16 +256,9 @@ public class MiningService extends Thread implements Runnable {
 					System.out.println("Errore invio blocco: " + bool);
 				} finally {
 					synchronized (counter) {
-						for (Integer i = 0; i < counter.size(); i++) {
-							Pairs<IP, Integer> c = counter.get(i);
-							if (c.isValue1(ip)) {
-								counter.remove(c);
-								c.setValue2(c.getValue2() + 1);
-								if (c.getValue2() < 3) {
-									counter.add(c);
-								}
-							}
-						}
+						// altrimenti aumenta il counter di uno
+						counter.put(ip, counter.get(ip) + 1);
+
 					}
 				}
 			}
