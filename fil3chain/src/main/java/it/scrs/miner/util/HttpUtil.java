@@ -8,7 +8,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import it.scrs.miner.util.JsonUtility;
-import it.scrs.miner.Miner;
+
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.models.Pairs;
 import org.apache.http.HttpResponse;
@@ -34,7 +34,7 @@ import org.apache.http.entity.StringEntity;
 /** classe di utilita per effettuare richieste http verso il sistema legacy */
 public class HttpUtil {
 
-	
+	private static final int TIMEOUT_MILLIS = 5000;
 
 
 	/**
@@ -50,7 +50,7 @@ public class HttpUtil {
 
 		HttpPost request = new HttpPost(url);
 
-		RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(Miner.timeoutSeconds).setConnectTimeout(Miner.timeoutSeconds).setConnectionRequestTimeout(Miner.timeoutSeconds).build();
+		RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(TIMEOUT_MILLIS).setConnectTimeout(TIMEOUT_MILLIS).setConnectionRequestTimeout(TIMEOUT_MILLIS).build();
 
 		request.setConfig(requestConfig);
 
@@ -83,7 +83,11 @@ public class HttpUtil {
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpGet request = new HttpGet(url);
 
-		RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(Miner.timeoutSeconds).setConnectTimeout(Miner.timeoutSeconds).setConnectionRequestTimeout(Miner.timeoutSeconds).build();
+		RequestConfig requestConfig = RequestConfig.custom()
+			.setSocketTimeout(TIMEOUT_MILLIS)
+			.setConnectTimeout(TIMEOUT_MILLIS)
+			.setConnectionRequestTimeout(TIMEOUT_MILLIS)
+			.build();
 
 		request.setConfig(requestConfig);
 
@@ -99,7 +103,7 @@ public class HttpUtil {
 		// TODO per lupo quando riuserai il fromJson , usare x.class nel caso specifico non va bene perche non riesce a
 		// ricostruire oggetto
 		// per un uso più corretto usa il la riga del Type che riesci a ricostruirlo bene
-		// System.out.println(result.toString());
+                //System.out.println(result.toString());
 		return JsonUtility.fromJson(result.toString(), t);
 	}
 
@@ -116,15 +120,10 @@ public class HttpUtil {
 
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpPost post = new HttpPost(url);
-
-		RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(Miner.timeoutSeconds).setConnectTimeout(Miner.timeoutSeconds).setConnectionRequestTimeout(Miner.timeoutSeconds).build();
-
-		post.setConfig(requestConfig);
-
-		// List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
-		// for (Pairs<?, ?> p : parameters) {
-		// urlParameters.add(new BasicNameValuePair(p.getValue1().toString(), p.getValue2().toString()));
-		// }
+//		List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+//		for (Pairs<?, ?> p : parameters) {
+//			urlParameters.add(new BasicNameValuePair(p.getValue1().toString(), p.getValue2().toString()));
+//		}
 		post.setEntity(new StringEntity(raw_data));
 		HttpResponse response = client.execute(post);
 		BufferedReader rd;

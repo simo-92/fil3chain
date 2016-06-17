@@ -76,7 +76,6 @@ public class Miner implements MinerEventsListener {
 	private BlockRepository blockRepository;
 	private ServiceMiner serviceMiner;
 	private BlockChain blockChain;
-	public static int timeoutSeconds;
 
 
 	/**
@@ -102,25 +101,6 @@ public class Miner implements MinerEventsListener {
 		// TODO PRendi dal database ME USER
 	}
 
-
-	/**
-	 * 
-	 */
-	private void loadConfiguration() {
-
-		// Carica la configurazione
-		Properties prop = new Properties();
-		InputStream in = ServiceMiner.class.getResourceAsStream("/network.properties");
-		try {
-			prop.load(in);
-			// Imposta il timeout
-			Miner.timeoutSeconds = Integer.parseInt(prop.getProperty("timeoutSeconds", "3"))*1000;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	
 	/**
 	 * @return the blockRepository
 	 */
@@ -176,7 +156,7 @@ public class Miner implements MinerEventsListener {
 		this.setActionConnect(prop.getProperty("actionConnect"));
 		this.setActionDisconnect(prop.getProperty("actionDisconnect"));
 		this.setActionKeepAlive(prop.getProperty("actionKeepAlive"));
-		loadConfiguration();
+
 	}
 
 	/**
