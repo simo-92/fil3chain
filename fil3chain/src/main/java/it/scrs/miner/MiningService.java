@@ -33,6 +33,7 @@ import java.util.Random;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 
 
@@ -216,10 +217,11 @@ public class MiningService extends Thread implements Runnable {
 
 		RestTemplate restTemplate = new RestTemplate();
 
-		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+		HttpComponentsClientHttpRequestFactory rf = new HttpComponentsClientHttpRequestFactory();
+
 		rf.setReadTimeout(1000 * 5);
 		rf.setConnectTimeout(1000 * 5);
-
+                restTemplate.setRequestFactory(rf);
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();
 		//Map<IP, Integer> map = new HashMap<IP, Integer>();
