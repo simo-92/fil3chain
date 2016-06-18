@@ -222,19 +222,19 @@ public class MiningService extends Thread implements Runnable {
 
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();
-		Map<IP, Integer> map = new HashMap<IP, Integer>();
-		Map<IP, Integer> counter = Collections.synchronizedMap(map);
-		Miner.getInstance().firstConnectToEntryPoint();
-		synchronized (counter) {
-			for (IP ip : IPManager.getManager().getIPList()) {
-				counter.put(ip, 0);
-			}
+		//Map<IP, Integer> map = new HashMap<IP, Integer>();
+		//Map<IP, Integer> counter = Collections.synchronizedMap(map);
+		//Miner.getInstance().firstConnectToEntryPoint();
+//		synchronized (counter) {
+//			for (IP ip : IPManager.getManager().getIPList()) {
+//				counter.put(ip, 0);
+//			}
+//
+//			System.out.println("dimensione lista hashmap " + counter.size());
+//
+//		}
 
-			System.out.println("dimensione lista hashmap " + counter.size());
-
-		}
-
-		while (counter.size() > 0) {
+		//while (counter.size() > 0) {
 
 			for (IP ip : IPManager.getManager().getIPList()) {
 				System.out.println("Invio blocco a: " + ip.getIp());
@@ -243,27 +243,27 @@ public class MiningService extends Thread implements Runnable {
 					// JsonUtility.toJson(block));
 					String response = restTemplate.postForObject("http://" + ip.getIp() + "/fil3chain/newBlock", block, String.class);
 					System.out.println("Ho inviato il blocco e mi è ritornato come risposta: " + response);
-					synchronized (counter) {
-
-						// Se ho mandato il blocco rimuovo il miner
-						counter.remove(ip);
-
-					}
+//					synchronized (counter) {
+//
+//						// Se ho mandato il blocco rimuovo il miner
+//						counter.remove(ip);
+//
+//					}
 				} catch (Exception e) {
 					e.printStackTrace();
 					sleep(1000);
 					System.out.println("Il miner " + ip.getIp() + " non è più connesso.");
 					System.out.println("Errore invio blocco: " + bool);
-				} finally {
-					synchronized (counter) {
-						// altrimenti aumenta il counter di uno
-						counter.put(ip, counter.get(ip) + 1);
-
-					}
-				}
+				} //finally {
+//					synchronized (counter) {
+//						// altrimenti aumenta il counter di uno
+//						counter.put(ip, counter.get(ip) + 1);
+//
+//					}
+				//}
 			}
 
-		}
+		//}
 
 		// Annullo il blocco appena minato
 		block = null;
