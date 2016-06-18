@@ -217,12 +217,12 @@ public class MiningService extends Thread implements Runnable {
 
 		RestTemplate restTemplate = new RestTemplate();
 
-		HttpComponentsClientHttpRequestFactory rf = new HttpComponentsClientHttpRequestFactory();
-
-		rf.setReadTimeout(1000 * 5);
-		rf.setConnectTimeout(1000 * 5);
-                restTemplate.setRequestFactory(rf);
-		List<Block> blocks = new ArrayList<Block>();
+//		HttpComponentsClientHttpRequestFactory rf = new HttpComponentsClientHttpRequestFactory();
+//
+//		rf.setReadTimeout(1000 * 5);
+//		rf.setConnectTimeout(1000 * 5);
+//                restTemplate.setRequestFactory(rf);
+		List<Block> blocks = new ArrayList<>();
 		String bool = Boolean.FALSE.toString();
 		//Map<IP, Integer> map = new HashMap<IP, Integer>();
 		//Map<IP, Integer> counter = Collections.synchronizedMap(map);

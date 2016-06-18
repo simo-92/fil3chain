@@ -35,9 +35,9 @@ public class ServiceMiner {
 
         // System.out.println("Timeout: " + timeoutSeconds);
 
-        SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-        rf.setReadTimeout(1000 * timeoutSeconds);
-        rf.setConnectTimeout(1000 * timeoutSeconds);
+//        SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+//        rf.setReadTimeout(1000 * timeoutSeconds);
+//        rf.setConnectTimeout(1000 * timeoutSeconds);
 
         String result = "";
         Integer level = -1;
@@ -75,9 +75,9 @@ public class ServiceMiner {
 
 		// System.out.println("Timeout: " + timeoutSeconds);
 
-		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-		rf.setReadTimeout(1000 * timeoutSeconds);
-		rf.setConnectTimeout(1000 * timeoutSeconds);
+//		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+//		rf.setReadTimeout(1000 * timeoutSeconds);
+//		rf.setConnectTimeout(1000 * timeoutSeconds);
 		Integer counter = 0;
 		while (counter <= nReqProp) {
 			try {

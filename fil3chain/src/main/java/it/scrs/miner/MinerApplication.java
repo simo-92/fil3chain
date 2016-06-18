@@ -84,7 +84,6 @@ public class MinerApplication implements CommandLineRunner {
 		block.setUserContainer(me);
 		block.setMinerPublicKey(miner.getMyPublickKey());
 
-		// TODO: Dopo che?
 		// Prendo le transazioni dal Pool Dispatcher
 		List<Transaction> transactionsList = PoolDispatcherUtility.getTransactions();
 
@@ -95,11 +94,9 @@ public class MinerApplication implements CommandLineRunner {
 
 		block.setMerkleRoot(MerkleTree.buildMerkleTree(hashTransactions));
 
-		// Test chiamata per difficoltà TODO decommentare
+		// Test chiamata per difficoltà
 		Integer complexity = PoolDispatcherUtility.getCurrentComplexity();
 
-		// TODO: Eliminare la moltiplicazione una volta che il server ha una complessità decente
-		// complexity *= 5;
 		System.out.println("Complessità per minare: " + complexity);
 
 		// Il miner inizia a minare
