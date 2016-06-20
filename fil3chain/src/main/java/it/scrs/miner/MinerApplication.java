@@ -17,6 +17,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import javax.swing.*;
 import java.net.InetAddress;
@@ -30,6 +31,7 @@ import java.util.concurrent.Future;
 
 
 @SpringBootApplication
+@EnableAsync
 @ComponentScan("it.scrs.miner")
 @EnableAutoConfiguration
 public class MinerApplication implements CommandLineRunner {
@@ -55,6 +57,13 @@ public class MinerApplication implements CommandLineRunner {
 		SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(MinerApplication.class).headless(false);
 		springApplicationBuilder.run(args);
 		// springApplication.run(MinerApplication.class);
+		
+//		ApplicationContext ctx = SpringApplication.run(Application.class, args);
+//		String[] beanNames = ctx.getBeanDefinitionNames();
+//		Arrays.sort(beanNames);
+//		for (String beanName : beanNames) {
+//		    System.out.println(beanName);
+//		}
 
 	}
 
@@ -115,13 +124,16 @@ public class MinerApplication implements CommandLineRunner {
 
 		// aspetto while flag che cambia con thread mio o arrivo blocco e riparto
 		while (Boolean.TRUE) {// finche gui dice si
+			System.out.println("richiesta asincrona");
 			Future<Boolean> response = miner.getMiningService().mine();
+			System.out.println("sono asincrona?");
 
 			do {
 				System.out.println("wait block mining");
-				Thread.sleep(3000);
+				Thread.sleep(250);
 
-			} while (response.isDone() && !response.get() && !miner.getFlagNewBlock());
+			} while (!response.isDone() && !miner.getFlagNewBlock());
+			System.out.println("ho aspettato la risposta" +response.isDone() +" con valore "+ response.get() +" oppure è arrivao il blocco "+miner.getFlagNewBlock());
 			miner.setFlagNewBlock(Boolean.TRUE);
 
 			miner.getMiningService().initializeService();

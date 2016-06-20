@@ -81,11 +81,10 @@ public class Miner {
 
 
 	/**
-	 *
+	 *NON CHIAMARMI!
 	 */
-	private Miner() {
+	public Miner() {
 		super();
-		// TODO PRendi dal database ME USER
 	}
 
 	private Miner(String ip, BlockRepository blockRepository, ServiceMiner serviceMiner) {

@@ -14,8 +14,10 @@ import it.scrs.miner.util.CryptoUtil;
 import it.scrs.miner.util.IP;
 import it.scrs.miner.util.PoolDispatcherUtility;
 
+import org.apache.http.HttpRequestFactory;
 import org.h2.command.dml.Set;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -202,12 +204,13 @@ public class MiningService {
 
 	@Async
 	public Future<List<Block>> sendBlockToMiners() throws InterruptedException {
-
-		//
-		// SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-		// rf.setReadTimeout(1000 * 5);
-		// rf.setConnectTimeout(1000 * 5);
-		// restTemplate.setRequestFactory(rf);
+		System.out.println(restTemplate.toString());
+		
+		HttpComponentsClientHttpRequestFactory rf = new HttpComponentsClientHttpRequestFactory();
+		 rf.setReadTimeout(1000 * 10);
+		 rf.setConnectTimeout(1000 * 10);
+		 rf.setConnectionRequestTimeout(1000 * 10);
+		 restTemplate.setRequestFactory(rf);
 
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();
