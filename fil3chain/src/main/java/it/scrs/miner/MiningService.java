@@ -220,9 +220,9 @@ public class MiningService extends Thread implements Runnable {
 
 		
 
-//		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-//		rf.setReadTimeout(1000 * 5);
-//		rf.setConnectTimeout(1000 * 5);
+		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+		rf.setReadTimeout(1000 * 5);
+		rf.setConnectTimeout(1000 * 5);
 
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();

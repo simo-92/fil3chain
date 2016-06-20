@@ -97,7 +97,7 @@ public class ControllerBlockRequest {
 		
 		
 		Miner.getInstance().onNewBlockArrived(block);
-		
+		System.out.println("rispondo");
 		
 		return Boolean.TRUE.toString();
 	}
