@@ -1,0 +1,43 @@
+<nav>
+  <style media="screen">
+    md-toolbar.md-default-theme:not(.md-menu-toolbar), md-toolbar:not(.md-menu-toolbar) {
+      background-color: rgb(63,81,110);
+      color: rgba(255,255,255,0.87);
+    }
+
+    md-tabs{
+      background-color: rgb(63,81,110);
+      color: rgba(255,255,255,0.87);
+    }
+    md-tabs .md-tab.md-active{
+      color: rgba(255,255,255,0.87);
+    }
+    .md-tab {
+      float: right;
+    }
+
+    md-pagination-wrapper {
+      left: initial;
+      right: 0;
+    }
+  </style>
+
+  <md-toolbar  layout-padding >
+    <div class="md-toolbar-tools" layout="row">
+      <md-button class="md-icon-button" aria-label="Settings">
+        <md-icon md-svg-src="icons/ic_menu_white_24px.svg"></md-icon>
+      </md-button>
+      <h2>
+        <span>{{navbar.title}}</span>
+      </h2>
+      <span flex=""></span>
+      <md-button class="md-icon-button" aria-label="{{action.label}}" ng-click="navbarClick(action)" ng-repeat="action in navbar.actions">
+        <md-icon md-svg-icon="{{action.icon}}" ></md-icon>
+      </md-button>
+    </div>
+  </md-toolbar>
+
+    <md-tabs md-stretch-tabs md-selected="selectedIndex" class="md-whiteframe-z2" ng-show="navbar.links.length>0">
+      <md-tab label="{{link.label}}" ng-repeat="link in navbar.links"></md-tab>
+    </md-tabs>
+</nav>

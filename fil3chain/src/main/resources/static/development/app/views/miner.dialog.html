@@ -1,0 +1,37 @@
+<md-dialog aria-label="Miner Settings"  ng-cloak>
+  <form>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Miner Settings</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <md-icon md-svg-src="icons/ic_close_white_24px.svg" aria-label="Close dialog"></md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+
+    <md-dialog-content>
+      <div class="md-dialog-content">
+        <h2>Select an IP address</h2>
+        <div layout="column" layout-align="center center">
+          <md-select placeholder="Assign to user" ng-model="user" md-on-open="loadUsers()" style="min-width: 200px;">
+            <md-option ng-value="user" ng-repeat="user in users">{{user.name}}</md-option>
+          </md-select>
+          <p class="md-caption">You have assigned the task to: {{ user ? user.name : 'No one yet' }}</p>
+        </div>
+      </md-dialog-content>
+
+      <md-dialog-actions layout="row">
+        <md-button href="http://en.wikipedia.org/wiki/Mango" target="_blank" md-autofocus>
+          More on Wikipedia
+        </md-button>
+        <span flex></span>
+        <md-button ng-click="answer('not useful')">
+          Not Useful
+        </md-button>
+        <md-button ng-click="answer('useful')">
+          Useful
+        </md-button>
+      </md-dialog-actions>
+    </form>
+  </md-dialog>

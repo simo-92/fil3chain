@@ -1,0 +1,42 @@
+transactions
+
+<md-content layout="row" flex layout-align="center" layout-fill>
+  <div flex="70" class="content" ui-view>
+    <md-item ng-repeat="user in users" class="item"
+    ng-class="{ 'selected-item': $index == selectedUserIndex}">
+    <md-item-content class="user tile md-whiteframe-z1"
+    ng-class="{ 'selected md-whiteframe-z2': $index == selectedUserIndex}"
+    layout="column">
+    <div layout="row" layout-fill ng-click="selectUserIndex($index)" class="folded">
+      <div class="md-tile-left">
+        <img ng-src="{{ user.face }}" class="face">
+      </div>
+      <div class="md-tile-content" layout="column" layout-align="center start">
+        <h3>{{ user.name.first + " " + user.name.last }}</h3>
+
+        <p ng-hide="$index == selectedUserIndex">
+          <span>Something</span>
+        </p>
+      </div>
+    </div>
+    <md-divider layout-fill ng-show="$index == selectedUserIndex"></md-divider>
+    <div layout="column" layout-fill class="expanded">
+      <span>some content</span>
+      <br/>
+      <span>some content</span>
+      <br/>
+      <span>some content</span>
+      <br/>
+      <span>some content</span>
+      <br/>
+      <span>some content</span>
+      <br/>
+      <span>some content</span>
+      <br/>
+      <span>some content</span>
+    </div>
+  </md-item-content>
+  <md-divider class="divider-inset" ng-if="!$last"></md-divider>
+</md-item>
+</div>
+</md-content>

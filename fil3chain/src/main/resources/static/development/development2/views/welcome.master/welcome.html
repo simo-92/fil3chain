@@ -1,0 +1,49 @@
+<style type="text/css">
+#widgetWelcome.ng-enter {
+  transition:0.5s linear all;
+  opacity:0;
+}
+#widgetWelcome.ng-enter-active {
+  /* end with opacity 1 (fade in) */
+  opacity: 1;
+}
+/*
+#widgetWelcome.ng-leave {
+  transition:0.5s linear all;
+  opacity:1;
+}
+#widgetWelcome.ng-leave.ng-leave-active {
+  opacity:0;
+  }*/
+  </style>
+
+  <div layout="row" flex layout-align="center center"
+  style="
+  height:inherit;
+  overflow-y: hidden;
+  background-image: url(images/blockchain_black.jpg);
+  background-size: cover;">
+    <main id="widgetWelcome" ui-view="content" flex>
+    </main>
+    <div ui-view="fab">
+    </div>
+<!--
+    <md-fab-speed-dial ng-hide="hidden" md-direction="up" md-open="isOpen" class="md-scale md-fab-bottom-right" ng-class="{ 'md-hover-full': hover }" ng-mouseenter="isOpen=true" ng-mouseleave="isOpen=false">
+      <md-fab-trigger>
+        <md-button aria-label="menu" class="md-fab">
+          <md-icon md-svg-src="icons/ic_menu_white_24px.svg" aria-label="menu"></md-icon>
+        </md-button>
+      </md-fab-trigger>
+
+      <md-fab-actions>
+        <div ng-repeat="item in fab.actions">
+          <md-button ui-sref={{item.sref}} aria-label="{{item.name}}" class="md-fab md-raised md-mini" ng-click="openDialog($event, item)">
+            <md-tooltip  md-direction="{{item.direction}}" md-visible="tooltipVisible" md-autohide="false">
+              {{item.name}}
+            </md-tooltip>
+            <md-icon md-svg-src="{{item.icon}}" aria-label="{{item.name}}"></md-icon>
+          </md-button>
+        </div>
+      </md-fab-actions>
+    </md-fab-speed-dial> -->
+  </div>

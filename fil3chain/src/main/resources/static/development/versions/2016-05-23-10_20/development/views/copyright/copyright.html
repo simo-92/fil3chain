@@ -1,0 +1,37 @@
+<div flex  layout-padding>
+
+
+  <h1>sdsdsds</h1>
+  <div class="upload">
+
+
+  </div>
+  <md-card>
+    <md-card-title>
+      <md-card-title-text>
+        <span class="md-headline">Card with image</span>
+        <span class="md-subhead">Large</span>
+      </md-card-title-text>
+      <md-card-title-media>
+        <div class="md-media-lg card-media"></div>
+      </md-card-title-media>
+    </md-card-title>
+    <md-card-actions layout="row" layout-align="end center">
+      <md-button>Action 1</md-button>
+      <md-button>Action 2</md-button>
+    </md-card-actions>
+  </md-card>
+  <md-progress-circular md-mode="{{progressMode}}" md-diameter="96"></md-progress-circular>
+  {{file.name}}
+  {{file.lastModifiedDate | date:'medium'}}
+  {{file.type}}
+  {{file.size}}
+  {{file.sha256}}
+
+  <!--
+  <input ng-model="messaggio"></input>
+  <button ng-click="sha(messaggio)"> Sha256</button>
+-->
+
+
+</div>

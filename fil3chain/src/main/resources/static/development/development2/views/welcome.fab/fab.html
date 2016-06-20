@@ -1,0 +1,17 @@
+<md-fab-speed-dial ng-show="{{speedDial.show}}" md-direction="{{speedDial.direction}}" md-open="isOpen" class="{{speedDial.class}}" ng-class="{{speedDial.ngClass}}" ng-mouseenter="isOpen=true" ng-mouseleave="isOpen=false">
+  <md-fab-trigger>
+    <md-button aria-label="menu" class="md-fab">
+      <md-icon md-svg-src="icons/ic_menu_white_24px.svg" aria-label="menu"></md-icon>
+    </md-button>
+  </md-fab-trigger>
+  <md-fab-actions ng-if="speedDial.fabActions">
+    <div ng-repeat="action in speedDial.fabActions">
+      <md-button ng-click="actionClick(action)" aria-label="{{action.name}}" class="md-fab md-raised md-mini" ng-click="openDialog($event, item)">
+        <md-tooltip  md-direction="{{action.direction}}" md-visible="tooltipVisible" md-autohide="false">
+          {{action.name}}
+        </md-tooltip>
+        <md-icon md-svg-src="{{action.icon}}" aria-label="{{action.name}}"></md-icon>
+      </md-button>
+    </div>
+  </md-fab-actions>
+</md-fab-speed-dial>

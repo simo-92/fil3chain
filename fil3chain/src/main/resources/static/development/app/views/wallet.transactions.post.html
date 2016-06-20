@@ -1,0 +1,49 @@
+<span flex="10"></span>
+<md-content flex>
+<md-progress-circular md-mode="{{progressMode}}" md-diameter="96" ng-hide="!progressMode" flex-offset="45"></md-progress-circular>
+<md-card ng-show="file && !progressMode" flex="" flex-gt-md="80" flex-offset-gt-md="10" >
+  <md-card-title style="min-height: 3em;">
+    <md-card-title-text>
+      <span class="md-headline">Transaction</span>
+      <span class="md-subhead">This card shows the details of the file inserted in the transaction</span>
+    </md-card-title-text>
+    <md-card-title-media>
+      <div class="md-media-lg card-media">
+        <img src="images/handshake.png" alt="Handshake Transaction" />
+      </div>
+    </md-card-title-media>
+  </md-card-title>
+  <md-card-content>
+    <div layout="column">
+      <div layout-gt-md="row" layout-md="column" flex="100">
+        <p flex-gt-md="30"><strong>File name </strong></p><p flex>{{file.name}}</p>
+      </div>
+      <div layout-gt-md="row" layout-md="column" flex="100">
+        <p flex="30"> <strong>Last Modified Date</strong></p><p>{{file.lastModifiedDate | date:'medium'}}</p>
+      </div>
+      <div layout-gt-md="row" layout-md="column" flex="100">
+        <p flex="30"> <strong>Type</strong></p><p flex> {{file.type}}</p>
+      </div>
+      <div layout-gt-md="row" layout-md="column" flex="100">
+        <p flex="30"> <strong>Size</strong> </p><p flex>{{file.size}}</p>
+      </div>
+      <div layout-gt-md="row" layout-md="column" flex="100">
+        <p flex="30"> <strong>Sha256</strong></p> <p flex>{{file.sha256}}</p>
+      </div>
+    </div>
+  </md-card-content>
+  <md-card-actions layout="row" layout-align-md="start center" layout-align-gt-md="end center">
+    <md-button>Delete</md-button>
+    <md-button class="md-raised md-primary md-button md-ink-ripple">Submit</md-button>
+  </md-card-actions>
+</md-card>
+<span flex-gt-md="10"></span>
+<div class="upload">
+</div>
+<style media="screen">
+  .upload>.md-fab-bottom-right{
+    position: fixed;
+  }
+</style>
+</md-content>
+<span flex="10"></span>

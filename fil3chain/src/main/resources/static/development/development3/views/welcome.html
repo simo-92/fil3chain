@@ -1,0 +1,25 @@
+<style type="text/css">
+  #widgetWelcome.ng-enter {
+    transition:0.5s linear all;
+    opacity:0;
+  }
+  #widgetWelcome.ng-enter-active {
+    /* end with opacity 1 (fade in) */
+    opacity: 1;
+  }
+  /*
+  #widgetWelcome.ng-leave {
+    transition:0.5s linear all;
+    opacity:1;
+  }
+  #widgetWelcome.ng-leave.ng-leave-active {
+    opacity:0;
+  }*/
+</style>
+
+
+<div layout="column" >
+  <span flex="20"></span>
+  <main ui-view="content" flex="auto"></main>
+  <span flex="20"></span>
+</div>

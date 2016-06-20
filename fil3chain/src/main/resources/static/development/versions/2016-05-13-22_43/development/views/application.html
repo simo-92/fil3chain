@@ -1,0 +1,38 @@
+<md-toolbar layout="row" layout-align="center center" layout-padding class="md-whiteframe-z2">
+  <span class="app-name">Super Clever App Name</span>
+  <span class="app-context" flex></span>
+  <span class="user-name">Name, User</span>
+  <md-icon md-svg-src="icons/user_white.svg"></md-icon>
+</md-toolbar>
+
+
+<div layout="row" flex>
+  <md-sidenav layout-align="end" flex="5" md-is-locked-open="$mdMedia('gt-sm')" class="md-whiteframe-1dp" md-component-id="left" layout="column">
+    <md-list layout="column" layout-align="null center" style="overflow-x: hidden;">
+      <md-list-item layout="row" layout-align="center" ng-repeat="nav in menu"  ui-sref-active="active">
+        <md-button  aria-label="{{nav.label}}"  ui-sref="{{nav.state}}" >
+          <md-icon md-svg-src="{{nav.icon}}"></md-icon>
+          <md-tooltip md-direction="right" md-delay="500">{{nav.label}}</md-tooltip>
+        </md-button>
+      </md-list-item>
+    </md-list>
+  </md-sidenav>
+
+  <section layout="row" flex layout-padding ui-view>
+
+  </section>
+
+
+</div>
+
+<!--
+<div ui-view>
+Application
+<div class="span6">
+<div class="well" ui-view="signin"></div>
+</div>
+<div class="span6">
+<div class="well" ui-view="signup"></div>
+</div>
+</div>
+-->

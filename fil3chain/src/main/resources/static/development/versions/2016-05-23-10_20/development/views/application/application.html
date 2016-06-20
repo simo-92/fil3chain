@@ -1,0 +1,32 @@
+<md-fab-speed-dial ng-hide="hidden" md-direction="up" md-open="isOpen" class="md-scale md-fab-bottom-right" ng-class="{ 'md-hover-full': hover }" ng-mouseenter="isOpen=true" ng-mouseleave="isOpen=false">
+  <md-fab-trigger>
+    <md-button aria-label="add" class="md-fab">
+      <md-icon md-svg-src="icons/ic_add_white_24px.svg" aria-label="add"></md-icon>
+    </md-button>
+  </md-fab-trigger>
+
+  <md-fab-actions>
+    <div ng-repeat="item in fab.actions">
+      <md-button ui-sref={{item.sref}} aria-label="{{item.name}}" class="md-fab md-raised md-mini" ng-click="openDialog($event, item)">
+        <md-tooltip  md-direction="{{item.direction}}" md-visible="tooltipVisible" md-autohide="false">
+          {{item.name}}
+        </md-tooltip>
+        <md-icon md-svg-src="{{item.icon}}" aria-label="{{item.name}}"></md-icon>
+      </md-button>
+    </div>
+  </md-fab-actions>
+</md-fab-speed-dial>
+<sidenav></sidenav>
+
+
+<div layout="column" flex layout-fill>
+  <navbar></navbar>
+
+
+
+  <section layout="row" flex layout-padding>
+    <md-content flex >
+      <ui-view layout="column" layout-fill layout-padding md-scroll-y></ui-view>
+    </md-content>
+  </section>
+</div>

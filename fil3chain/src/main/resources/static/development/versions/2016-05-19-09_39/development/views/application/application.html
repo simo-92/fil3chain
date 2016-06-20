@@ -1,0 +1,89 @@
+<!--
+<nav>
+  <style media="screen">
+    md-toolbar.md-default-theme:not(.md-menu-toolbar), md-toolbar:not(.md-menu-toolbar) {
+      background-color: rgb(63,81,110);
+      color: rgba(255,255,255,0.87);
+    }
+
+    md-tabs{
+      background-color: rgb(63,81,110);
+      color: rgba(255,255,255,0.87);
+    }
+    md-tabs .md-tab.md-active{
+      color: rgba(255,255,255,0.87);
+    }
+    .md-tab {
+      float: right;
+    }
+
+    md-pagination-wrapper {
+      left: initial;
+      right: 0;
+    }
+  </style>
+
+  <md-toolbar  layout-padding >
+    <div class="md-toolbar-tools" layout="row">
+      <md-button class="md-icon-button" aria-label="Settings">
+        <md-icon md-svg-src="icons/ic_menu_white_24px.svg"></md-icon>
+      </md-button>
+      <h2>
+        <span>{{title}}</span>
+      </h2>
+      <span flex=""></span>
+      <md-button class="md-icon-button" aria-label="{{action.label}}" ng-click="navbarClick(action)" ng-repeat="action in navbar.actions">
+        <md-icon md-svg-icon="{{action.icon}}" ></md-icon>
+      </md-button>
+    </div>
+  </md-toolbar>
+
+    <md-tabs md-stretch-tabs md-selected="selectedIndex" class="md-whiteframe-z2" ng-show="navbar.links.length>0">
+      <md-tab label="{{link.label}}" ng-repeat="link in navbar.links"></md-tab>
+    </md-tabs>
+
+</nav>
+-->
+
+<!--
+<md-toolbar layout="row" layout-align="center center" layout-padding class="md-tall md-whiteframe-z2">
+<md-icon md-svg-src="icons/ic_menu_white_24px.svg"></md-icon>
+<span class="app-name">Super Clever App Name</span>
+<span class="app-context" flex></span>
+<span class="user-name">Name, User</span>
+<md-icon md-svg-src="icons/user_white.svg"></md-icon>
+</md-toolbar>
+-->
+
+
+<navbar></navbar>
+<div class="sidenav" layout="row" flex>
+  <sidenav></sidenav>
+  <!--
+  <md-sidenav layout-align="end" flex="5" md-is-locked-open="$mdMedia('gt-sm')" class="md-whiteframe-1dp" md-component-id="left" layout="column">
+    <md-list layout="column" layout-align="null center" style="overflow-x: hidden;">
+      <md-list-item layout="row" layout-align="center" ng-repeat="nav in sidenavItems"  ui-sref-active="active">
+        <md-button  aria-label="{{nav.label}}"  ui-sref="{{nav.state}}" >
+          <md-icon md-svg-src="{{nav.icon}}"></md-icon>
+          <md-tooltip md-direction="right" md-delay="500">{{nav.label}}</md-tooltip>
+        </md-button>
+      </md-list-item>
+    </md-list>
+  </md-sidenav>
+-->
+  <section layout="row" flex layout-padding ui-view></section>
+
+
+</div>
+
+<!--
+<div ui-view>
+Application
+<div class="span6">
+<div class="well" ui-view="signin"></div>
+</div>
+<div class="span6">
+<div class="well" ui-view="signup"></div>
+</div>
+</div>
+-->

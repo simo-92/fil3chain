@@ -1,0 +1,16 @@
+<div ui-view="sidenav">  </div>
+
+<div layout="column" flex layout-fill>
+  
+  <div ui-view="fab"></div>
+  <div ui-view="navbar"></div>
+
+  <style media="screen">
+  md-content{
+    background-color: #eee
+  }
+  </style>
+
+  <div ui-view="content" layout="column"></div>
+
+</div>

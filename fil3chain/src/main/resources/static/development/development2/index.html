@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title></title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
+  <!-- bower:css -->
+  <link rel="stylesheet" href="../bower_components/angular-material/angular-material.css" />
+  <link rel="stylesheet" href="../bower_components/angular-chart.js/dist/angular-chart.css" />
+  <!-- endbower -->
+  <!-- include: "type": "css", "files": "styles/**/*.css" -->
+  <link href="styles/css/animate.css" rel="stylesheet" type="text/css">
+  <link href="styles/css/main.css" rel="stylesheet" type="text/css">
+  <!-- /include -->
+  <style type="text/css">
+  [ng\:cloak], [ng-cloak], .ng-cloak {
+    display: none !important;
+  }
+  body{
+    background-color: #ececec;
+  }
+  md-toast{
+    left: 50%;
+    margin-left: -150px;
+  }
+  </style>
+</head>
+<body ng-app="blockchainApp" >
+  <div  ng-cloak class="ng-cloak" layout="row" style="height: 100%;" ui-view="master"> </div>
+
+  <!-- ui-router content here -->
+
+  <!-- bower:js -->
+  <script src="../bower_components/angular/angular.js"></script>
+  <script src="../bower_components/angular-animate/angular-animate.js"></script>
+  <script src="../bower_components/angular-aria/angular-aria.js"></script>
+  <script src="../bower_components/angular-cookies/angular-cookies.js"></script>
+  <script src="../bower_components/angular-messages/angular-messages.js"></script>
+  <script src="../bower_components/angular-material/angular-material.js"></script>
+  <script src="../bower_components/angular-resource/angular-resource.js"></script>
+  <script src="../bower_components/angular-route/angular-route.js"></script>
+  <script src="../bower_components/angular-ui-router/release/angular-ui-router.js"></script>
+  <script src="../bower_components/Chart.js/Chart.js"></script>
+  <script src="../bower_components/angular-chart.js/dist/angular-chart.js"></script>
+  <!-- endbower -->
+  <!-- include: "type": "js", "files": "scripts/**/*.js" -->
+  <script src="scripts/app.js"></script>
+  <script src="scripts/app/navbar@app/navbar@app.service.js"></script>
+  <script src="scripts/controllers/app.dashboard.filters/filters.js"></script>
+  <script src="scripts/controllers/app.dashboard/dashboard.js"></script>
+  <script src="scripts/controllers/app.fab/fab.js"></script>
+  <script src="scripts/controllers/app.navbar/navbar.js"></script>
+  <script src="scripts/controllers/app.sidenav/sidenav.js"></script>
+  <script src="scripts/controllers/app.wallet.filters/filters.js"></script>
+  <script src="scripts/controllers/app/application.js"></script>
+  <script src="scripts/controllers/application/application.js"></script>
+  <script src="scripts/controllers/application/copyright.js"></script>
+  <script src="scripts/controllers/application/dashboard/dashboard.js"></script>
+  <script src="scripts/controllers/welcome.fab/fab.js"></script>
+  <script src="scripts/controllers/welcome.signin/signin.js"></script>
+  <script src="scripts/controllers/welcome.signup/signup.js"></script>
+  <script src="scripts/controllers/welcome/welcome.js"></script>
+  <script src="scripts/directives/uploadDirective.js"></script>
+  <script src="scripts/filters/ExactMatch/ExactMatchFilter.js"></script>
+  <script src="scripts/filters/fabState/fabStateFilter.js"></script>
+  <script src="scripts/modules/Auto-breadcrumbs/uiBreadcrumbs.js"></script>
+  <script src="scripts/modules/sha256/sha256.js"></script>
+  <script src="scripts/services/Authentication/AuthenticationService.js"></script>
+  <script src="scripts/services/User/UserService.js"></script>
+  <script src="scripts/services/User/UserValidator/UserValidatorService.js"></script>
+  <script src="scripts/services/fab/fabService.js"></script>
+  <script src="scripts/services/fab/fabService1.js"></script>
+  <script src="scripts/services/navbar/navbarService.js"></script>
+  <script src="scripts/services/sidenav/sidenavService.js"></script>
+  <!-- /include -->
+  <!-- include: "type": "js", "files": "states/**/*.js" -->
+  <script src="states/app/components/navbar@app/navbar@app.js"></script>
+  <script src="states/app/components/navbar@app/navbar@app.service.js"></script>
+  <script src="states/app/components/sidenav@app/sidenav@app.js"></script>
+  <!-- /include -->
+</body>
+</html>
