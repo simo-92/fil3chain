@@ -7,14 +7,8 @@ import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.transaction.TransactionRepository;
 import it.scrs.miner.dao.user.User;
-import it.scrs.miner.models.BlockChain;
 import it.scrs.miner.util.PoolDispatcherUtility;
-import scala.annotation.meta.setter;
 
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.http.HttpRequestFactory;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.config.RequestConfig.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +17,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 
 
 import javax.swing.*;
@@ -166,10 +157,10 @@ public class MinerApplication implements CommandLineRunner {
 		ArrayList<String> ips = new ArrayList<>();
 
 		try {
-			Enumeration e = NetworkInterface.getNetworkInterfaces();
+			Enumeration<?> e = NetworkInterface.getNetworkInterfaces();
 			while (e.hasMoreElements()) {
 				NetworkInterface n = (NetworkInterface) e.nextElement();
-				Enumeration ee = n.getInetAddresses();
+				Enumeration<?> ee = n.getInetAddresses();
 				while (ee.hasMoreElements()) {
 					InetAddress i = (InetAddress) ee.nextElement();
 					if (i.getHostAddress().matches(IP_REGEX)) {

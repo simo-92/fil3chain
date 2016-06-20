@@ -7,8 +7,11 @@ import it.scrs.miner.Miner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 import it.scrs.miner.MinersListenerRegister;
+import it.scrs.miner.MiningService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +36,7 @@ public class ControllerBlockRequest {
 
 	@Autowired
 	private BlockRepository blockRepository;
+
 
 	/*
 	 * @RequestMapping(value="/provaJson", method= RequestMethod.GET)
@@ -90,7 +94,10 @@ public class ControllerBlockRequest {
 
 		//MinersListenerRegister.getInstance().notifyListenersNewBlock(newBlock);
 		//TODO POSSIAMO TOGLIERE IL LISTENER E FARE COSI
+		
+		
 		Miner.getInstance().onNewBlockArrived(block);
+		
 		
 		return Boolean.TRUE.toString();
 	}

@@ -9,13 +9,14 @@ import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.block.MerkleTree;
 import it.scrs.miner.dao.transaction.Transaction;
 import it.scrs.miner.dao.user.User;
-import it.scrs.miner.interfaces.MinerEventsListener;
 import it.scrs.miner.models.BlockChain;
 import it.scrs.miner.models.Pairs;
 import it.scrs.miner.util.*;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -44,7 +45,7 @@ import javax.crypto.NoSuchPaddingException;
  *
  */
 @Component
-public class Miner implements MinerEventsListener {
+public class Miner {
 
 	private static Miner miner;
 	private static String minerIp;
@@ -134,10 +135,7 @@ public class Miner implements MinerEventsListener {
 	}
 
 	/*
-	 * public void loadMinerConfiguration() { // Carica la configurazione Properties prop = new Properties();
-	 * InputStream in = Miner.class.getResourceAsStream("/miner.properties"); try { prop.load(in); // Imposta il timeout
-	 * blockChain.setnBlockUpdate(Integer.parseInt(prop.getProperty( "nBlockUpdate", "10"))); } catch (IOException e) {
-	 * e.printStackTrace(); } }
+	 * public void loadMinerConfiguration() { // Carica la configurazione Properties prop = new Properties(); InputStream in = Miner.class.getResourceAsStream("/miner.properties"); try { prop.load(in); // Imposta il timeout blockChain.setnBlockUpdate(Integer.parseInt(prop.getProperty( "nBlockUpdate", "10"))); } catch (IOException e) { e.printStackTrace(); } }
 	 */
 
 	public void loadNetworkConfig() {
@@ -311,7 +309,7 @@ public class Miner implements MinerEventsListener {
 	// Metodo di verifica della proof of work
 	private Boolean verifyProofOfWork(Block block) {
 
-		Integer complexity = PoolDispatcherUtility.getBlockComplexity(block.getCreationTime())-10;//TODO SEMPLIFICATO LA DIFF
+		Integer complexity = PoolDispatcherUtility.getBlockComplexity(block.getCreationTime()) - 10;// TODO SEMPLIFICATO LA DIFF
 
 		// Se c'è stato un errore o la complessità non è stata trovata nel
 		// server
@@ -607,50 +605,44 @@ public class Miner implements MinerEventsListener {
 		this.poolDispatcherBaseUri = poolDispatcherBaseUri;
 	}
 
-	@Override
-	public void onNewBlockArrived(Block block) {
+	@Async
+	public Future<Boolean> onNewBlockArrived(Block block) {
 
-		VerifyBlockService verifyBlockService = new VerifyBlockService(new Runnable() {
+		System.out.println("Nuovo blocco arrivato, verifico...");
 
-			@Override
-			public void run() {
+		Boolean isVerified = Boolean.FALSE;
 
-				System.out.println("Nuovo blocco arrivato, verifico...");
+		// Se ho già il blocco nella catena termina.
+		if (blockRepository.findByhashBlock(block.getHashBlock()) != null)
+			return new AsyncResult<Boolean>(isVerified);
 
-				Boolean isVerified = Boolean.FALSE;
+		try {
 
-				// Se ho già il blocco nella catena termina.
-				if (blockRepository.findByhashBlock(block.getHashBlock()) != null)
-					return;
+			isVerified = verifyBlock(block, blockRepository, serviceMiner);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-				try {
+		System.out.println("Blocco valido? " + isVerified);
 
-					isVerified = verifyBlock(block, blockRepository, serviceMiner);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+		if (isVerified) {
+			// Stoppo il processo di mining
+			stopMine();
+			// Salvo il blocco nella catena
+			blockRepository.save(block);
+			// Aggiorno il servizio di mining
+			updateMiningService();
+			// Ricomincio a minare
+			miningService.run();
 
-				System.out.println("Blocco valido? " + isVerified);
-
-				if (isVerified) {
-					// Stoppo il processo di mining
-					stopMine();
-					// Salvo il blocco nella catena
-					blockRepository.save(block);
-					// Aggiorno il servizio di mining
-					updateMiningService();
-					// Ricomincio a minare
-					miningService.run();
-				}
-			}
-		});
-
-		verifyBlockService.run();
-
+			// TODO CHIAMATA ASINCRONA
+		}
+		
+		return new AsyncResult<Boolean>(isVerified);
 	}
 
 	private void updateMiningService() {

@@ -38,12 +38,12 @@ public class MinersListenerRegister {
         registeredMiners.remove(miner);
     }
 
-    // Metodo per notificare i miners di un nuovo blocco verificato
-    public void notifyListenersNewBlock(Block verifiedBlock) {
-        for(Miner miner: registeredMiners) {
-            miner.onNewBlockArrived(verifiedBlock);
-            System.out.println("\n Listener blocco e lo gestisco ");
-        }
-    }
+//    // Metodo per notificare i miners di un nuovo blocco verificato
+//    public void notifyListenersNewBlock(Block verifiedBlock) {
+//        for(Miner miner: registeredMiners) {
+//            miner.onNewBlockArrived(verifiedBlock);
+//            System.out.println("\n Listener blocco e lo gestisco ");
+//        }
+//    }
 
 }
