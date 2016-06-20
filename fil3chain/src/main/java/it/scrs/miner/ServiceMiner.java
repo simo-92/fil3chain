@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.Future;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -21,48 +22,47 @@ import it.scrs.miner.util.IP;
 @Service
 public class ServiceMiner {
 
-	public static final Integer nReqProp = 5;//TODO al properties
+	public static final Integer nReqProp = 5;// TODO al properties
+
+	@Autowired
+	RestTemplate restTemplate;
 
 	private int timeoutSeconds;
 
-	RestTemplate restTemplate = new RestTemplate();
-
-
 	@Async
-    public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner) {
+	public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner) {
 
-        loadConfiguration();
-
-        // System.out.println("Timeout: " + timeoutSeconds);
+		loadConfiguration();
 //
-//        SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-//        rf.setReadTimeout(1000 * timeoutSeconds);
-//        rf.setConnectTimeout(1000 * timeoutSeconds);
+//		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+//		rf.setReadTimeout(1000 * 5);
+//		rf.setConnectTimeout(1000 * 5);
+//		restTemplate.setRequestFactory(rf);
 
-        String result = "";
-        Integer level = -1;
-        Integer counter =0;
-        while (counter <= nReqProp) {
-            try {
-                System.out.println("\nRichiesta ad :" + uriMiner);
-                result = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/updateAtMaxLevel", String.class);
-                level = Integer.decode(result);
-                return new AsyncResult<>(new Pairs<>(new IP(uriMiner), level));
-            } catch (Exception e) {
-                // e.printStackTrace();
-                System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
-                counter++;
-            }
+		String result = "";
+		Integer level = -1;
+		Integer counter = 0;
+		while (counter <= nReqProp) {
+			try {
+				System.out.println("\nRichiesta ad :" + uriMiner);
+				result = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/updateAtMaxLevel", String.class);
+				level = Integer.decode(result);
+				return new AsyncResult<>(new Pairs<>(new IP(uriMiner), level));
+			} catch (Exception e) {
+				// e.printStackTrace();
+				System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
+				counter++;
+			}
 
-            try {
-                Thread.sleep(250);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 
-        }
-        return null;
-    }
+		}
+		return null;
+	}
 
 	/**
 	 * @param uriMiner
@@ -73,11 +73,11 @@ public class ServiceMiner {
 
 		loadConfiguration();
 
-		// System.out.println("Timeout: " + timeoutSeconds);
-//
 //		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-//		rf.setReadTimeout(1000 * timeoutSeconds);
-//		rf.setConnectTimeout(1000 * timeoutSeconds);
+//		rf.setReadTimeout(1000 * 5);
+//		rf.setConnectTimeout(1000 * 5);
+//		restTemplate.setRequestFactory(rf);
+
 		Integer counter = 0;
 		while (counter <= nReqProp) {
 			try {

@@ -1,6 +1,7 @@
 package it.scrs.miner;
 
 
+import it.scrs.miner.config.ApplicationConfig;
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.block.MerkleTree;
@@ -219,11 +220,11 @@ public class MiningService extends Thread implements Runnable {
 	public Future<List<Block>> sendBlockToMiners() throws InterruptedException {
 
 		
-
-		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-		rf.setReadTimeout(1000 * 5);
-		rf.setConnectTimeout(1000 * 5);
-		restTemplate.setRequestFactory(rf);
+//
+//		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+//		rf.setReadTimeout(1000 * 5);
+//		rf.setConnectTimeout(1000 * 5);
+//		restTemplate.setRequestFactory(rf);
 
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();
@@ -246,6 +247,8 @@ public class MiningService extends Thread implements Runnable {
 				try {
 					// String response = HttpUtil.doPost("http://" + ip.getIp() + "/fil3chain/newBlock",
 					// JsonUtility.toJson(block));
+					
+					
 					String response = restTemplate.postForObject("http://" + ip.getIp() + "/fil3chain/newBlock", block, String.class);
 					System.out.println("Ho inviato il blocco e mi è ritornato come risposta: " + response);
 					synchronized (counter) {
