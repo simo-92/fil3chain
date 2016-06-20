@@ -21,11 +21,14 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.mysql.cj.api.x.Collection;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -33,6 +36,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -44,6 +48,7 @@ import java.util.logging.Logger;
  * Created by Marco Date: 08/06/2016
  */
 @Service
+@EnableAsync
 public class MiningService {
 
 	// Blocco da minare
@@ -78,6 +83,100 @@ public class MiningService {
 	@Autowired
 	RestTemplate restTemplate;
 
+	
+	
+	public static final Integer nReqProp = 5;// TODO al properties
+
+	private int timeoutSeconds;
+
+	@Async
+	public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner) {
+
+		loadConfiguration();
+//
+//		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+//		rf.setReadTimeout(1000 * 5);
+//		rf.setConnectTimeout(1000 * 5);
+//		restTemplate.setRequestFactory(rf);
+
+		String result = "";
+		Integer level = -1;
+		Integer counter = 0;
+		while (counter <= nReqProp) {
+			try {
+				System.out.println("\nRichiesta ad :" + uriMiner);
+				result = restTemplate.getForObject("http://" + uriMiner + "/fil3chain/updateAtMaxLevel", String.class);
+				level = Integer.decode(result);
+				return new AsyncResult<>(new Pairs<>(new IP(uriMiner), level));
+			} catch (Exception e) {
+				// e.printStackTrace();
+				System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
+				counter++;
+			}
+
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+		}
+		return null;
+	}
+
+	/**
+	 * @param uriMiner
+	 * @return
+	 */
+	@Async
+	public Future<String> pingUser(String uriMiner) {
+
+		loadConfiguration();
+
+//		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+//		rf.setReadTimeout(1000 * 5);
+//		rf.setConnectTimeout(1000 * 5);
+//		restTemplate.setRequestFactory(rf);
+
+		Integer counter = 0;
+		while (counter <= nReqProp) {
+			try {
+				System.out.println("\nRichiesta ad :" + uriMiner);
+				String response = restTemplate.postForObject("http://" + uriMiner + "/user_ping", null, String.class);
+				return new AsyncResult<>(response);
+			} catch (Exception e) {
+				// e.printStackTrace();
+				System.out.println("\nSono Morto: " + uriMiner + " Causa: " + e.getMessage());
+				counter++;
+			}
+
+			// Aspetto prima della prossima richiesta
+			try {
+				Thread.sleep(250);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+		}
+		return null;
+	}
+
+	/**
+	 * 
+	 */
+	private void loadConfiguration() {
+
+		// Carica la configurazione
+		Properties prop = new Properties();
+		InputStream in = MiningService.class.getResourceAsStream("/network.properties");
+		try {
+			prop.load(in);
+			// Imposta il timeout
+			this.timeoutSeconds = Integer.parseInt(prop.getProperty("timeoutSeconds", "3"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	/**
 	 * Costruttore di default (necessario)
@@ -252,7 +351,7 @@ public class MiningService {
 						// altrimenti aumenta il counter di uno
 
 						counter.put(ip, counter.get(ip) + 1);
-						if (counter.get(ip) > ServiceMiner.nReqProp)
+						if (counter.get(ip) > nReqProp)
 							counter.remove(ip);
 
 					}

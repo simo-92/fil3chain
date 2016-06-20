@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -45,12 +46,13 @@ import javax.crypto.NoSuchPaddingException;
  *
  */
 @Component
+@EnableAsync
 public class Miner {
 
 	private static Miner miner;
 	private static String minerIp;
 	private static BlockRepository minerBlockRepository;
-	private static ServiceMiner minerService;
+	private static MiningService minerService;
 	private String ipEntryPoint;
 	private String portEntryPoint;
 	private String entryPointBaseUri;
@@ -75,7 +77,7 @@ public class Miner {
 	private String myPublickKey;
 	private String myPrivateKey;
 	private BlockRepository blockRepository;
-	private ServiceMiner serviceMiner;
+	private MiningService serviceMiner;
 	private BlockChain blockChain;
 	private Boolean flagNewBlock;
 
@@ -87,7 +89,7 @@ public class Miner {
 		super();
 	}
 
-	private Miner(String ip, BlockRepository blockRepository, ServiceMiner serviceMiner) {
+	private Miner(String ip, BlockRepository blockRepository, MiningService serviceMiner) {
 		super();
 		loadNetworkConfig();
 		loadKeyConfig(); // carica le chiavi dal file properties
@@ -113,7 +115,7 @@ public class Miner {
 	/**
 	 * @return the serviceMiner
 	 */
-	public ServiceMiner getServiceMiner() {
+	public MiningService getServiceMiner() {
 
 		return serviceMiner;
 	}
@@ -167,7 +169,7 @@ public class Miner {
 		String result = "";
 		Integer counter = 0;
 
-		while (counter <= ServiceMiner.nReqProp) {
+		while (counter <= MiningService.nReqProp) {
 			try {
 				System.out.println("URL: " + url);
 				System.out.println("Il mio IP: " + ip);
@@ -239,7 +241,7 @@ public class Miner {
 	 * @throws ExecutionException
 	 * @throws IOException
 	 */
-	public Boolean verifyBlock(Block b, BlockRepository blockRepository, ServiceMiner serviceMiner) throws InterruptedException, ExecutionException, IOException {
+	public Boolean verifyBlock(Block b, BlockRepository blockRepository) throws InterruptedException, ExecutionException, IOException {
 
 		Boolean result = Boolean.FALSE;
 		// nell primo updateh
@@ -593,7 +595,7 @@ public class Miner {
 
 		try {
 
-			isVerified = verifyBlock(block, blockRepository, serviceMiner);
+			isVerified = verifyBlock(block, blockRepository);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} catch (ExecutionException e) {
@@ -668,13 +670,13 @@ public class Miner {
 		this.blockRepository = blockRepository;
 	}
 
-	public void setServiceMiner(ServiceMiner serviceMiner) {
+	public void setServiceMiner(MiningService serviceMiner) {
 
 		this.serviceMiner = serviceMiner;
 
 	}
 
-	public static Miner getInstance(String ip, BlockRepository blockRepository, ServiceMiner serviceMiner) {
+	public static Miner getInstance(String ip, BlockRepository blockRepository, MiningService serviceMiner) {
 
 		if (miner == null) {
 			miner = new Miner(ip, blockRepository, serviceMiner);

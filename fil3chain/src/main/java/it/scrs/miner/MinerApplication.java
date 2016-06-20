@@ -31,8 +31,8 @@ import java.util.concurrent.Future;
 
 
 @SpringBootApplication
-@EnableAsync
 @ComponentScan("it.scrs.miner")
+@EnableAsync
 @EnableAutoConfiguration
 public class MinerApplication implements CommandLineRunner {
 
@@ -49,7 +49,7 @@ public class MinerApplication implements CommandLineRunner {
 	@Autowired
 	private TransactionRepository transRepo;
 	@Autowired
-	private ServiceMiner serviceMiner;
+	private MiningService serviceMiner;
 
 
 	public static void main(String[] args) {
@@ -206,7 +206,7 @@ public class MinerApplication implements CommandLineRunner {
 	/**
 	 * @return the serviceMiner
 	 */
-	public ServiceMiner getServiceMiner() {
+	public MiningService getServiceMiner() {
 
 		return serviceMiner;
 	}
@@ -215,7 +215,7 @@ public class MinerApplication implements CommandLineRunner {
 	 * @param serviceMiner
 	 *            the serviceMiner to set
 	 */
-	public void setServiceMiner(ServiceMiner serviceMiner) {
+	public void setServiceMiner(MiningService serviceMiner) {
 
 		this.serviceMiner = serviceMiner;
 	}

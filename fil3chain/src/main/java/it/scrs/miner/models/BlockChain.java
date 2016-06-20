@@ -8,7 +8,7 @@ package it.scrs.miner.models;
 import com.google.gson.reflect.TypeToken;
 import it.scrs.miner.IPManager;
 import it.scrs.miner.Miner;
-import it.scrs.miner.ServiceMiner;
+import it.scrs.miner.MiningService;
 import it.scrs.miner.dao.block.Block;
 import it.scrs.miner.dao.block.BlockRepository;
 import it.scrs.miner.dao.transaction.Transaction;
@@ -24,12 +24,20 @@ import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 
 
 public class BlockChain {
 
 	private int nBlockUpdate = 10;
+	private Miner miner;
+	private BlockRepository blockRepository;
 
+	
+	
+	@Autowired
+	private MiningService ms;
 
 	/**
 	 * @return the nBlockUpdate
@@ -49,15 +57,11 @@ public class BlockChain {
 	}
 
 
-	private Miner miner;
-	private BlockRepository blockRepository;
-	private ServiceMiner serviceMiner;
 
 
 	public BlockChain(Miner miner) {
 		this.miner = miner;
 		this.blockRepository = miner.getBlockRepository();
-		this.serviceMiner = miner.getServiceMiner();
 
 		Properties prop = new Properties();
 		InputStream in = Miner.class.getResourceAsStream("/miner.properties");
@@ -88,7 +92,7 @@ public class BlockChain {
 			// Finche non sono aggiornato(ovvero mi rispondono con stringa
 			// codificata o blocco fittizio)
 			// Prendo k ip random da tutta la lista di Ip che mi sono stati inviati
-			askMinerChainLvl(ipMiners, minerResp, serviceMiner);
+			askMinerChainLvl(ipMiners, minerResp);
 			System.out.println("2");
 			// minerResp.add(serviceMiner.findMaxChainLevel("192.168.0.107"));
 			// System.out.println("1");
@@ -113,7 +117,7 @@ public class BlockChain {
 				System.out.println("Il Miner designato = " + designedMiner.getValue1() + " con ChainLevel = " + designedMiner.getValue2() + "\n");
 				Integer counter = 0;
 				Boolean flag = Boolean.TRUE;
-				while (counter <= ServiceMiner.nReqProp && flag) {
+				while (counter <= MiningService.nReqProp && flag) {
 					try {
 						System.out.println("\nBranchUpdate GetBlock");
 						getBlocksFromMiner(ipMiners, designedMiner, blockRepository);
@@ -164,7 +168,7 @@ public class BlockChain {
 			// Finche non sono aggiornato(ovvero mi rispondono con stringa
 			// codificata o blocco fittizio)
 			// Prendo k ip random da tutta la lista di Ip che mi sono stati inviati
-			askMinerBlock(ipMiners, minerResp, serviceMiner);
+			askMinerBlock(ipMiners, minerResp);
 			System.out.println("\nBranchUpdate REQ");
 
 			// minerResp.add(serviceMiner.findMaxChainLevel("192.168.0.107"));
@@ -192,7 +196,7 @@ public class BlockChain {
 				System.out.println("Il Miner designato = " + designedMiner.getIp() + "\n");
 				Integer counter = 0;
 				flag = Boolean.TRUE;
-				while (counter <= ServiceMiner.nReqProp && flag) {
+				while (counter <= MiningService.nReqProp && flag) {
 					try {
 						System.out.println("\nBranchUpdate GetBlock");
 						getBlockFromMiner(ipMiners, hash, designedMiner, blockRepository);
@@ -260,11 +264,11 @@ public class BlockChain {
 	 * @param ipMiners
 	 * @param minerResp
 	 */
-	private void askMinerChainLvl(List<IP> ipMiners, List<Future<Pairs<IP, Integer>>> minerResp, ServiceMiner serviceMiner) {
+	private void askMinerChainLvl(List<IP> ipMiners, List<Future<Pairs<IP, Integer>>> minerResp) {
 
 		for (int i = 0; i < ipMiners.size(); i++) {
 			// Double x = Math.random() * ipMiners.size();
-			Future<Pairs<IP, Integer>> result = serviceMiner.findMaxChainLevel(ipMiners.get(i).getIp());
+			Future<Pairs<IP, Integer>> result = ms.findMaxChainLevel(ipMiners.get(i).getIp());
 			try {
 				if (result == null || result.get() == null || result.get().getValue1() == null || result.get().getValue2() == null) {
                     IP tmp = ipMiners.remove(i);
@@ -286,12 +290,12 @@ public class BlockChain {
 	 * @param ipMiners
 	 * @param minerResp
 	 */
-	private void askMinerBlock(List<IP> ipMiners, List<Pairs<Future<String>, IP>> minerResp, ServiceMiner serviceMiner) {
+	private void askMinerBlock(List<IP> ipMiners, List<Pairs<Future<String>, IP>> minerResp) {
 
 		for (int i = 0; i < ipMiners.size(); i++) {
 			// Double x = Math.random() * ipMiners.size();
 			// Future<Pairs<IP, Block>> result = serviceMiner.pingUser(ipMiners.get(i).getIp(), "getBlockByhash?hash=0");
-            Future<String> result = serviceMiner.pingUser(ipMiners.get(i).getIp());
+            Future<String> result = ms.pingUser(ipMiners.get(i).getIp());
 			try {
 				if (result == null || result.get() == null) {
                     IP tmp = ipMiners.remove(i);
@@ -427,7 +431,7 @@ public class BlockChain {
 		if (blockResponse != null) {
 			System.out.println("\n Block response branch update: " + blockResponse.getHashBlock() + "\n");
 
-			if (miner.verifyBlock(blockResponse, blockRepository, serviceMiner)) {
+			if (miner.verifyBlock(blockResponse, blockRepository)) {
 				System.out.println("Salvo il blocco");
 				blockRepository.save(blockResponse);
 				return Boolean.TRUE;
@@ -464,7 +468,7 @@ public class BlockChain {
 			System.out.println("\n Numero di blocchi ricevuti da block chain update from level: " + blockResponse.size());
 			for (Block b : blockResponse) {
 				System.out.println("Blocco ricevuto: " + b);
-				if (miner.verifyBlock(b, blockRepository, serviceMiner)) {
+				if (miner.verifyBlock(b, blockRepository)) {
 					for (Transaction t : b.getTransactionsContainer())
 						t.setBlockContainer(b.getHashBlock());
 					blockRepository.save(b);

@@ -9,12 +9,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.client.RestTemplate;
 
 
 //TODO Controllare se li prende o sostituire con application properties
 
 @Configuration
+@EnableAsync
 @PropertySource("classpath:/network.properties")
 public class ApplicationConfig {
 
