@@ -52,7 +52,6 @@ public class Miner {
 	private static Miner miner;
 	private static String minerIp;
 	private static BlockRepository minerBlockRepository;
-	private static MiningService minerService;
 	private String ipEntryPoint;
 	private String portEntryPoint;
 	private String entryPointBaseUri;
@@ -67,7 +66,7 @@ public class Miner {
 	private String ip;
 	private User me;
 
-	private MiningService miningService;
+	private static MiningService miningService;
 
 	private static final Logger log = LoggerFactory.getLogger(Miner.class);
 
@@ -682,7 +681,7 @@ public class Miner {
 			miner = new Miner(ip, blockRepository, serviceMiner);
 			minerIp = ip;
 			minerBlockRepository = blockRepository;
-			minerService = serviceMiner;
+			miningService = serviceMiner;
 		}
 
 		return miner;
@@ -691,7 +690,7 @@ public class Miner {
 	public static Miner getInstance() {
 
 		if (miner == null) {
-			miner = new Miner(minerIp, minerBlockRepository, minerService);
+			miner = new Miner(minerIp, minerBlockRepository, miningService);
 		}
 
 		return miner;

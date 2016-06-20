@@ -66,7 +66,6 @@ public class MiningService {
 	// Maschera per il check dell'hash nel byte di "resto"
 	private byte restMask;
 
-
 	// Chiave pubblica dell'autore del blocco
 	private String publicKey;
 
@@ -77,27 +76,27 @@ public class MiningService {
 	private List<Transaction> transactions;
 
 	// Block repository
+	@Autowired
 	private BlockRepository blockRepository;
 	private TransactionRepository transRepo;
 
 	@Autowired
 	RestTemplate restTemplate;
 
-	
-	
 	public static final Integer nReqProp = 5;// TODO al properties
 
 	private int timeoutSeconds;
+
 
 	@Async
 	public Future<Pairs<IP, Integer>> findMaxChainLevel(String uriMiner) {
 
 		loadConfiguration();
-//
-//		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-//		rf.setReadTimeout(1000 * 5);
-//		rf.setConnectTimeout(1000 * 5);
-//		restTemplate.setRequestFactory(rf);
+		//
+		// SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+		// rf.setReadTimeout(1000 * 5);
+		// rf.setConnectTimeout(1000 * 5);
+		// restTemplate.setRequestFactory(rf);
 
 		String result = "";
 		Integer level = -1;
@@ -133,10 +132,10 @@ public class MiningService {
 
 		loadConfiguration();
 
-//		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-//		rf.setReadTimeout(1000 * 5);
-//		rf.setConnectTimeout(1000 * 5);
-//		restTemplate.setRequestFactory(rf);
+		// SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+		// rf.setReadTimeout(1000 * 5);
+		// rf.setConnectTimeout(1000 * 5);
+		// restTemplate.setRequestFactory(rf);
 
 		Integer counter = 0;
 		while (counter <= nReqProp) {
@@ -230,13 +229,12 @@ public class MiningService {
 	@Async
 	public Future<Boolean> mine() throws Exception {
 
+		if (block == null)
+			initializeService();
 		if (difficulty == -1) {
 			System.err.println("Complessità per il calcolo del blocco errata, impossibile minare");
 			return new AsyncResult<Boolean>(Boolean.FALSE);
 		}
-
-		if (block == null)
-			initializeService();
 
 		// Calcolo le maschere per il check dell'hash.
 		calculateMasks();
@@ -303,13 +301,14 @@ public class MiningService {
 
 	@Async
 	public Future<List<Block>> sendBlockToMiners() throws InterruptedException {
+
 		System.out.println(restTemplate.toString());
-		
+
 		HttpComponentsClientHttpRequestFactory rf = new HttpComponentsClientHttpRequestFactory();
-		 rf.setReadTimeout(1000 * 10);
-		 rf.setConnectTimeout(1000 * 10);
-		 rf.setConnectionRequestTimeout(1000 * 10);
-		 restTemplate.setRequestFactory(rf);
+		rf.setReadTimeout(1000 * 10);
+		rf.setConnectTimeout(1000 * 10);
+		rf.setConnectionRequestTimeout(1000 * 10);
+		restTemplate.setRequestFactory(rf);
 
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();

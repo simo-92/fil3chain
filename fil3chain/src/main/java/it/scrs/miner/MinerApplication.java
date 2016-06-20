@@ -123,13 +123,13 @@ public class MinerApplication implements CommandLineRunner {
 		// Chiamo asincrono
 
 		// aspetto while flag che cambia con thread mio o arrivo blocco e riparto
+		miner.setFlagNewBlock(Boolean.FALSE);
 		while (Boolean.TRUE) {// finche gui dice si
 			System.out.println("richiesta asincrona");
-			Future<Boolean> response = miner.getMiningService().mine();
+			Future<Boolean> response = serviceMiner.mine();
 			System.out.println("sono asincrona?");
 
 			do {
-				System.out.println("wait block mining");
 				Thread.sleep(250);
 
 			} while (!response.isDone() && !miner.getFlagNewBlock());
