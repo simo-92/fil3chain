@@ -1,4 +1,4 @@
-package it.scrs.miner;
+package it.scrs.miner.config;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

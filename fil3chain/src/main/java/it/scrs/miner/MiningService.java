@@ -14,6 +14,7 @@ import it.scrs.miner.util.IP;
 import it.scrs.miner.util.PoolDispatcherUtility;
 
 import org.h2.command.dml.Set;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -73,6 +74,9 @@ public class MiningService extends Thread implements Runnable {
 	private BlockRepository blockRepository;
 	private TransactionRepository transRepo;
 
+	
+	@Autowired
+	 RestTemplate restTemplate ;
 
 	/**
 	 * Costruttore di default (necessario)
@@ -214,11 +218,11 @@ public class MiningService extends Thread implements Runnable {
 	@Async
 	public Future<List<Block>> sendBlockToMiners() throws InterruptedException {
 
-		RestTemplate restTemplate = new RestTemplate();
+		
 
-		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-		rf.setReadTimeout(1000 * 5);
-		rf.setConnectTimeout(1000 * 5);
+//		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+//		rf.setReadTimeout(1000 * 5);
+//		rf.setConnectTimeout(1000 * 5);
 
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();

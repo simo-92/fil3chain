@@ -9,6 +9,12 @@ import it.scrs.miner.dao.transaction.TransactionRepository;
 import it.scrs.miner.dao.user.User;
 import it.scrs.miner.models.BlockChain;
 import it.scrs.miner.util.PoolDispatcherUtility;
+import scala.annotation.meta.setter;
+
+import org.apache.commons.httpclient.HttpClient;
+import org.apache.http.HttpRequestFactory;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.config.RequestConfig.Builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +23,10 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.RestTemplate;
+
 
 import javax.swing.*;
 import java.net.InetAddress;
@@ -49,6 +59,17 @@ public class MinerApplication implements CommandLineRunner {
 	private ServiceMiner serviceMiner;
 
 
+	public static void main(String[] args) {
+
+		SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(MinerApplication.class).headless(false);
+		springApplicationBuilder.run(args);
+		// springApplication.run(MinerApplication.class);
+		
+	
+	}
+
+	
+	
 	@Override
 	public void run(String... args) throws Exception {
 
@@ -118,12 +139,6 @@ public class MinerApplication implements CommandLineRunner {
 
 	}
 
-	public static void main(String[] args) {
-
-		SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(MinerApplication.class).headless(false);
-		springApplicationBuilder.run(args);
-		// springApplication.run(MinerApplication.class);
-	}
 
 	/**
 	 * Permette di selezionare l'IP da utilizzare per la sessione corrente tramite un dialog.
