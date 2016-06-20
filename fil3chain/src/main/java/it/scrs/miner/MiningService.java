@@ -261,7 +261,10 @@ public class MiningService extends Thread implements Runnable {
 				} finally {
 					synchronized (counter) {
 						// altrimenti aumenta il counter di uno
+					
 						counter.put(ip, counter.get(ip) + 1);
+						if(counter.get(ip)> ServiceMiner.nReqProp)
+							counter.remove(ip);
 
 					}
 				}
