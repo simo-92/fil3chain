@@ -77,6 +77,7 @@ public class Miner {
 	private BlockRepository blockRepository;
 	private ServiceMiner serviceMiner;
 	private BlockChain blockChain;
+	private Boolean flagNewBlock;
 
 
 	/**
@@ -506,32 +507,7 @@ public class Miner {
 		return log;
 	}
 
-	public void startMine() {
 
-		if (miningService == null && !miningService.isInitialized()) {
-			return;
-		}
-
-		miningService.start();
-	}
-
-	public void stopMine() {
-
-		if (miningService == null && !miningService.isInitialized()) {
-			return;
-		}
-
-		miningService.interrupt();
-	}
-
-	public Boolean isMining() {
-
-		if (miningService == null && !miningService.isInitialized()) {
-			return Boolean.FALSE;
-		}
-
-		return !miningService.isInterrupted();
-	}
 
 	public void initializeBlockChain() {
 
@@ -609,7 +585,7 @@ public class Miner {
 	public Future<Boolean> onNewBlockArrived(Block block) {
 
 		System.out.println("Nuovo blocco arrivato, verifico...");
-
+		flagNewBlock = Boolean.TRUE;
 		Boolean isVerified = Boolean.FALSE;
 
 		// Se ho già il blocco nella catena termina.
@@ -631,18 +607,34 @@ public class Miner {
 
 		if (isVerified) {
 			// Stoppo il processo di mining
-			stopMine();
 			// Salvo il blocco nella catena
 			blockRepository.save(block);
 			// Aggiorno il servizio di mining
 			updateMiningService();
 			// Ricomincio a minare
-			miningService.run();
 
 			// TODO CHIAMATA ASINCRONA
 		}
 		
 		return new AsyncResult<Boolean>(isVerified);
+	}
+
+	
+	/**
+	 * @return the flagNewBlock
+	 */
+	public Boolean getFlagNewBlock() {
+	
+		return flagNewBlock;
+	}
+
+	
+	/**
+	 * @param flagNewBlock the flagNewBlock to set
+	 */
+	public void setFlagNewBlock(Boolean flagNewBlock) {
+	
+		this.flagNewBlock = flagNewBlock;
 	}
 
 	private void updateMiningService() {

@@ -18,7 +18,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.annotation.ComponentScan;
 
-
 import javax.swing.*;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -26,6 +25,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.Future;
 
 
 
@@ -55,12 +55,9 @@ public class MinerApplication implements CommandLineRunner {
 		SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(MinerApplication.class).headless(false);
 		springApplicationBuilder.run(args);
 		// springApplication.run(MinerApplication.class);
-		
-	
+
 	}
 
-	
-	
 	@Override
 	public void run(String... args) throws Exception {
 
@@ -73,15 +70,12 @@ public class MinerApplication implements CommandLineRunner {
 		// Block block = miner.generateBlock(null, 17, 31, null, null, null);
 		// System.out.println(block.generateAndGetHashBlock());
 		// prendi minerReq ip a caso dalla lista dei miner
-		
-	
 
 		// Registro il miner per gli eventi
 		MinersListenerRegister.getInstance().registerMiner(miner);
 
 		// Update della block chain
-		
-		
+
 		// System.out.println("3");
 
 		// Prendo il mio ultimo blocco
@@ -115,21 +109,25 @@ public class MinerApplication implements CommandLineRunner {
 		System.out.println("Complessità per minare: " + complexity);
 
 		// Il miner inizia a minare
-		miner.setMiningService(new MiningService(transactionsList, myLastBlock, miner.getMyPrivateKey(), miner.getMyPublickKey(), block, complexity, blockRepository,transRepo, new Runnable() {
+		miner.setMiningService(new MiningService(transactionsList, myLastBlock, miner.getMyPrivateKey(), miner.getMyPublickKey(), block, complexity, blockRepository, transRepo));
 
-			@Override
-			public void run() {
+		// Chiamo asincrono
 
-				System.out.println("Miner interrotto");
-				System.out.println("Sta minando: " + miner.isMining());
-				// System.out.println("Numero di IP: " + IPManager.getManager().getIPList().size());
-			}
-		}));
+		// aspetto while flag che cambia con thread mio o arrivo blocco e riparto
+		while (Boolean.TRUE) {// finche gui dice si
+			Future<Boolean> response = miner.getMiningService().mine();
 
-		miner.startMine();
+			do {
+				System.out.println("wait block mining");
+				Thread.sleep(3000);
+
+			} while (response.isDone() && !response.get() && !miner.getFlagNewBlock());
+			miner.setFlagNewBlock(Boolean.TRUE);
+
+			miner.getMiningService().initializeService();
+		}
 
 	}
-
 
 	/**
 	 * Permette di selezionare l'IP da utilizzare per la sessione corrente tramite un dialog.

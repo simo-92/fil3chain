@@ -42,7 +42,7 @@ import java.util.logging.Logger;
  * Created by Marco Date: 08/06/2016
  */
 @Service
-public class MiningService extends Thread implements Runnable {
+public class MiningService {
 
 	// Blocco da minare
 	private Block block;
@@ -59,8 +59,6 @@ public class MiningService extends Thread implements Runnable {
 	// Maschera per il check dell'hash nel byte di "resto"
 	private byte restMask;
 
-	// Callback chiamata dopo l'interruzione del thread
-	private Runnable interruptCallback;
 
 	// Chiave pubblica dell'autore del blocco
 	private String publicKey;
@@ -75,9 +73,9 @@ public class MiningService extends Thread implements Runnable {
 	private BlockRepository blockRepository;
 	private TransactionRepository transRepo;
 
-	
 	@Autowired
-	 RestTemplate restTemplate ;
+	RestTemplate restTemplate;
+
 
 	/**
 	 * Costruttore di default (necessario)
@@ -87,7 +85,6 @@ public class MiningService extends Thread implements Runnable {
 		difficulty = -1;
 		fullMask = 0;
 		restMask = 0b1111111;
-		interruptCallback = null;
 	}
 
 	/**
@@ -96,14 +93,13 @@ public class MiningService extends Thread implements Runnable {
 	 * @param block
 	 * @param difficulty
 	 */
-	public MiningService(List<Transaction> transactions, Block previousBlock, String prKey, String puKey, Block block, Integer difficulty, BlockRepository blockRepository, TransactionRepository transRepo, Runnable interruptCallback) {
+	public MiningService(List<Transaction> transactions, Block previousBlock, String prKey, String puKey, Block block, Integer difficulty, BlockRepository blockRepository, TransactionRepository transRepo) {
 		this.block = block;
 		this.privateKey = prKey;
 		this.publicKey = puKey;
 		this.previousBlock = previousBlock;
 		this.transactions = transactions;
 		this.difficulty = difficulty;
-		this.interruptCallback = interruptCallback;
 		this.blockRepository = blockRepository;
 		this.transRepo = transRepo;
 	}
@@ -127,24 +123,15 @@ public class MiningService extends Thread implements Runnable {
 		}
 	}
 
-	@Override
-	public void run() {
-
-		try {
-			mine();
-		} catch (Exception ex) {
-			Logger.getLogger(MiningService.class.getName()).log(Level.SEVERE, null, ex);
-		}
-	}
-
 	/**
 	 * Metodo per minare un blocco
 	 */
-	public void mine() throws Exception {
+	@Async
+	public Future<Boolean> mine() throws Exception {
 
 		if (difficulty == -1) {
 			System.err.println("Complessità per il calcolo del blocco errata, impossibile minare");
-			return;
+			return new AsyncResult<Boolean>(Boolean.FALSE);
 		}
 
 		if (block == null)
@@ -210,21 +197,17 @@ public class MiningService extends Thread implements Runnable {
 		}
 
 		sendBlockToMiners();
-
-		// TODO: Ricomincia a minare
-		initializeService();
-		mine();
+		return new AsyncResult<Boolean>(Boolean.TRUE);
 	}
 
 	@Async
 	public Future<List<Block>> sendBlockToMiners() throws InterruptedException {
 
-		
-//
-//		SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
-//		rf.setReadTimeout(1000 * 5);
-//		rf.setConnectTimeout(1000 * 5);
-//		restTemplate.setRequestFactory(rf);
+		//
+		// SimpleClientHttpRequestFactory rf = ((SimpleClientHttpRequestFactory) restTemplate.getRequestFactory());
+		// rf.setReadTimeout(1000 * 5);
+		// rf.setConnectTimeout(1000 * 5);
+		// restTemplate.setRequestFactory(rf);
 
 		List<Block> blocks = new ArrayList<Block>();
 		String bool = Boolean.FALSE.toString();
@@ -247,8 +230,7 @@ public class MiningService extends Thread implements Runnable {
 				try {
 					// String response = HttpUtil.doPost("http://" + ip.getIp() + "/fil3chain/newBlock",
 					// JsonUtility.toJson(block));
-					
-					
+
 					String response = restTemplate.postForObject("http://" + ip.getIp() + "/fil3chain/newBlock", block, String.class);
 					System.out.println("Ho inviato il blocco e mi è ritornato come risposta: " + response);
 					synchronized (counter) {
@@ -259,15 +241,15 @@ public class MiningService extends Thread implements Runnable {
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					sleep(1000);
+					Thread.sleep(1000);
 					System.out.println("Il miner " + ip.getIp() + " non è più connesso.");
 					System.out.println("Errore invio blocco: " + bool);
 				} finally {
 					synchronized (counter) {
 						// altrimenti aumenta il counter di uno
-					
+
 						counter.put(ip, counter.get(ip) + 1);
-						if(counter.get(ip)> ServiceMiner.nReqProp)
+						if (counter.get(ip) > ServiceMiner.nReqProp)
 							counter.remove(ip);
 
 					}
@@ -280,14 +262,6 @@ public class MiningService extends Thread implements Runnable {
 		block = null;
 
 		return new AsyncResult<>(blocks);
-	}
-
-	@Override
-	public void interrupt() {
-
-		super.interrupt();
-		if (interruptCallback != null)
-			interruptCallback.run();
 	}
 
 	private Boolean verifyHash(byte[] hash) {
@@ -307,36 +281,6 @@ public class MiningService extends Thread implements Runnable {
 		return (hash[fullMask] & restMask) == 0;
 	}
 
-	public Block getBlock() {
-
-		return block;
-	}
-
-	public void setBlock(Block block) {
-
-		this.block = block;
-	}
-
-	public String getPrivateKey() {
-
-		return privateKey;
-	}
-
-	public void setPrivateKey(String privateKey) {
-
-		this.privateKey = privateKey;
-	}
-
-	public Integer getDifficulty() {
-
-		return difficulty;
-	}
-
-	public void setDifficulty(Integer difficulty) {
-
-		this.difficulty = difficulty;
-	}
-
 	public Boolean isInitialized() {
 
 		return (block != null && difficulty != -1);
@@ -345,7 +289,6 @@ public class MiningService extends Thread implements Runnable {
 	public void updateService(Block miningBlock, Block previousBlock, int difficulty, List<Transaction> transactionList) {
 
 		System.out.println("Update service");
-		interrupt();
 		this.block = miningBlock;
 		this.previousBlock = previousBlock;
 		this.difficulty = difficulty;
@@ -382,4 +325,33 @@ public class MiningService extends Thread implements Runnable {
 		transactions = transactionsList;
 	}
 
+	public Block getBlock() {
+
+		return block;
+	}
+
+	public void setBlock(Block block) {
+
+		this.block = block;
+	}
+
+	public String getPrivateKey() {
+
+		return privateKey;
+	}
+
+	public void setPrivateKey(String privateKey) {
+
+		this.privateKey = privateKey;
+	}
+
+	public Integer getDifficulty() {
+
+		return difficulty;
+	}
+
+	public void setDifficulty(Integer difficulty) {
+
+		this.difficulty = difficulty;
+	}
 }
