@@ -202,6 +202,7 @@ public class MiningService {
 		this.difficulty = difficulty;
 		this.blockRepository = blockRepository;
 		this.transRepo = transRepo;
+		System.out.println("Chiave dentro mining service:"+privateKey);
 	}
 
 	/**
@@ -249,6 +250,7 @@ public class MiningService {
 		float totalTime = 0;
 
 		System.out.println("Nonce di partenza: " + nonce);
+		System.out.println("Mine Miner Key:"+privateKey);
 
 		// Hash del blocco
 		byte[] hash;

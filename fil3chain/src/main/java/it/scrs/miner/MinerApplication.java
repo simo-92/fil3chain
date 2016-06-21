@@ -117,6 +117,7 @@ public class MinerApplication implements CommandLineRunner {
 		// complexity *= 5;
 		System.out.println("Complessità per minare: " + complexity);
 
+		System.out.println("La mia chiave privata :"+miner.getMyPrivateKey());
 		// Il miner inizia a minare
 		miner.setMiningService(new MiningService(transactionsList, myLastBlock, miner.getMyPrivateKey(), miner.getMyPublickKey(), block, complexity, blockRepository, transRepo));
 
@@ -126,7 +127,7 @@ public class MinerApplication implements CommandLineRunner {
 		miner.setFlagNewBlock(Boolean.FALSE);
 		while (Boolean.TRUE) {// finche gui dice si
 			System.out.println("richiesta asincrona");
-			Future<Boolean> response = serviceMiner.mine();
+			Future<Boolean> response = miner.getMiningService().mine();
 			System.out.println("sono asincrona?");
 
 			do {
@@ -135,6 +136,7 @@ public class MinerApplication implements CommandLineRunner {
 			} while (!response.isDone() && !miner.getFlagNewBlock());
 			System.out.println("ho aspettato la risposta" +response.isDone() +" con valore "+ response.get() +" oppure è arrivao il blocco "+miner.getFlagNewBlock());
 			miner.setFlagNewBlock(Boolean.TRUE);
+
 
 			miner.getMiningService().initializeService();
 		}
