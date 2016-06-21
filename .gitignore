@@ -1,4 +1,4 @@
-/fil3chain/bin/target/
-/fil3chain/main/resources/application.properties
-/fil3chain/main/resources/keys.properties
-/fil3chain/target/
+fil3chain/bin/target/
+fil3chain/main/resources/application.properties
+fil3chain/main/resources/keys.properties
+fil3chain/target/
