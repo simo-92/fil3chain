@@ -30,7 +30,7 @@ import java.util.List;
 
 
 @SpringBootApplication
-@ComponentScan("it.scrs.miner")
+@ComponentScan(basePackages={"it.scrs.miner"})
 @EnableAutoConfiguration
 public class MinerApplication implements CommandLineRunner {
 

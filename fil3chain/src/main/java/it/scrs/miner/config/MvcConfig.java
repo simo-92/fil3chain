@@ -1,6 +1,8 @@
 
 package it.scrs.miner.config;
 
+import java.util.Iterator;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -11,6 +13,8 @@ import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
+import it.scrs.miner.ui.config.AUiConfig;
+import it.scrs.miner.ui.config.Resource;
 import it.scrs.miner.ui.config.UiConfig;
 
 /**
@@ -23,62 +27,56 @@ import it.scrs.miner.ui.config.UiConfig;
 
 @Configuration
 @EnableTransactionManagement
-@EnableConfigurationProperties({UiConfig.class}) 
 public class MvcConfig extends WebMvcConfigurerAdapter {
+
 	@Autowired
 	UiConfig uiCfg;
-
+	
+	/**
+	 * Aggiunta di un view controller che al path / associa la view index
+	 */
 	@Override
 	public void addViewControllers(ViewControllerRegistry registry) {
-		//Aggiunta di un view controller che al path / associa la view index
 		registry.addViewController("/").setViewName("index");
 	}
-
+	
+	/**
+	 * Aggiunta delle Risorse a seconda dell'ambiente utilizzato
+	 */
 	@Override
 	public void addResourceHandlers(ResourceHandlerRegistry registry) {
-		registry.addResourceHandler("/bower_components/**")
-		.addResourceLocations("classpath:/static/development/bower_components/");
+		Resource resource;
+		AUiConfig config = uiCfg.getConfigFromEnvironment(uiCfg.getEnvironment());
 
-		registry.addResourceHandler("/vendors/**")
-		.addResourceLocations("classpath:/static/production/vendors/");
-
-		registry.addResourceHandler("/styles/**")
-		.addResourceLocations("classpath:/static/development/app/styles/");
-
-		registry.addResourceHandler("/scripts/**")
-		.addResourceLocations("classpath:/static/development/app/scripts/");
-
-		registry.addResourceHandler("/views/**")
-		.addResourceLocations("classpath:/static/development/app/views/");
-
-		registry.addResourceHandler("/images/**")
-		.addResourceLocations("classpath:/static/development/app/images/");
-
-		registry.addResourceHandler("/icons/**")
-		.addResourceLocations("classpath:/static/development/app/icons/");
+		Iterator<Resource> resourceIterator = config.getResources().iterator();
+		//Per ogni risorsa presente nell ambiente considerato
+		while (resourceIterator.hasNext()) {
+			//Prossimo elemento risorsa da considerare
+			resource = resourceIterator.next();
+			//Viene aggiunto il pattern che corrisponde al nome risorsa con il relativo pattern di locazione
+			registry
+			.addResourceHandler(resource.getPattern())
+			.addResourceLocations(resource.getLocation());
+		} 
 	}
-
+	
+	/**
+	 * Creazione del Bean adibito alla risoluzione delle view a seconda dell'ambiente utilizzato
+	 * @return InternalResourceViewResolver
+	 * @throws Exception
+	 */
 	@Bean
 	public InternalResourceViewResolver viewResolver() throws Exception {
-		String env;
-		String uiPrefix;
-
 		InternalResourceViewResolver resolver;
-		
-		
 		System.out.println("Environment found: "+uiCfg.getEnvironment());
-		env = uiCfg.getEnvironment();
-		if(env.equals("development")){
-			//uiPrefix = uiCfg.getPrefix();
-		}else if(env.equals("production")){
+		System.out.println("Environment To String: "+ uiCfg.getConfigFromEnvironment(uiCfg.getEnvironment()).toString());
 
-		}else{
-			throw new Exception("Configuration Environment Error");
-		}
+		//Configurazione attuale
+		AUiConfig config = uiCfg.getConfigFromEnvironment(uiCfg.getEnvironment());
 
 		resolver = new InternalResourceViewResolver();
-		resolver.setPrefix("/development/app/");
-		resolver.setSuffix(".html");
+		resolver.setPrefix(config.getPrefix());
+		resolver.setSuffix(config.getSuffix());
 		return resolver;
 	}
 
